@@ -330,118 +330,82 @@ public class ImageEditor extends javax.swing.JFrame {
      * @param evt 
      */
     
-    private String generateRLECompressionFromPBM(){
-        // 1 = Black and 0 = White
-        // Initializing the data with width and height
-        String data = "";
-        int currentColor = -1;
+    private void writeRLEFile(String filename){
+        int currentColor;
         int inColor;
         int counter = 0;
-        int r = 0;
         if (img != null){
-            data = "P1 \n" + width + " " + height + " \n";
-            for(int y = 0; y < height; y++){
-                for(int x = 0; x < width; x++){
-                    if(x == 0 && y == 0){
-                        currentColor = img.getRGB(x,y);
-                    }
-                    // Unpacking the color of each pixel.
-                    inColor = img.getRGB(x,y);
-                    r = (currentColor >> 16) & 0xff;
-                    // Comparing read color "inColor" with current color:
-                    if ( inColor != currentColor ){
-                        if (r != 0){
-                            data = data + counter + " 0 ";
-                        }else{
-                            data = data + counter + " 1 ";
-                        }
-                        currentColor = inColor;
-                        counter = 1;
-                    }else{
-                        counter++;
-                    }
+            try(FileWriter fw = new FileWriter(filename + ".rle")) {
+                // Initializing the data with a header according to the format
+                switch(format){
+                    case 1:
+                        fw.write("P1 \n" + width + " " + height + "\n");
+                        break;
+                    case 2:
+                        fw.write("P2 \n" + width + " " + height + "\n");
+                        break;
+                    case 3:
+                        fw.write("P3 \n" + width + " " + height + "\n");
                 }
-            }
-            // Filling the last color ocurrence
-            if (r != 0){
-                data = data + counter + " 0 ";
-            }else{
-                data = data + counter + " 1 ";
-            }
-        }
+                // This function will create a big array with all the pixel RGB values.
+                int[] pixelDataBuffInt = img.getRGB(0, 0, width, height, null, 0, width);
+                int maxSize = pixelDataBuffInt.length;
 
-        return data;
-    }
-    
-    private String generateRLECompressionFromPGM(){
-        // Initializing the data with width and height
-        String data = "";
-        int currentColor = -1;
-        int inColor;
-        int counter = 0;
-        int r = 0;
-        if (img != null){
-            data = "P2 \n" + width + " " + height + " \n";
-            for(int y = 0; y < height; y++){
-                for(int x = 0; x < width; x++){
-                    if(x == 0 && y == 0){
-                        currentColor = img.getRGB(x,y);
-                    }
-                    // Unpacking the color of each pixel.
-                    inColor = img.getRGB(x,y);
-                    
-                    r = (currentColor >> 16) & 0xff;
-                    int g = (currentColor >> 8) & 0xff;
-                    int b = currentColor & 0xff;
-                    // Comparing read color "inColor" with current color:
+                // Initializing the very first pixel value
+                currentColor = pixelDataBuffInt[0];
+
+                for(int i = 0; i < maxSize; i++){
+                    // Reading next pixel value
+                    inColor = pixelDataBuffInt[i];
+
+                    // If the colors are different write the count to the file and reset
                     if ( inColor != currentColor ){
-                        // Writing intances in a row and the color separated by a space
-                        data = data + counter + " " + r + " ";
+                        //Writing data to the file according to the format
+                        switch(format){
+                            case 1: //1 = Black and 0 = White
+                                if (((currentColor >> 16) & 0xff) == 0){
+                                    fw.write(counter + " 1 ");
+                                }else{
+                                    fw.write(counter + " 0 ");
+                                }
+                                break;
+                            case 2: // Just the red value.
+                                fw.write(counter + " " + ((currentColor >> 16) & 0xff) + " ");
+                                break;
+                            case 3: // Red, green and blue values together as the same int value.
+                                fw.write(counter + " " + currentColor  + " ");   // red, green and blue
+                        }
+
                         currentColor = inColor;
                         counter = 1;
                     }else{
                         counter++;
                     }
                 }
-            }
-            // Filling the last color ocurrence
-            data = data + counter + " " + r + " ";
-            
-        }
-        return data;
-    }
-    
-    private String generateRLECompressionFromPPM(){
-        // Initializing the data with width and height
-        String data = "";
-        int currentColor = -1;
-        int inColor;
-        int counter = 0;
-        if (img != null){
-            data = "P3 \n" + width + " " + height + " \n";
-            for(int y = 0; y < height; y++){
-                for(int x = 0; x < width; x++){
-                    if(x == 0 && y == 0){
-                        currentColor = img.getRGB(x,y);
-                    }
-                    // Unpacking the color of each pixel.
-                    inColor = img.getRGB(x,y);
-                    //r = (currentColor >> 16) & 0xff;
-                    // Comparing read color "inColor" with current color:
-                    if ( inColor != currentColor ){
-                        // Writing intances in a row and the color separated by a space
-                        data = data + counter + " " + currentColor + " ";
-                        currentColor = inColor;
-                        counter = 1;
-                    }else{
-                        counter++;
-                    }
+                //Writing the last color ocurrence to the file according to the format
+                switch(format){
+                    case 1: //1 = Black and 0 = White
+                        if (((currentColor >> 16) & 0xff) == 0){
+                            fw.write(counter + " 1 ");
+                        }else{
+                            fw.write(counter + " 0 ");
+                        }
+                        break;
+                    case 2: // Just the red value.
+                        fw.write(counter + " " + ((currentColor >> 16) & 0xff) + " ");
+                        break;
+                    case 3: // Red, green and blue values.
+                        fw.write(counter + " " + currentColor  + " ");   // red, green and blue
                 }
+
+                fw.close();
+                Estado.setText("Imagen guardada en: " + filename + ".rle");
+            }catch (IOException ex) {
+                    Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        return data;
     }
-     
+
     private void writeNetPBMFile(String filename){
         String ext = "";
         switch(format){
@@ -585,7 +549,7 @@ public class ImageEditor extends javax.swing.JFrame {
         int row = 0;
         int col = 0;
         int freq = 0;
-        int numTokens = 0;
+        //int numTokens = 0;
         while (parser.ttype != StreamTokenizer.TT_EOF){
             try {
                 // Reading next token:
@@ -619,7 +583,9 @@ public class ImageEditor extends javax.swing.JFrame {
                         row++;
                     }
                 }catch(ArrayIndexOutOfBoundsException e){
-                    System.out.println( "Width: "+ width + "  Height: " + height + "  c: " + col + "  r: " + row + " freq: " + freq + " val: " + value);
+                    //System.out.println( "Width: "+ width + "  Height: " + height + "  c: " + col + "  r: " + row + " freq: " + freq + " val: " + value);
+                    JOptionPane.showMessageDialog(this, "La imagen está corrompida.");
+                    break;
                 }
             }  
         }
@@ -1050,44 +1016,20 @@ public class ImageEditor extends javax.swing.JFrame {
     }//GEN-LAST:event_NegativoActionPerformed
 
     private void CompresionRLEActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CompresionRLEActionPerformed
-        // TODO add your handling code here:
-        String fileData = "";
         int returnVal;
-        
+
         if ( img != null ){
             returnVal = fcSave.showSaveDialog(this);
-            Estado.setText("Guardando...");
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                if (format >= 1 && format <= 3)
+                    writeRLEFile(fcSave.getSelectedFile().getAbsolutePath());
+                else
+                   JOptionPane.showMessageDialog(this, "¡ERROR: Error de Formato!");
+            }
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
             return;
         }
-        
-        switch(format){
-            case 1:
-                fileData = generateRLECompressionFromPBM();
-                break;
-            case 2:
-                fileData = generateRLECompressionFromPGM();
-                break;
-            case 3:
-                fileData = generateRLECompressionFromPPM();
-                break;
-            default:
-                JOptionPane.showMessageDialog(this, "La imagen original no es Netpbm, no se puede comprimir mediante RLE.");
-                break;
-        }
-        
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            // Writing to file with extension .rle with name and path indicated by file chooser
-            try(FileWriter fw = new FileWriter(fcSave.getSelectedFile()+".rle")) {
-                fw.write(fileData);
-                fw.close();
-            }catch (IOException ex) {
-                    Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            Estado.setText("Imagen RLE guardada en: " + fcSave.getSelectedFile()+".rle");
-        }
-        
     }//GEN-LAST:event_CompresionRLEActionPerformed
 
     private void EscalaDeGrisesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EscalaDeGrisesActionPerformed
