@@ -45,7 +45,7 @@ The application must have the following features implemented:
 - **(Pending)** Display image information, such as: dimensions, bits per pixel, number of unique colors and dots per inch.
 - **(Pending)** Calculations and display of the image's Histogram
 - **(Pending)** Contrast and Brightness adjustment.
-- **(Pending)** Dynamic Thresholding.
+- **(DONE)** Dynamic Thresholding | **(Pending)** Real-time image change while selecting threshold dynamically.
 - **(Pending)** Scaling and free rotation (no angle constraint).
 - **(Pending)** Zoom in & Zoom out.
 - **(Pending)** Gradient calculations using filters. (Sobel, Roberts, Prewitt).
