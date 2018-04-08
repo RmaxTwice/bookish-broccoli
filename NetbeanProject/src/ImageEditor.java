@@ -443,34 +443,32 @@ public class ImageEditor extends javax.swing.JFrame {
     }
      
     private void generatePBM( String filename ){
-        // 1 = Black and 0 = White
         if (img != null){
-            
             try(FileWriter fw = new FileWriter(filename)) {
-                long startTime = System.currentTimeMillis();
+//                long startTime = System.currentTimeMillis();
                 // Initializing the data with magic number, width and height
                 fw.write("P1 \n" + width + " " + height);
-                
+
                 // This function will create a big array with all the pixel RGB values.
-                int[] pixelDataBuffInt = img.getRGB(0, 0, width, height, null, 0, width); 
-            
+                int[] pixelDataBuffInt = img.getRGB(0, 0, width, height, null, 0, width);
+
                 int maxSize = pixelDataBuffInt.length;
-                long endTime = System.currentTimeMillis();
-                System.out.println("That took " + (endTime - startTime) + " milliseconds");
+//                long endTime = System.currentTimeMillis();
+//                System.out.println("That took " + (endTime - startTime) + " milliseconds");
                 for(int i = 0; i < maxSize; i++){
                     // Adding end of line after each row.
                     if (i % width == 0){
                         fw.write("\n");
                     }
-                    //Adding data to string.
+                    //Adding data to string. 1 = Black and 0 = White
                     if (((pixelDataBuffInt[i] >> 16) & 0xff) == 0){
                         fw.write(" 1 ");
                     }else{
-                        fw.write(" 0 ");  
+                        fw.write(" 0 ");
                     }
-                } 
-                endTime = System.currentTimeMillis();
-                System.out.println("That took " + (endTime - startTime) + " milliseconds");
+                }
+//                endTime = System.currentTimeMillis();
+//                System.out.println("That took " + (endTime - startTime) + " milliseconds");
                 fw.close();
             }catch (IOException ex) {
                     Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
@@ -478,54 +476,66 @@ public class ImageEditor extends javax.swing.JFrame {
         }
     }
     
-    private String generatePGM(){
-        // Initializing the data with width and height
-        String data = "";
-        int inColor;
-        int r;
+    private void generatePGM( String filename ){
         if (img != null){
-            data = "P2 \n" + width + " " + height + " \n" + maxColor + "\n";
-            for(int y = 0; y < height; y++){
-                for(int x = 0; x < width; x++){
-                    // Unpacking the color of each pixel, just red sample is enough
-                    inColor = img.getRGB(x,y);
-                    r = (inColor >> 16) & 0xff;
-                    
-                    // Concatenating the current pixel's color value with previous data:
-                    data = data + r + " ";
+            try(FileWriter fw = new FileWriter(filename)) {
+//                long startTime = System.currentTimeMillis();
+                // Initializing the data with magic number, width, height and maxColor value.
+                fw.write("P2 \n" + width + " " + height + " \n" + maxColor);
 
+                // This function will create a big array with all the pixel RGB values.
+                int[] pixelDataBuffInt = img.getRGB(0, 0, width, height, null, 0, width);
+
+                int maxSize = pixelDataBuffInt.length;
+//                long endTime = System.currentTimeMillis();
+//                System.out.println("That took " + (endTime - startTime) + " milliseconds");
+                for(int i = 0; i < maxSize; i++){
+                    // Adding end of line after each row.
+                    if (i % width == 0){
+                        fw.write("\n");
+                    }
+                    //Adding data to string (the red value).
+                    fw.write(((pixelDataBuffInt[i] >> 16) & 0xff) + " ");
                 }
-                // Adding end of line after each row.
-                data = data + "\n";
+//                endTime = System.currentTimeMillis();
+//                System.out.println("That took " + (endTime - startTime) + " milliseconds");
+                fw.close();
+            }catch (IOException ex) {
+                    Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        return data;
     }
     
-    private String generatePPM(){
-        // Initializing the data with width and height
-        
-        String data = "";
-        int inColor;
-        int r, g, b;
+    private void generatePPM( String filename ){
         if (img != null){
-            data = "P2 \n" + width + " " + height + " \n" + maxColor + "\n";
-            for(int y = 0; y < height; y++){
-                for(int x = 0; x < width; x++){
-                    // Unpacking the color of each pixel into each sample value.
-                    inColor = img.getRGB(x,y);
-                    r = (inColor >> 16) & 0xff;
-                    g = (inColor >> 8) & 0xff;
-                    b = inColor & 0xff;
-                    // Concatenating the current pixel's color value with previous data:
-                    data = data + r + " " + g + " " + b + " ";
+            try(FileWriter fw = new FileWriter(filename)) {
+//                long startTime = System.currentTimeMillis();
+                // Initializing the data with magic number, width, height and maxColor value.
+                fw.write("P3 \n" + width + " " + height + " \n" + maxColor);
 
+                // This function will create a big array with all the pixel RGB values.
+                int[] pixelDataBuffInt = img.getRGB(0, 0, width, height, null, 0, width);
+
+                int maxSize = pixelDataBuffInt.length;
+//                long endTime = System.currentTimeMillis();
+//                System.out.println("That took " + (endTime - startTime) + " milliseconds");
+                for(int i = 0; i < maxSize; i++){
+                    // Adding end of line after each row.
+                    if (i % width == 0){
+                        fw.write("\n");
+                    }
+                    //Adding data to string (red, green and blue values).
+                    fw.write(((pixelDataBuffInt[i] >> 16) & 0xff) + " ");   // red
+                    fw.write(((pixelDataBuffInt[i] >> 8) & 0xff) + " ");    // green
+                    fw.write((pixelDataBuffInt[i] & 0xff) + " ");           // blue
                 }
-                // Adding end of line after each row.
-                data = data + "\n";
+//                endTime = System.currentTimeMillis();
+//                System.out.println("That took " + (endTime - startTime) + " milliseconds");
+                fw.close();
+            }catch (IOException ex) {
+                    Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        return data;
     }
     
     private void countUniqueColors(){
@@ -1142,11 +1152,8 @@ public class ImageEditor extends javax.swing.JFrame {
     }//GEN-LAST:event_EscalaDeGrisesActionPerformed
 
     private void SinCompresionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SinCompresionActionPerformed
-        // TODO add your handling code here:
-        String fileData = "";
         int returnVal;
-        String ext = "";
-        
+
         if ( img != null ){
             returnVal = fcSave.showSaveDialog(this);
             Estado.setText("Guardando...");
@@ -1154,19 +1161,21 @@ public class ImageEditor extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
             return;
         }
+
+        // If save action is taken, select type of file to save by format.
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             switch(format){
                 case 1:
-                    generatePBM(fcSave.getSelectedFile().getAbsolutePath() + ".pbm");   
+                    generatePBM(fcSave.getSelectedFile().getAbsolutePath() + ".pbm");
                     Estado.setText("Imagen guardada en: " + fcSave.getSelectedFile() + ".pbm");
                     return;
                 case 2:
-                    fileData = generatePGM();
-                    ext = ".pgm";
+                    generatePGM(fcSave.getSelectedFile().getAbsolutePath() + ".pgm");
+                    Estado.setText("Imagen guardada en: " + fcSave.getSelectedFile() + ".pgm");
                     return;
                 case 3:
-                    fileData = generatePPM();
-                    ext = ".ppm";
+                    generatePPM(fcSave.getSelectedFile().getAbsolutePath() + ".ppm");
+                    Estado.setText("Imagen guardada en: " + fcSave.getSelectedFile() + ".ppm");
                     return;
                 default:
                     JOptionPane.showMessageDialog(this, "ERROR: La imagen original tiene un formato desconocido. No se puede guardar como Netpbm");
