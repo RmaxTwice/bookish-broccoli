@@ -23,7 +23,8 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import java.lang.Object;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -90,6 +91,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private void initComponents() {
 
         jMenu1 = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
         ScrollPanePanel = new javax.swing.JPanel();
         jScrollPane = new javax.swing.JScrollPane();
         BarraEstadoPanel = new javax.swing.JPanel();
@@ -109,11 +111,15 @@ public class ImageEditor extends javax.swing.JFrame {
         Rotacion = new javax.swing.JMenu();
         Rotar90CW = new javax.swing.JMenuItem();
         Rotar90CCW = new javax.swing.JMenuItem();
+        MenuFiltros = new javax.swing.JMenu();
+        SuavizadoGaussiano = new javax.swing.JMenuItem();
         Ayuda = new javax.swing.JMenu();
         Readme = new javax.swing.JMenuItem();
         About = new javax.swing.JMenuItem();
 
         jMenu1.setText("jMenu1");
+
+        jMenuItem1.setText("jMenuItem1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Editor de Imagenes | by Raquel Escalante & Rafael Vasquez");
@@ -280,6 +286,18 @@ public class ImageEditor extends javax.swing.JFrame {
         MenuEditar.add(Rotacion);
 
         MenuBar.add(MenuEditar);
+
+        MenuFiltros.setText("Filtros");
+
+        SuavizadoGaussiano.setText("Suavizado Gaussiano");
+        SuavizadoGaussiano.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                SuavizadoGaussianoActionPerformed(evt);
+            }
+        });
+        MenuFiltros.add(SuavizadoGaussiano);
+
+        MenuBar.add(MenuFiltros);
 
         Ayuda.setText("Ayuda");
 
@@ -745,12 +763,34 @@ public class ImageEditor extends javax.swing.JFrame {
         return imgTemp;
     }
     
+    private int convolutionFunction(int krnlVal, int[] kernl, ArrayList r, ArrayList g, ArrayList b){
+        int krnlSize = kernl.length;
+        int rTotal = 0;
+        int gTotal = 0;
+        int bTotal = 0;
+        // If all the kernels have the same length then we can convolute.
+        if(krnlSize == r.size() && r.size() == g.size() && g.size() == b.size()){
+            for(int i = 0 ; i < krnlSize; i++){
+                rTotal += (int)r.get(i) * kernl[i];
+                gTotal += (int)g.get(i) * kernl[i];
+                bTotal += (int)b.get(i) * kernl[i];
+            }
+
+            rTotal /= krnlVal;
+            gTotal /= krnlVal;
+            bTotal /= krnlVal;
+        }else{
+        // Error: Can't calculate convolution.
+        }
+        return (255<<24) | (rTotal<<16) | (gTotal<<8) | bTotal;
+    }
+    
     //Function to set parameters of B&W slider
     private JSlider getSlider(JOptionPane SliderPane) {
-        JSlider slider = new JSlider(0, 255);
-        slider.setMajorTickSpacing(50);
-        slider.setPaintTicks(true);
-        slider.setPaintLabels(true);
+        JSlider sliderAux = new JSlider(0, 255);
+        sliderAux.setMajorTickSpacing(50);
+        sliderAux.setPaintTicks(true);
+        sliderAux.setPaintLabels(true);
         ChangeListener changeListener = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent changeEvent) {
@@ -760,8 +800,8 @@ public class ImageEditor extends javax.swing.JFrame {
                 }
             }
         };
-        slider.addChangeListener(changeListener);
-        return slider;
+        sliderAux.addChangeListener(changeListener);
+        return sliderAux;
     }
     
     private void GuardarBMPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GuardarBMPActionPerformed
@@ -987,23 +1027,22 @@ public class ImageEditor extends javax.swing.JFrame {
         if (img != null){
             for(int y = 0; y < height; y++){
                 for(int x = 0; x < width; x++){
-                
                     // Unpacking the data of each pixel with masks.
                     int p = img.getRGB(x, y);
                     int a = (p >> 24) & 0xff;
                     int r = (p >> 16) & 0xff;
                     int g = (p >> 8) & 0xff;
                     int b = p & 0xff;
-                    
+
                     // Inverting the colors of the pixel per sample.
                     r = 255 - r;
                     g = 255 - g;
                     b = 255 - b;
-                    
+
                     // Packing back the pixel data
                     p = (a<<24) | (r<<16) | (g<<8) | b;
                     img.setRGB(x, y, p);
-                    
+
                     // Repainting the scroll pane to update the changes
                     jScrollPane.repaint();
                     // Updating status bar.
@@ -1151,14 +1190,12 @@ public class ImageEditor extends javax.swing.JFrame {
     }//GEN-LAST:event_BlancoNegroActionPerformed
 
     private void Rotar90CWActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Rotar90CWActionPerformed
-        // TODO add your handling code here:
         //Declaring an auxiliary image for operations with Width and Height inverted
-        BufferedImage imgAux = null;
         if (img != null){
             int imgW = img.getWidth();
             int imgH = img.getHeight();
             //Declaring an auxiliary image for operations with Width and Height inverted
-            imgAux = new BufferedImage(imgH, imgW, BufferedImage.TYPE_3BYTE_BGR);
+            BufferedImage imgAux = new BufferedImage(imgH, imgW, BufferedImage.TYPE_3BYTE_BGR);
             for (int i = 0; i < imgW; i++){
                 for(int j = 0; j < imgH; j++){
                     imgAux.setRGB(imgH - j - 1, i, img.getRGB(i, j));
@@ -1226,6 +1263,80 @@ public class ImageEditor extends javax.swing.JFrame {
         
     }//GEN-LAST:event_AboutActionPerformed
 
+    private void SuavizadoGaussianoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SuavizadoGaussianoActionPerformed
+        
+        if (img != null){
+            BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+            int kernelSize = 5;
+            int kernelValue = 16;
+            int[] kernel = {1, 4, 6, 4, 1};
+            int i;
+            int j;
+            int k;
+            int pvalue;
+            // These Deques serve as sliding windows per color channel.
+            ArrayList redL = new ArrayList();
+            ArrayList greenL = new ArrayList();
+            ArrayList blueL = new ArrayList();
+            //This cycles choose the pivot pixel and where to write in the temp image. (Row by Row)
+            for(i = 0; i < height; i++){
+                redL.clear();
+                greenL.clear();
+                blueL.clear();
+                // The values outside of the kernel are equal to 0
+                for(k = 0; k < kernelSize/2; k++){
+                    redL.add(0);
+                    greenL.add(0);
+                    blueL.add(0);
+                }
+                for(k = 0; k < kernelSize/2 + 1; k++){
+                    pvalue = img.getRGB(k, i);
+                    redL.add((pvalue >> 16) & 0xff);
+                    greenL.add((pvalue >> 8) & 0xff);
+                    blueL.add(pvalue & 0xff);
+                }
+                
+                for(j = 0; j < width; j++){
+                    int newPixelValue = convolutionFunction(kernelValue, kernel, redL, greenL, blueL);
+                    imgTemp.setRGB(j, i, newPixelValue);
+                    // Shifting sliding windows to the right by one pixel, if the kernel is out of bounds, complete with 0's.
+                    if (j + 1 + kernelSize/2 >= width){
+                        redL.add(0);
+                        greenL.add(0);
+                        blueL.add(0);
+                    }else{
+                        pvalue = img.getRGB(j + 1 + kernelSize / 2, i);
+                        redL.add((pvalue >> 16) & 0xff);
+                        greenL.add((pvalue >> 8) & 0xff);
+                        blueL.add(pvalue & 0xff);
+                    }
+                    
+                    redL.remove(0);
+                    greenL.remove(0);
+                    blueL.remove(0);
+                }
+            }
+            
+            img = imgTemp;
+            ImageIcon icon = new ImageIcon(img);
+            // Adding the ImageIcon to the Label.
+            imglabel.setIcon( icon );
+            //Aligning the image to the center.
+            imglabel.setHorizontalAlignment(JLabel.CENTER);
+            //Adding the label to the Scrolling pane.
+            jScrollPane.getViewport().add(imglabel);
+            // Repainting the scroll pane to update the changes
+            jScrollPane.repaint();
+            // Recounting colors
+            countUniqueColors();
+            // Updating status bar.
+            Estado.setText("Aplicando Suavizado Gaussiano | Colores Únicos en imagen: " + colorsCounter);
+            
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_SuavizadoGaussianoActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -1276,6 +1387,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JMenu MenuArchivo;
     private javax.swing.JMenuBar MenuBar;
     private javax.swing.JMenu MenuEditar;
+    private javax.swing.JMenu MenuFiltros;
     private javax.swing.JMenuItem Negativo;
     private javax.swing.JMenuItem Readme;
     private javax.swing.JMenu Rotacion;
@@ -1283,7 +1395,9 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JMenuItem Rotar90CW;
     private javax.swing.JPanel ScrollPanePanel;
     private javax.swing.JMenuItem SinCompresion;
+    private javax.swing.JMenuItem SuavizadoGaussiano;
     private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JScrollPane jScrollPane;
     // End of variables declaration//GEN-END:variables
 
