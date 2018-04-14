@@ -25,6 +25,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import javax.swing.JCheckBox;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -79,7 +80,7 @@ public class ImageEditor extends javax.swing.JFrame {
         uniqueCols = new HashMap<>();
         colorsCounter = 0;
         // Configuring some Slider's properties.
-        thresholdSlider = new JSlider(0, 255);
+        thresholdSlider = new JSlider(0, 255, 127); // min, max, init
         thresholdSlider.setMajorTickSpacing(50);
         thresholdSlider.setPaintTicks(true);
         thresholdSlider.setPaintLabels(true);
@@ -773,6 +774,105 @@ public class ImageEditor extends javax.swing.JFrame {
         return imgTemp;
     }
     
+    private void GaussianBlurController(){
+        BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+        int kernelSize = 5;
+        int kernelValue = 16;
+        int[] kernel = {1, 4, 6, 4, 1};
+        int i;
+        int j;
+        int k;
+        int pvalue;
+        // These Deques serve as sliding windows per color channel (Horizontal).
+        ArrayList redH = new ArrayList();
+        ArrayList greenH = new ArrayList();
+        ArrayList blueH = new ArrayList();
+        // These Deques serve as sliding windows per color channel (Vertical).
+        ArrayList redV = new ArrayList();
+        ArrayList greenV = new ArrayList();
+        ArrayList blueV = new ArrayList();
+        //This cycles choose the pivot pixel and where to write in the temp image. (Row by Row)
+        for(i = 0; i < height; i++){
+            redH.clear();
+            greenH.clear();
+            blueH.clear();
+            // The values outside of the kernel are equal to 0
+            for(k = 0; k < kernelSize/2; k++){
+                redH.add(0);
+                greenH.add(0);
+                blueH.add(0);
+            }
+            for(k = 0; k < kernelSize/2 + 1; k++){
+                pvalue = img.getRGB(k, i);
+                redH.add((pvalue >> 16) & 0xff);
+                greenH.add((pvalue >> 8) & 0xff);
+                blueH.add(pvalue & 0xff);
+            }
+
+            for(j = 0; j < width; j++){
+                int newPixelValue = convolutionFunction(kernelValue, kernel, redH, greenH, blueH);
+                imgTemp.setRGB(j, i, newPixelValue);
+                // Shifting sliding windows to the right by one pixel, if the kernel is out of bounds, complete with 0's.
+                if (j + 1 + kernelSize/2 >= width){
+                    redH.add(0);
+                    greenH.add(0);
+                    blueH.add(0);
+                }else{
+                    pvalue = img.getRGB(j + 1 + kernelSize / 2, i);
+                    redH.add((pvalue >> 16) & 0xff);
+                    greenH.add((pvalue >> 8) & 0xff);
+                    blueH.add(pvalue & 0xff);
+                }
+
+                redH.remove(0);
+                greenH.remove(0);
+                blueH.remove(0);
+            }
+        }
+
+        img = imgTemp;
+
+        //This cycles choose the pivot pixel and where to write in the temp image. (Column by Column)
+        for(j = 0; j < width; j++){
+            redV.clear();
+            greenV.clear();
+            blueV.clear();
+            // The values outside of the kernel are equal to 0
+            for(k = 0; k < kernelSize/2; k++){
+                redV.add(0);
+                greenV.add(0);
+                blueV.add(0);
+            }
+            for(k = 0; k < kernelSize/2 + 1; k++){
+                pvalue = img.getRGB(j, k);
+                redV.add((pvalue >> 16) & 0xff);
+                greenV.add((pvalue >> 8) & 0xff);
+                blueV.add(pvalue & 0xff);
+            }
+
+            for(i = 0; i < height; i++){
+                int newPixelValue = convolutionFunction(kernelValue, kernel, redV, greenV, blueV);
+                imgTemp.setRGB(j, i, newPixelValue);
+                // Shifting sliding windows to the right by one pixel, if the kernel is out of bounds, complete with 0's.
+                if (i + 1 + kernelSize/2 >= height){
+                    redV.add(0);
+                    greenV.add(0);
+                    blueV.add(0);
+                }else{
+                    pvalue = img.getRGB(j , i + 1 + kernelSize / 2);
+                    redV.add((pvalue >> 16) & 0xff);
+                    greenV.add((pvalue >> 8) & 0xff);
+                    blueV.add(pvalue & 0xff);
+                }
+                redV.remove(0);
+                greenV.remove(0);
+                blueV.remove(0);
+            }
+        }
+
+        img = imgTemp;
+    }
+
     private int convolutionFunction(int krnlVal, int[] kernl, ArrayList r, ArrayList g, ArrayList b){
         int krnlSize = kernl.length;
         int rTotal = 0;
@@ -1149,33 +1249,32 @@ public class ImageEditor extends javax.swing.JFrame {
     }//GEN-LAST:event_SinCompresionActionPerformed
 
     private void BlancoNegroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BlancoNegroActionPerformed
-        // TODO add your handling code here:
-        //Adding JOptionPane and initializing slider for input
-
         if (img != null){
-            JOptionPane SliderPane = new JOptionPane();
-
-            // Creating a ChangeListener so the changes in the JOptionPane get reflected to the slider.
+            /** JOptionPane SliderPane = new JOptionPane();
+            //Creating a ChangeListener so the changes in the JOptionPane get reflected to the slider.
             thresholdSlider.addChangeListener(createChangeListener( SliderPane ));
             SliderPane.setMessage(new Object[] { "Valor del umbral: ", thresholdSlider });
             SliderPane.setMessageType(JOptionPane.QUESTION_MESSAGE);
             SliderPane.setOptionType(JOptionPane.OK_CANCEL_OPTION);
             JDialog dialog;
             dialog = SliderPane.createDialog(jScrollPane, "Umbral");
-            dialog.setVisible(true);
+            dialog.setVisible(true); */
 
-            /*Input Dialog for testing
-            String aux = JOptionPane.showInputDialog("Umbral: ");
-            int thr;
-            thr = Integer.parseInt(aux);*/
-
-            //getting threshold from slider
-            int thr;
-            //If there's no value from slider and it's unininitialized, assign just half the value
-            if (SliderPane.getInputValue() == JOptionPane.UNINITIALIZED_VALUE){
-                thr = 127;
-            }else{            
-                thr = (int)SliderPane.getInputValue();
+            Object[] params = {"Valor del umbral: ", thresholdSlider};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                                                        params,
+                                                        "Opciones de Umbralización",
+                                                        JOptionPane.YES_NO_OPTION,
+                                                        JOptionPane.QUESTION_MESSAGE,
+                                                        null,           // Don't use a custom Icon
+                                                        options,        // The strings of buttons
+                                                        options[0]);    // Default button title
+            // Getting threshold value from the slider
+            int thr = thresholdSlider.getValue();
+            //If the operation was canceled do nothing.
+            if (result == JOptionPane.NO_OPTION){
+                return;
             }
 
             for(int y = 0; y < height; y++){
@@ -1294,102 +1393,9 @@ public class ImageEditor extends javax.swing.JFrame {
     private void SuavizadoGaussianoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SuavizadoGaussianoActionPerformed
         
         if (img != null){
-            BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-            int kernelSize = 5;
-            int kernelValue = 16;
-            int[] kernel = {1, 4, 6, 4, 1};
-            int i;
-            int j;
-            int k;
-            int pvalue;
-            // These Deques serve as sliding windows per color channel (Horizontal).
-            ArrayList redH = new ArrayList();
-            ArrayList greenH = new ArrayList();
-            ArrayList blueH = new ArrayList();
-            // These Deques serve as sliding windows per color channel (Vertical).
-            ArrayList redV = new ArrayList();
-            ArrayList greenV = new ArrayList();
-            ArrayList blueV = new ArrayList();
-            //This cycles choose the pivot pixel and where to write in the temp image. (Row by Row)
-            for(i = 0; i < height; i++){
-                redH.clear();
-                greenH.clear();
-                blueH.clear();
-                // The values outside of the kernel are equal to 0
-                for(k = 0; k < kernelSize/2; k++){
-                    redH.add(0);
-                    greenH.add(0);
-                    blueH.add(0);
-                }
-                for(k = 0; k < kernelSize/2 + 1; k++){
-                    pvalue = img.getRGB(k, i);
-                    redH.add((pvalue >> 16) & 0xff);
-                    greenH.add((pvalue >> 8) & 0xff);
-                    blueH.add(pvalue & 0xff);
-                }
-                
-                for(j = 0; j < width; j++){
-                    int newPixelValue = convolutionFunction(kernelValue, kernel, redH, greenH, blueH);
-                    imgTemp.setRGB(j, i, newPixelValue);
-                    // Shifting sliding windows to the right by one pixel, if the kernel is out of bounds, complete with 0's.
-                    if (j + 1 + kernelSize/2 >= width){
-                        redH.add(0);
-                        greenH.add(0);
-                        blueH.add(0);
-                    }else{
-                        pvalue = img.getRGB(j + 1 + kernelSize / 2, i);
-                        redH.add((pvalue >> 16) & 0xff);
-                        greenH.add((pvalue >> 8) & 0xff);
-                        blueH.add(pvalue & 0xff);
-                    }
-                    
-                    redH.remove(0);
-                    greenH.remove(0);
-                    blueH.remove(0);
-                }
-            }
 
-            img = imgTemp;
+            GaussianBlurController();
 
-            //This cycles choose the pivot pixel and where to write in the temp image. (Column by Column)
-            for(j = 0; j < width; j++){
-                redV.clear();
-                greenV.clear();
-                blueV.clear();
-                // The values outside of the kernel are equal to 0
-                for(k = 0; k < kernelSize/2; k++){
-                    redV.add(0);
-                    greenV.add(0);
-                    blueV.add(0);
-                }
-                for(k = 0; k < kernelSize/2 + 1; k++){
-                    pvalue = img.getRGB(j, k);
-                    redV.add((pvalue >> 16) & 0xff);
-                    greenV.add((pvalue >> 8) & 0xff);
-                    blueV.add(pvalue & 0xff);
-                }
-
-                for(i = 0; i < height; i++){
-                    int newPixelValue = convolutionFunction(kernelValue, kernel, redV, greenV, blueV);
-                    imgTemp.setRGB(j, i, newPixelValue);
-                    // Shifting sliding windows to the right by one pixel, if the kernel is out of bounds, complete with 0's.
-                    if (i + 1 + kernelSize/2 >= height){
-                        redV.add(0);
-                        greenV.add(0);
-                        blueV.add(0);
-                    }else{
-                        pvalue = img.getRGB(j , i + 1 + kernelSize / 2);
-                        redV.add((pvalue >> 16) & 0xff);
-                        greenV.add((pvalue >> 8) & 0xff);
-                        blueV.add(pvalue & 0xff);
-                    }
-                    redV.remove(0);
-                    greenV.remove(0);
-                    blueV.remove(0);
-                }
-            }
-
-            img = imgTemp;
             ImageIcon icon = new ImageIcon(img);
             // Adding the ImageIcon to the Label.
             imglabel.setIcon( icon );
