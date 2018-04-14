@@ -53,7 +53,8 @@ public class ImageEditor extends javax.swing.JFrame {
     // Hashmap and counter used to count unique colors
     private HashMap<Integer, Integer> uniqueCols;
     private int colorsCounter;
-    private JSlider slider;
+    private JSlider thresholdSlider;
+    private JSlider kernelSizeSlider;
     
     
     /**
@@ -77,8 +78,17 @@ public class ImageEditor extends javax.swing.JFrame {
         
         uniqueCols = new HashMap<>();
         colorsCounter = 0;
-        slider = new JSlider(0, 255);
+        // Configuring some Slider's properties.
+        thresholdSlider = new JSlider(0, 255);
+        thresholdSlider.setMajorTickSpacing(50);
+        thresholdSlider.setPaintTicks(true);
+        thresholdSlider.setPaintLabels(true);
         
+        // Configuring some Slider's properties.
+        kernelSizeSlider = new JSlider(2, 7, 5); // min, max, init
+        kernelSizeSlider.setMajorTickSpacing(1);
+        kernelSizeSlider.setPaintTicks(true);
+        kernelSizeSlider.setPaintLabels(true);
     }
 
     /**
@@ -786,7 +796,7 @@ public class ImageEditor extends javax.swing.JFrame {
     }
     
     //Function to set parameters of B&W slider
-    private JSlider getSlider(JOptionPane SliderPane) {
+    /**private JSlider getSlider(JOptionPane SliderPane) {
         JSlider sliderAux = new JSlider(0, 255);
         sliderAux.setMajorTickSpacing(50);
         sliderAux.setPaintTicks(true);
@@ -802,6 +812,21 @@ public class ImageEditor extends javax.swing.JFrame {
         };
         sliderAux.addChangeListener(changeListener);
         return sliderAux;
+    }*/
+
+    // This function provides a ChangeListener based on a JOptionPane that will
+    // listen anychanges made in a JOptionsPane
+    private ChangeListener createChangeListener(JOptionPane Pane) {
+        ChangeListener changeListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent changeEvent) {
+                JSlider theSlider = (JSlider) changeEvent.getSource();
+                if (!theSlider.getValueIsAdjusting()) {
+                    Pane.setInputValue(theSlider.getValue());
+                }
+            }
+        };
+        return changeListener;
     }
     
     private void GuardarBMPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GuardarBMPActionPerformed
@@ -1126,10 +1151,13 @@ public class ImageEditor extends javax.swing.JFrame {
     private void BlancoNegroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BlancoNegroActionPerformed
         // TODO add your handling code here:
         //Adding JOptionPane and initializing slider for input
+
         if (img != null){
             JOptionPane SliderPane = new JOptionPane();
-            slider = getSlider(SliderPane);
-            SliderPane.setMessage(new Object[] { "Valor del umbral: ", slider });
+
+            // Creating a ChangeListener so the changes in the JOptionPane get reflected to the slider.
+            thresholdSlider.addChangeListener(createChangeListener( SliderPane ));
+            SliderPane.setMessage(new Object[] { "Valor del umbral: ", thresholdSlider });
             SliderPane.setMessageType(JOptionPane.QUESTION_MESSAGE);
             SliderPane.setOptionType(JOptionPane.OK_CANCEL_OPTION);
             JDialog dialog;
@@ -1149,7 +1177,7 @@ public class ImageEditor extends javax.swing.JFrame {
             }else{            
                 thr = (int)SliderPane.getInputValue();
             }
-        
+
             for(int y = 0; y < height; y++){
                 for(int x = 0; x < width; x++){
                     
