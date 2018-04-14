@@ -94,6 +94,16 @@ public class ImageEditor extends javax.swing.JFrame {
         jMenuItem1 = new javax.swing.JMenuItem();
         ScrollPanePanel = new javax.swing.JPanel();
         jScrollPane = new javax.swing.JScrollPane();
+        jPanel2 = new javax.swing.JPanel();
+        PropertiesPanel = new javax.swing.JPanel();
+        InfoPanel = new javax.swing.JPanel();
+        InfoLabel = new javax.swing.JLabel();
+        Dimensiones = new javax.swing.JLabel();
+        BPP = new javax.swing.JLabel();
+        Colores = new javax.swing.JLabel();
+        DPI = new javax.swing.JLabel();
+        HistoPanel = new javax.swing.JPanel();
+        HistogramLabel = new javax.swing.JLabel();
         BarraEstadoPanel = new javax.swing.JPanel();
         BarraEstado = new javax.swing.JPanel();
         Estado = new javax.swing.JLabel();
@@ -124,12 +134,121 @@ public class ImageEditor extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Editor de Imagenes | by Raquel Escalante & Rafael Vasquez");
         setBounds(new java.awt.Rectangle(0, 0, 800, 600));
-        setMaximumSize(getMaximumSize());
 
         jScrollPane.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jScrollPane.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jScrollPane.setDoubleBuffered(true);
         jScrollPane.setPreferredSize(new java.awt.Dimension(1011, 1));
+
+        PropertiesPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        InfoPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
+
+        InfoLabel.setText("Información de la imagen:");
+
+        Dimensiones.setFont(new java.awt.Font("Dialog", 1, 10)); // NOI18N
+        Dimensiones.setText("Dimensiones:");
+
+        BPP.setFont(new java.awt.Font("Dialog", 1, 10)); // NOI18N
+        BPP.setText("Bits por pixel:");
+
+        Colores.setFont(new java.awt.Font("Dialog", 1, 10)); // NOI18N
+        Colores.setText("Colores únicos:");
+
+        DPI.setFont(new java.awt.Font("Dialog", 1, 10)); // NOI18N
+        DPI.setText("Puntos por pulgada (dpi): ");
+
+        javax.swing.GroupLayout InfoPanelLayout = new javax.swing.GroupLayout(InfoPanel);
+        InfoPanel.setLayout(InfoPanelLayout);
+        InfoPanelLayout.setHorizontalGroup(
+            InfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(InfoPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(InfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(InfoLabel)
+                    .addGroup(InfoPanelLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addGroup(InfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(BPP)
+                            .addComponent(Dimensiones)
+                            .addComponent(Colores)
+                            .addComponent(DPI))))
+                .addContainerGap(122, Short.MAX_VALUE))
+        );
+        InfoPanelLayout.setVerticalGroup(
+            InfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(InfoPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(InfoLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Dimensiones)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(BPP)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Colores)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(DPI)
+                .addContainerGap(89, Short.MAX_VALUE))
+        );
+
+        HistoPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
+
+        HistogramLabel.setText("Histogramas");
+
+        javax.swing.GroupLayout HistoPanelLayout = new javax.swing.GroupLayout(HistoPanel);
+        HistoPanel.setLayout(HistoPanelLayout);
+        HistoPanelLayout.setHorizontalGroup(
+            HistoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(HistoPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(HistogramLabel)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        HistoPanelLayout.setVerticalGroup(
+            HistoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(HistoPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(HistogramLabel)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout PropertiesPanelLayout = new javax.swing.GroupLayout(PropertiesPanel);
+        PropertiesPanel.setLayout(PropertiesPanelLayout);
+        PropertiesPanelLayout.setHorizontalGroup(
+            PropertiesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(PropertiesPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(PropertiesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(HistoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(InfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        PropertiesPanelLayout.setVerticalGroup(
+            PropertiesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(PropertiesPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(InfoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(HistoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(PropertiesPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(PropertiesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
 
         javax.swing.GroupLayout ScrollPanePanelLayout = new javax.swing.GroupLayout(ScrollPanePanel);
         ScrollPanePanel.setLayout(ScrollPanePanelLayout);
@@ -137,14 +256,18 @@ public class ImageEditor extends javax.swing.JFrame {
             ScrollPanePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(ScrollPanePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 988, Short.MAX_VALUE)
+                .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 678, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         ScrollPanePanelLayout.setVerticalGroup(
             ScrollPanePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(ScrollPanePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 571, Short.MAX_VALUE)
+                .addGroup(ScrollPanePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 571, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -510,6 +633,10 @@ public class ImageEditor extends javax.swing.JFrame {
             }
         }
     }
+    
+    //private void getDimensions(){
+        //int 
+    //}
     
     private BufferedImage readPBMfromRLE(int width, int height, StreamTokenizer parser){
         // Proceeding to read the image data and render it with a WritableRaster class
@@ -1013,7 +1140,8 @@ public class ImageEditor extends javax.swing.JFrame {
                 countUniqueColors();
                 
                 //Changing Estado Label
-                Estado.setText("Abriendo " + file.getAbsolutePath() + " | Colores Únicos en imagen: " + colorsCounter);
+                Estado.setText("Abriendo " + file.getAbsolutePath() );
+                Colores.setText("Colores únicos: "+colorsCounter);
             }
         } else {
             // Cancel opening.
@@ -1376,19 +1504,28 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JMenuItem About;
     private javax.swing.JMenuItem AbrirArchivo;
     private javax.swing.JMenu Ayuda;
+    private javax.swing.JLabel BPP;
     private javax.swing.JPanel BarraEstado;
     private javax.swing.JPanel BarraEstadoPanel;
     private javax.swing.JMenuItem BlancoNegro;
+    private javax.swing.JLabel Colores;
     private javax.swing.JMenuItem CompresionRLE;
+    private javax.swing.JLabel DPI;
+    private javax.swing.JLabel Dimensiones;
     private javax.swing.JMenuItem EscalaDeGrises;
     private javax.swing.JLabel Estado;
     private javax.swing.JMenuItem GuardarBMP;
     private javax.swing.JMenu GuardarNetpbm;
+    private javax.swing.JPanel HistoPanel;
+    private javax.swing.JLabel HistogramLabel;
+    private javax.swing.JLabel InfoLabel;
+    private javax.swing.JPanel InfoPanel;
     private javax.swing.JMenu MenuArchivo;
     private javax.swing.JMenuBar MenuBar;
     private javax.swing.JMenu MenuEditar;
     private javax.swing.JMenu MenuFiltros;
     private javax.swing.JMenuItem Negativo;
+    private javax.swing.JPanel PropertiesPanel;
     private javax.swing.JMenuItem Readme;
     private javax.swing.JMenu Rotacion;
     private javax.swing.JMenuItem Rotar90CCW;
@@ -1398,6 +1535,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JMenuItem SuavizadoGaussiano;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane;
     // End of variables declaration//GEN-END:variables
 
