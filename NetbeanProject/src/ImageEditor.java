@@ -1274,49 +1274,93 @@ public class ImageEditor extends javax.swing.JFrame {
             int j;
             int k;
             int pvalue;
-            // These Deques serve as sliding windows per color channel.
-            ArrayList redL = new ArrayList();
-            ArrayList greenL = new ArrayList();
-            ArrayList blueL = new ArrayList();
+            // These Deques serve as sliding windows per color channel (Horizontal).
+            ArrayList redH = new ArrayList();
+            ArrayList greenH = new ArrayList();
+            ArrayList blueH = new ArrayList();
+            // These Deques serve as sliding windows per color channel (Vertical).
+            ArrayList redV = new ArrayList();
+            ArrayList greenV = new ArrayList();
+            ArrayList blueV = new ArrayList();
             //This cycles choose the pivot pixel and where to write in the temp image. (Row by Row)
             for(i = 0; i < height; i++){
-                redL.clear();
-                greenL.clear();
-                blueL.clear();
+                redH.clear();
+                greenH.clear();
+                blueH.clear();
                 // The values outside of the kernel are equal to 0
                 for(k = 0; k < kernelSize/2; k++){
-                    redL.add(0);
-                    greenL.add(0);
-                    blueL.add(0);
+                    redH.add(0);
+                    greenH.add(0);
+                    blueH.add(0);
                 }
                 for(k = 0; k < kernelSize/2 + 1; k++){
                     pvalue = img.getRGB(k, i);
-                    redL.add((pvalue >> 16) & 0xff);
-                    greenL.add((pvalue >> 8) & 0xff);
-                    blueL.add(pvalue & 0xff);
+                    redH.add((pvalue >> 16) & 0xff);
+                    greenH.add((pvalue >> 8) & 0xff);
+                    blueH.add(pvalue & 0xff);
                 }
                 
                 for(j = 0; j < width; j++){
-                    int newPixelValue = convolutionFunction(kernelValue, kernel, redL, greenL, blueL);
+                    int newPixelValue = convolutionFunction(kernelValue, kernel, redH, greenH, blueH);
                     imgTemp.setRGB(j, i, newPixelValue);
                     // Shifting sliding windows to the right by one pixel, if the kernel is out of bounds, complete with 0's.
                     if (j + 1 + kernelSize/2 >= width){
-                        redL.add(0);
-                        greenL.add(0);
-                        blueL.add(0);
+                        redH.add(0);
+                        greenH.add(0);
+                        blueH.add(0);
                     }else{
                         pvalue = img.getRGB(j + 1 + kernelSize / 2, i);
-                        redL.add((pvalue >> 16) & 0xff);
-                        greenL.add((pvalue >> 8) & 0xff);
-                        blueL.add(pvalue & 0xff);
+                        redH.add((pvalue >> 16) & 0xff);
+                        greenH.add((pvalue >> 8) & 0xff);
+                        blueH.add(pvalue & 0xff);
                     }
                     
-                    redL.remove(0);
-                    greenL.remove(0);
-                    blueL.remove(0);
+                    redH.remove(0);
+                    greenH.remove(0);
+                    blueH.remove(0);
                 }
             }
-            
+
+            img = imgTemp;
+
+            //This cycles choose the pivot pixel and where to write in the temp image. (Column by Column)
+            for(j = 0; j < width; j++){
+                redV.clear();
+                greenV.clear();
+                blueV.clear();
+                // The values outside of the kernel are equal to 0
+                for(k = 0; k < kernelSize/2; k++){
+                    redV.add(0);
+                    greenV.add(0);
+                    blueV.add(0);
+                }
+                for(k = 0; k < kernelSize/2 + 1; k++){
+                    pvalue = img.getRGB(j, k);
+                    redV.add((pvalue >> 16) & 0xff);
+                    greenV.add((pvalue >> 8) & 0xff);
+                    blueV.add(pvalue & 0xff);
+                }
+
+                for(i = 0; i < height; i++){
+                    int newPixelValue = convolutionFunction(kernelValue, kernel, redV, greenV, blueV);
+                    imgTemp.setRGB(j, i, newPixelValue);
+                    // Shifting sliding windows to the right by one pixel, if the kernel is out of bounds, complete with 0's.
+                    if (i + 1 + kernelSize/2 >= height){
+                        redV.add(0);
+                        greenV.add(0);
+                        blueV.add(0);
+                    }else{
+                        pvalue = img.getRGB(j , i + 1 + kernelSize / 2);
+                        redV.add((pvalue >> 16) & 0xff);
+                        greenV.add((pvalue >> 8) & 0xff);
+                        blueV.add(pvalue & 0xff);
+                    }
+                    redV.remove(0);
+                    greenV.remove(0);
+                    blueV.remove(0);
+                }
+            }
+
             img = imgTemp;
             ImageIcon icon = new ImageIcon(img);
             // Adding the ImageIcon to the Label.
