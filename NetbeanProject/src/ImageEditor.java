@@ -586,7 +586,7 @@ public class ImageEditor extends javax.swing.JFrame {
         
         return imgTemp;
     }
-    
+
     private BufferedImage readPGMfromRLE(int width, int height, StreamTokenizer parser){
         // Proceeding to read the image data and render it with a WritableRaster class
         BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
@@ -637,7 +637,7 @@ public class ImageEditor extends javax.swing.JFrame {
         }
         return imgTemp;
     }
-    
+
     private BufferedImage readPPMfromRLE(int width, int height, StreamTokenizer parser){
         // Proceeding to read the image data and render it with a WritableRaster class
         BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
@@ -684,7 +684,7 @@ public class ImageEditor extends javax.swing.JFrame {
         }
         return imgTemp;
     }
-    
+
     private BufferedImage readPPM(int width, int height, int maxCol, StreamTokenizer parser){
         // Proceeding to read the image data and render it with a WritableRaster class
         BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
@@ -749,7 +749,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 }
         return imgTemp;
     }
-        
+
     private BufferedImage readPBM(int width, int height, StreamTokenizer parser){
         // Proceeding to read the image data and render it with a WritableRaster class
         BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
@@ -790,8 +790,31 @@ public class ImageEditor extends javax.swing.JFrame {
                 }
         return imgTemp;
     }
-    
-    private void GaussianBlurController(int[] kernel, int kernelSize, int kernelValue, boolean Vert, boolean Horiz ){
+
+    private int convolutionFunction(int krnlVal, int[] kernl, ArrayList r, ArrayList g, ArrayList b) throws RuntimeException{
+        int krnlSize = kernl.length;
+        int rTotal = 0;
+        int gTotal = 0;
+        int bTotal = 0;
+        // If all the kernels have the same length then we can convolute.
+        if(krnlSize == r.size() && r.size() == g.size() && g.size() == b.size()){
+            for(int i = 0 ; i < krnlSize; i++){
+                rTotal += (int)r.get(i) * kernl[i];
+                gTotal += (int)g.get(i) * kernl[i];
+                bTotal += (int)b.get(i) * kernl[i];
+            }
+
+            rTotal /= krnlVal;
+            gTotal /= krnlVal;
+            bTotal /= krnlVal;
+        }else{
+        // Error: Can't calculate convolution.
+          throw new RuntimeException("Error en la convolución.");  //JOptionPane.showMessageDialog(this, "¡ERROR: Error en la convolusion!");
+        }
+        return (255<<24) | (rTotal<<16) | (gTotal<<8) | bTotal;
+    }
+
+    private void GaussianBlurController(int[] kernel, int kernelSize, int kernelValue, boolean Vert, boolean Horiz ) throws RuntimeException{
         BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
         int i;
         int j;
@@ -830,7 +853,12 @@ public class ImageEditor extends javax.swing.JFrame {
                 }
 
                 for(j = 0; j < width; j++){
-                    int newPixelValue = convolutionFunction(kernelValue, kernel, redH, greenH, blueH);
+                    int newPixelValue = 0;
+                    try{
+                        newPixelValue = convolutionFunction(kernelValue, kernel, redH, greenH, blueH);
+                    }catch(RuntimeException re){
+                        throw new RuntimeException("No se pudo aplicar filtro gaussiano.",re);
+                    }
                     imgTemp.setRGB(j, i, newPixelValue);
                     // Shifting sliding windows to the right by one pixel, if the kernel is out of bounds, complete with 0's.
                     if (j + 1 + kernelPivotIndex >= width){
@@ -849,6 +877,9 @@ public class ImageEditor extends javax.swing.JFrame {
                     blueH.remove(0);
                 }
             }
+            redH.clear();
+            greenH.clear();
+            blueH.clear();
             img = imgTemp;
         }
 
@@ -877,7 +908,12 @@ public class ImageEditor extends javax.swing.JFrame {
                 }
 
                 for(i = 0; i < height; i++){
-                    int newPixelValue = convolutionFunction(kernelValue, kernel, redV, greenV, blueV);
+                    int newPixelValue = 0;
+                    try{
+                        newPixelValue = convolutionFunction(kernelValue, kernel, redV, greenV, blueV);
+                    }catch(RuntimeException re){
+                        throw new RuntimeException("No se pudo aplicar filtro gaussiano.",re);
+                    }
                     imgTemp.setRGB(j, i, newPixelValue);
                     // Shifting sliding windows to the right by one pixel, if the kernel is out of bounds, complete with 0's.
                     if (i + 1 + kernelPivotIndex >= height){
@@ -924,28 +960,6 @@ public class ImageEditor extends javax.swing.JFrame {
         return k;
     }
 
-    private int convolutionFunction(int krnlVal, int[] kernl, ArrayList r, ArrayList g, ArrayList b){
-        int krnlSize = kernl.length;
-        int rTotal = 0;
-        int gTotal = 0;
-        int bTotal = 0;
-        // If all the kernels have the same length then we can convolute.
-        if(krnlSize == r.size() && r.size() == g.size() && g.size() == b.size()){
-            for(int i = 0 ; i < krnlSize; i++){
-                rTotal += (int)r.get(i) * kernl[i];
-                gTotal += (int)g.get(i) * kernl[i];
-                bTotal += (int)b.get(i) * kernl[i];
-            }
-
-            rTotal /= krnlVal;
-            gTotal /= krnlVal;
-            bTotal /= krnlVal;
-        }else{
-        // Error: Can't calculate convolution.
-        }
-        return (255<<24) | (rTotal<<16) | (gTotal<<8) | bTotal;
-    }
-    
     //Function to set parameters of B&W slider
     /**private JSlider getSlider(JOptionPane SliderPane) {
         JSlider sliderAux = new JSlider(0, 255);
@@ -979,7 +993,7 @@ public class ImageEditor extends javax.swing.JFrame {
         };
         return changeListener;
     }
-    
+
     private void GuardarBMPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GuardarBMPActionPerformed
         // TODO add your handling code here:
         int returnVal;
@@ -1502,7 +1516,12 @@ public class ImageEditor extends javax.swing.JFrame {
                     Horiz = true;
             }
 
-            GaussianBlurController(kernel, kSize, kValue, Vert, Horiz);
+            try{
+                GaussianBlurController(kernel, kSize, kValue, Vert, Horiz);
+            }catch(RuntimeException re){
+                JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
+                return;
+            }
 
             ImageIcon icon = new ImageIcon(img);
             // Adding the ImageIcon to the Label.
@@ -1556,7 +1575,7 @@ public class ImageEditor extends javax.swing.JFrame {
         
         
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem About;
     private javax.swing.JMenuItem AbrirArchivo;
