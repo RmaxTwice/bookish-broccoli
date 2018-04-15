@@ -54,6 +54,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private HashMap<Integer, Integer> uniqueCols;
     private int colorsCounter;
     private JSlider slider;
+    private int bitspp;
     
     
     /**
@@ -78,6 +79,7 @@ public class ImageEditor extends javax.swing.JFrame {
         uniqueCols = new HashMap<>();
         colorsCounter = 0;
         slider = new JSlider(0, 255);
+        bitspp = 0;
         
     }
 
@@ -94,16 +96,15 @@ public class ImageEditor extends javax.swing.JFrame {
         jMenuItem1 = new javax.swing.JMenuItem();
         ScrollPanePanel = new javax.swing.JPanel();
         jScrollPane = new javax.swing.JScrollPane();
-        jPanel2 = new javax.swing.JPanel();
-        PropertiesPanel = new javax.swing.JPanel();
-        InfoPanel = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        jPanel3 = new javax.swing.JPanel();
         InfoLabel = new javax.swing.JLabel();
         Dimensiones = new javax.swing.JLabel();
         BPP = new javax.swing.JLabel();
         Colores = new javax.swing.JLabel();
         DPI = new javax.swing.JLabel();
-        HistoPanel = new javax.swing.JPanel();
-        HistogramLabel = new javax.swing.JLabel();
+        jPanel4 = new javax.swing.JPanel();
+        HistoLabel = new javax.swing.JLabel();
         BarraEstadoPanel = new javax.swing.JPanel();
         BarraEstado = new javax.swing.JPanel();
         Estado = new javax.swing.JLabel();
@@ -134,20 +135,19 @@ public class ImageEditor extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Editor de Imagenes | by Raquel Escalante & Rafael Vasquez");
         setBounds(new java.awt.Rectangle(0, 0, 800, 600));
+        setMaximumSize(getMaximumSize());
 
         jScrollPane.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jScrollPane.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jScrollPane.setDoubleBuffered(true);
         jScrollPane.setPreferredSize(new java.awt.Dimension(1011, 1));
 
-        PropertiesPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
 
-        InfoPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
-
-        InfoLabel.setText("Información de la imagen:");
+        InfoLabel.setText("Información de la imagen");
 
         Dimensiones.setFont(new java.awt.Font("Dialog", 1, 10)); // NOI18N
-        Dimensiones.setText("Dimensiones:");
+        Dimensiones.setText("Dimensiones: ");
 
         BPP.setFont(new java.awt.Font("Dialog", 1, 10)); // NOI18N
         BPP.setText("Bits por pixel:");
@@ -156,28 +156,28 @@ public class ImageEditor extends javax.swing.JFrame {
         Colores.setText("Colores únicos:");
 
         DPI.setFont(new java.awt.Font("Dialog", 1, 10)); // NOI18N
-        DPI.setText("Puntos por pulgada (dpi): ");
+        DPI.setText("Puntos por pulgada (dpi):");
 
-        javax.swing.GroupLayout InfoPanelLayout = new javax.swing.GroupLayout(InfoPanel);
-        InfoPanel.setLayout(InfoPanelLayout);
-        InfoPanelLayout.setHorizontalGroup(
-            InfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(InfoPanelLayout.createSequentialGroup()
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(InfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(InfoLabel)
-                    .addGroup(InfoPanelLayout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addGroup(InfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(BPP)
                             .addComponent(Dimensiones)
                             .addComponent(Colores)
                             .addComponent(DPI))))
-                .addContainerGap(122, Short.MAX_VALUE))
+                .addContainerGap(55, Short.MAX_VALUE))
         );
-        InfoPanelLayout.setVerticalGroup(
-            InfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(InfoPanelLayout.createSequentialGroup()
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(InfoLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -188,65 +188,48 @@ public class ImageEditor extends javax.swing.JFrame {
                 .addComponent(Colores)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(DPI)
-                .addContainerGap(89, Short.MAX_VALUE))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
 
-        HistoPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
+        jPanel4.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
 
-        HistogramLabel.setText("Histogramas");
+        HistoLabel.setText("Histogramas");
 
-        javax.swing.GroupLayout HistoPanelLayout = new javax.swing.GroupLayout(HistoPanel);
-        HistoPanel.setLayout(HistoPanelLayout);
-        HistoPanelLayout.setHorizontalGroup(
-            HistoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(HistoPanelLayout.createSequentialGroup()
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(HistogramLabel)
+                .addComponent(HistoLabel)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        HistoPanelLayout.setVerticalGroup(
-            HistoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(HistoPanelLayout.createSequentialGroup()
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(HistogramLabel)
+                .addComponent(HistoLabel)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        javax.swing.GroupLayout PropertiesPanelLayout = new javax.swing.GroupLayout(PropertiesPanel);
-        PropertiesPanel.setLayout(PropertiesPanelLayout);
-        PropertiesPanelLayout.setHorizontalGroup(
-            PropertiesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(PropertiesPanelLayout.createSequentialGroup()
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(PropertiesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(HistoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(InfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
-        PropertiesPanelLayout.setVerticalGroup(
-            PropertiesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(PropertiesPanelLayout.createSequentialGroup()
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(InfoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(HistoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(PropertiesPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(PropertiesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -256,9 +239,9 @@ public class ImageEditor extends javax.swing.JFrame {
             ScrollPanePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(ScrollPanePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 678, Short.MAX_VALUE)
+                .addComponent(jScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 886, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
         ScrollPanePanelLayout.setVerticalGroup(
@@ -266,8 +249,8 @@ public class ImageEditor extends javax.swing.JFrame {
             .addGroup(ScrollPanePanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(ScrollPanePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 571, Short.MAX_VALUE))
+                    .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 611, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -282,7 +265,7 @@ public class ImageEditor extends javax.swing.JFrame {
             .addGroup(BarraEstadoLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(Estado)
-                .addContainerGap(928, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         BarraEstadoLayout.setVerticalGroup(
             BarraEstadoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -634,9 +617,25 @@ public class ImageEditor extends javax.swing.JFrame {
         }
     }
     
-    //private void getDimensions(){
-        //int 
-    //}
+    private void updateDimensions(){
+        if (img != null){
+            width = img.getWidth();
+            height = img.getHeight();
+        } 
+    }
+    
+    private void getBitsPerPixel(){
+        if (img != null){
+            if (format == 3) {
+                ColorModel cm = img.getColorModel();
+                bitspp = cm.getPixelSize();
+            }else if (format == 2){
+                bitspp = 8;
+            }else if (format == 1){
+                bitspp = 1;
+            }
+        }
+    }
     
     private BufferedImage readPBMfromRLE(int width, int height, StreamTokenizer parser){
         // Proceeding to read the image data and render it with a WritableRaster class
@@ -961,6 +960,7 @@ public class ImageEditor extends javax.swing.JFrame {
         // Resetting unique colors container for new image.
         uniqueCols.clear();
         colorsCounter = 0;
+        bitspp = 0;
         
         FileInputStream in = null;
         StreamTokenizer parser;
@@ -1138,10 +1138,13 @@ public class ImageEditor extends javax.swing.JFrame {
 
                 // Counting unique colors
                 countUniqueColors();
+                getBitsPerPixel();
                 
                 //Changing Estado Label
                 Estado.setText("Abriendo " + file.getAbsolutePath() );
                 Colores.setText("Colores únicos: "+colorsCounter);
+                Dimensiones.setText("Dimensiones: " + width + "x" + height);
+                BPP.setText("Bits por pixel: " + bitspp);    
             }
         } else {
             // Cancel opening.
@@ -1174,7 +1177,8 @@ public class ImageEditor extends javax.swing.JFrame {
                     // Repainting the scroll pane to update the changes
                     jScrollPane.repaint();
                     // Updating status bar.
-                    Estado.setText("Aplicando Negativo | Colores Únicos en imagen: " + colorsCounter);
+                    Estado.setText("Aplicando Negativo");
+                    Colores.setText("Colores únicos: "+colorsCounter);
                 }
             }    
         }else{
@@ -1228,7 +1232,9 @@ public class ImageEditor extends javax.swing.JFrame {
             colorsCounter = 0;
             countUniqueColors();
             format = 2;
-            Estado.setText("Aplicando Escala de Grises | Colores Únicos en imagen: " + colorsCounter);
+            Estado.setText("Aplicando Escala de Grises");
+            Colores.setText("Colores únicos: "+colorsCounter);
+            Dimensiones.setText("Dimensiones: " + width + "x" + height);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1311,7 +1317,10 @@ public class ImageEditor extends javax.swing.JFrame {
             colorsCounter = 0;
             countUniqueColors();
             format = 1;
-            Estado.setText("Aplicando Blanco y Negro | Colores Únicos en imagen: " + colorsCounter);
+            Estado.setText("Aplicando Blanco y Negro");
+            Colores.setText("Colores únicos: "+colorsCounter);
+            Dimensiones.setText("Dimensiones: " + width + "x" + height);
+            
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1337,7 +1346,10 @@ public class ImageEditor extends javax.swing.JFrame {
             imglabel.setHorizontalAlignment(JLabel.CENTER);
             //Adding the label to the Scrolling pane.
             jScrollPane.getViewport().add(imglabel);
-            Estado.setText("Aplicando Rotación 90°CW | Colores Únicos en imagen: " + colorsCounter);
+            updateDimensions();
+            Estado.setText("Aplicando Rotación 90°CW");
+            Colores.setText("Colores únicos: "+colorsCounter);
+            Dimensiones.setText("Dimensiones: " + width + "x" + height);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1367,7 +1379,10 @@ public class ImageEditor extends javax.swing.JFrame {
             imglabel.setHorizontalAlignment(JLabel.CENTER);
             //Adding the label to the Scrolling pane.
             jScrollPane.getViewport().add(imglabel);
-            Estado.setText("Aplicando Rotación 90°CCW | Colores Únicos en imagen: " + colorsCounter);
+            updateDimensions();
+            Estado.setText("Aplicando Rotación 90°CCW");
+            Colores.setText("Colores únicos: "+colorsCounter);
+            Dimensiones.setText("Dimensiones: " + width + "x" + height);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1516,16 +1531,13 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JLabel Estado;
     private javax.swing.JMenuItem GuardarBMP;
     private javax.swing.JMenu GuardarNetpbm;
-    private javax.swing.JPanel HistoPanel;
-    private javax.swing.JLabel HistogramLabel;
+    private javax.swing.JLabel HistoLabel;
     private javax.swing.JLabel InfoLabel;
-    private javax.swing.JPanel InfoPanel;
     private javax.swing.JMenu MenuArchivo;
     private javax.swing.JMenuBar MenuBar;
     private javax.swing.JMenu MenuEditar;
     private javax.swing.JMenu MenuFiltros;
     private javax.swing.JMenuItem Negativo;
-    private javax.swing.JPanel PropertiesPanel;
     private javax.swing.JMenuItem Readme;
     private javax.swing.JMenu Rotacion;
     private javax.swing.JMenuItem Rotar90CCW;
@@ -1535,7 +1547,9 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JMenuItem SuavizadoGaussiano;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane;
     // End of variables declaration//GEN-END:variables
 
