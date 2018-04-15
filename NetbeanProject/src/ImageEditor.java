@@ -826,7 +826,7 @@ public class ImageEditor extends javax.swing.JFrame {
     /**
     * Initialize the 3 color channels sliding windows(matrices) according to a given position (x,y) of an image.
     *
-    * If any portion of the sliding windows is outside of the image boundaries, it will be filled with 0.
+    * If any portion of the sliding windows is outside of the image boundaries, it will be filled with fillerValue.
     * @param kwidth Width of the kernel, also, the width of the sliding windows.
     * @param kheigth Height of the kernel, also, the height of the sliding windows.
     * @param ppixelX Pivot pixel's X position index in the kernel.
@@ -837,7 +837,7 @@ public class ImageEditor extends javax.swing.JFrame {
     * @param g Reference of Green color's sliding window (serves as output).
     * @param b Reference of Blue color's sliding window (serves as output).
     */
-    private void initSlidingWindows(int kwidth, int kheight, int ppixelX, int ppixelY, int x, int y, ArrayList r, ArrayList g, ArrayList b){
+    private void initSlidingWindows(int kwidth, int kheight, int ppixelX, int ppixelY, int x, int y, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
         int fillerValue = 0;
         // Calculating the "image" coordinates of each (0,0) windows pixels.
         int xg = x - ppixelX;
@@ -876,6 +876,51 @@ public class ImageEditor extends javax.swing.JFrame {
         }
     }
 
+    /**
+    * Slides the 3 color channels sliding windows(matrices) one pixel to the right according to a given position (x,y) of an image.
+    *
+    * If any portion of the sliding windows is outside of the image boundaries, it will be filled with fillerValue.
+    * This method also assumes that all windows given have the same dimensions.(r, g and b)
+    * @param kwidth Width of the kernel, also, the width of the sliding windows.
+    * @param ppixelX Pivot pixel's X position index in the kernel.
+    * @param ppixelY Pivot pixel's Y position index in the kernel.
+    * @param x Horizontal coordinate of the pivot pixel in the image.
+    * @param r Reference of Red color's sliding window (serves as output).
+    * @param r Reference of Red color's sliding window (serves as output).
+    * @param g Reference of Green color's sliding window (serves as output).
+    * @param b Reference of Blue color's sliding window (serves as output).
+    */
+    private void slideRightSlidingWindows(int kwidth, int ppixelX, int ppixelY, int x, int y, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
+        int fillerValue = 0;
+        // Calculating the "image" coordinates of each next-to-the-right windows pixels.
+        int xg = kwidth - ppixelX + x;
+        int yg;
+        int pvalue;
+
+        for (int i = 0; i < r.size(); i++) {
+            // Calculating the "image" coordinates of each next-to-the-right windows pixels.
+            yg = y - ppixelY + i;
+
+            // If any coordinate is negative or bigger than the image dimensions use the fillerValue
+            // else use the image pixels color values.
+            if ( xg < 0 || xg >= width || yg < 0 || yg >= height ){
+                r.get(i).add(fillerValue);
+                g.get(i).add(fillerValue);
+                b.get(i).add(fillerValue);
+            }else{
+                pvalue = img.getRGB(xg, yg);
+                r.get(i).add((pvalue >> 16) & 0xff);
+                g.get(i).add((pvalue >> 8) & 0xff);
+                b.get(i).add(pvalue & 0xff);
+            }
+
+            // Removing the first value of each row.
+            r.get(i).remove(0);
+            g.get(i).remove(0);
+            b.get(i).remove(0);
+        }
+    }
+
     private void GaussianBlurController(int[] kernel, int kernelSize, int kernelValue, boolean Vert, boolean Horiz ) throws RuntimeException{
         BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
         int i;
@@ -890,11 +935,13 @@ public class ImageEditor extends javax.swing.JFrame {
             kernelPivotIndex = kernelSize/2;
             odd = true;
         }
-//        ArrayList red = new ArrayList();
-//        ArrayList green = new ArrayList();
-//        ArrayList blue = new ArrayList();
+//        ArrayList<ArrayList<Integer>> red = new ArrayList();
+//        ArrayList<ArrayList<Integer>> green = new ArrayList();
+//        ArrayList<ArrayList<Integer>> blue = new ArrayList();
 //        initSlidingWindows(int kwidth, int kheight, int ppixelX, int ppixelY, int x, int y, red, green, blue);
-//        initSlidingWindows(4, 4, 0, 0, 3, 5, red, green, blue);
+//        initSlidingWindows(4, 4, 0, 0, 0, 5, red, green, blue);
+//        slideSlidingWindowsRight(int ppixelX, int ppixelY, int x, int y, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b)
+//        slideRightSlidingWindows(red.get(0).size(), 0, 0, 0, 5, red, green, blue);
 //        initSlidingWindows(3, 1, 2, 0, 0, 0, red, green, blue);
 //        initSlidingWindows(3, 1, 1, 0, 0, 0, red, green, blue);
 //        initSlidingWindows(3, 3, 1, 1, 3, 6, red, green, blue);
