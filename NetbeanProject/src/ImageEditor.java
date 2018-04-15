@@ -25,7 +25,12 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import javax.swing.AbstractButton;
+import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -359,6 +364,18 @@ public class ImageEditor extends javax.swing.JFrame {
      * @param evt 
      */
     
+    private String getSelectedButtonText(ButtonGroup buttonGroup) {
+        for (Enumeration<AbstractButton> buttons = buttonGroup.getElements(); buttons.hasMoreElements();) {
+            AbstractButton button = buttons.nextElement();
+
+            if (button.isSelected()) {
+                return button.getText();
+            }
+        }
+
+        return null;
+    }
+
     private void writeRLEFile(String filename){
         int currentColor;
         int inColor;
@@ -774,103 +791,137 @@ public class ImageEditor extends javax.swing.JFrame {
         return imgTemp;
     }
     
-    private void GaussianBlurController(){
+    private void GaussianBlurController(int[] kernel, int kernelSize, int kernelValue, boolean Vert, boolean Horiz ){
         BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-        int kernelSize = 5;
-        int kernelValue = 16;
-        int[] kernel = {1, 4, 6, 4, 1};
         int i;
         int j;
         int k;
         int pvalue;
-        // These Deques serve as sliding windows per color channel (Horizontal).
-        ArrayList redH = new ArrayList();
-        ArrayList greenH = new ArrayList();
-        ArrayList blueH = new ArrayList();
-        // These Deques serve as sliding windows per color channel (Vertical).
-        ArrayList redV = new ArrayList();
-        ArrayList greenV = new ArrayList();
-        ArrayList blueV = new ArrayList();
-        //This cycles choose the pivot pixel and where to write in the temp image. (Row by Row)
-        for(i = 0; i < height; i++){
-            redH.clear();
-            greenH.clear();
-            blueH.clear();
-            // The values outside of the kernel are equal to 0
-            for(k = 0; k < kernelSize/2; k++){
-                redH.add(0);
-                greenH.add(0);
-                blueH.add(0);
-            }
-            for(k = 0; k < kernelSize/2 + 1; k++){
-                pvalue = img.getRGB(k, i);
-                redH.add((pvalue >> 16) & 0xff);
-                greenH.add((pvalue >> 8) & 0xff);
-                blueH.add(pvalue & 0xff);
-            }
+        int kernelPivotIndex = 0;
 
-            for(j = 0; j < width; j++){
-                int newPixelValue = convolutionFunction(kernelValue, kernel, redH, greenH, blueH);
-                imgTemp.setRGB(j, i, newPixelValue);
-                // Shifting sliding windows to the right by one pixel, if the kernel is out of bounds, complete with 0's.
-                if (j + 1 + kernelSize/2 >= width){
+        if (kernelSize%2 == 0){
+            kernelPivotIndex = kernelSize/2 - 1;
+        }else{
+            kernelPivotIndex = kernelSize/2;
+        }
+
+        if (Horiz){
+            // These ArrayLists serve as sliding windows per color channel (Horizontal).
+            ArrayList redH = new ArrayList();
+            ArrayList greenH = new ArrayList();
+            ArrayList blueH = new ArrayList();
+
+            //This cycles choose the pivot pixel and where to write in the temp image. (Row by Row)
+            for(i = 0; i < height; i++){
+                redH.clear();
+                greenH.clear();
+                blueH.clear();
+                // The values outside of the kernel are equal to 0
+                for(k = 0; k < kernelPivotIndex; k++){
                     redH.add(0);
                     greenH.add(0);
                     blueH.add(0);
-                }else{
-                    pvalue = img.getRGB(j + 1 + kernelSize / 2, i);
+                }
+                for(k = 0; k < kernelPivotIndex + 1; k++){
+                    pvalue = img.getRGB(k, i);
                     redH.add((pvalue >> 16) & 0xff);
                     greenH.add((pvalue >> 8) & 0xff);
                     blueH.add(pvalue & 0xff);
                 }
 
-                redH.remove(0);
-                greenH.remove(0);
-                blueH.remove(0);
+                for(j = 0; j < width; j++){
+                    int newPixelValue = convolutionFunction(kernelValue, kernel, redH, greenH, blueH);
+                    imgTemp.setRGB(j, i, newPixelValue);
+                    // Shifting sliding windows to the right by one pixel, if the kernel is out of bounds, complete with 0's.
+                    if (j + 1 + kernelPivotIndex >= width){
+                        redH.add(0);
+                        greenH.add(0);
+                        blueH.add(0);
+                    }else{
+                        pvalue = img.getRGB(j + 1 + kernelPivotIndex, i);
+                        redH.add((pvalue >> 16) & 0xff);
+                        greenH.add((pvalue >> 8) & 0xff);
+                        blueH.add(pvalue & 0xff);
+                    }
+
+                    redH.remove(0);
+                    greenH.remove(0);
+                    blueH.remove(0);
+                }
             }
+            img = imgTemp;
         }
 
-        img = imgTemp;
+        if(Vert){
+            // These ArrayLists serve as sliding windows per color channel (Vertical).
+            ArrayList redV = new ArrayList();
+            ArrayList greenV = new ArrayList();
+            ArrayList blueV = new ArrayList();
 
-        //This cycles choose the pivot pixel and where to write in the temp image. (Column by Column)
-        for(j = 0; j < width; j++){
-            redV.clear();
-            greenV.clear();
-            blueV.clear();
-            // The values outside of the kernel are equal to 0
-            for(k = 0; k < kernelSize/2; k++){
-                redV.add(0);
-                greenV.add(0);
-                blueV.add(0);
-            }
-            for(k = 0; k < kernelSize/2 + 1; k++){
-                pvalue = img.getRGB(j, k);
-                redV.add((pvalue >> 16) & 0xff);
-                greenV.add((pvalue >> 8) & 0xff);
-                blueV.add(pvalue & 0xff);
-            }
-
-            for(i = 0; i < height; i++){
-                int newPixelValue = convolutionFunction(kernelValue, kernel, redV, greenV, blueV);
-                imgTemp.setRGB(j, i, newPixelValue);
-                // Shifting sliding windows to the right by one pixel, if the kernel is out of bounds, complete with 0's.
-                if (i + 1 + kernelSize/2 >= height){
+            //This cycles choose the pivot pixel and where to write in the temp image. (Column by Column)
+            for(j = 0; j < width; j++){
+                redV.clear();
+                greenV.clear();
+                blueV.clear();
+                // The values outside of the kernel are equal to 0
+                for(k = 0; k < kernelPivotIndex; k++){
                     redV.add(0);
                     greenV.add(0);
                     blueV.add(0);
-                }else{
-                    pvalue = img.getRGB(j , i + 1 + kernelSize / 2);
+                }
+                for(k = 0; k < kernelPivotIndex + 1; k++){
+                    pvalue = img.getRGB(j, k);
                     redV.add((pvalue >> 16) & 0xff);
                     greenV.add((pvalue >> 8) & 0xff);
                     blueV.add(pvalue & 0xff);
                 }
-                redV.remove(0);
-                greenV.remove(0);
-                blueV.remove(0);
-            }
-        }
 
-        img = imgTemp;
+                for(i = 0; i < height; i++){
+                    int newPixelValue = convolutionFunction(kernelValue, kernel, redV, greenV, blueV);
+                    imgTemp.setRGB(j, i, newPixelValue);
+                    // Shifting sliding windows to the right by one pixel, if the kernel is out of bounds, complete with 0's.
+                    if (i + 1 + kernelPivotIndex >= height){
+                        redV.add(0);
+                        greenV.add(0);
+                        blueV.add(0);
+                    }else{
+                        pvalue = img.getRGB(j , i + 1 + kernelPivotIndex);
+                        redV.add((pvalue >> 16) & 0xff);
+                        greenV.add((pvalue >> 8) & 0xff);
+                        blueV.add(pvalue & 0xff);
+                    }
+                    redV.remove(0);
+                    greenV.remove(0);
+                    blueV.remove(0);
+                }
+            }
+            img = imgTemp;
+        }
+    }
+
+    private int[] getGaussianKernel(int n){
+        int[] k = null;
+        switch(n){
+            case 2:
+                k = new int[] {1,1};
+                return k;
+            case 3:
+                k = new int[] {1,2,1};
+                return k;
+            case 4:
+                k = new int[] {1,3,3,1};
+                return k;
+            case 5:
+                k = new int[] {1,4,6,4,1};
+                return k;
+            case 6:
+                k = new int[] {1,5,10,10,5,1};
+                return k;
+            case 7:
+                k = new int[] {1,6,15,20,15,6,1};
+                return k;
+        }
+        return k;
     }
 
     private int convolutionFunction(int krnlVal, int[] kernl, ArrayList r, ArrayList g, ArrayList b){
@@ -1394,7 +1445,64 @@ public class ImageEditor extends javax.swing.JFrame {
         
         if (img != null){
 
-            GaussianBlurController();
+            // Creating radial buttons to use in the next interface:
+            JRadioButton VButton = new JRadioButton("Vertical");
+            JRadioButton HButton = new JRadioButton("Horizontal");
+            JRadioButton VHButton = new JRadioButton("Ambas");
+
+            ButtonGroup orientationBGroup = new ButtonGroup();
+            orientationBGroup.add(VButton);
+            orientationBGroup.add(HButton);
+            orientationBGroup.add(VHButton);
+            VHButton.setSelected(true);         // "Ambas" is the default button.
+
+            JPanel panel = new JPanel();
+            panel.add(VButton);
+            panel.add(HButton);
+            panel.add(VHButton);
+
+            Object[] params = {"Tamaño del kernel: ", kernelSizeSlider, "Orientación:", panel};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                                                        params,
+                                                        "Opciones de Suavizado Gaussiano",
+                                                        JOptionPane.YES_NO_OPTION,
+                                                        JOptionPane.QUESTION_MESSAGE,
+                                                        null,           // Don't use a custom Icon
+                                                        options,        // The strings of buttons
+                                                        options[0]);    // Default button title
+
+            // Getting the orientation string from the radiobutton group.
+            String orientation = getSelectedButtonText(orientationBGroup);
+
+            //JOptionPane.showMessageDialog(this, "Tamaño Kernel: " + kernelSizeSlider.getValue() + "\nOrientación: " + orientation);
+
+            //If the operation was canceled do nothing.
+            if (result == JOptionPane.NO_OPTION){
+                return;
+            }
+
+            // Parameters for the Gaussian Blur function
+            int[] kernel = getGaussianKernel(kernelSizeSlider.getValue());
+            int kSize = kernel.length;
+            int kValue = 0;
+            for (int i : kernel)
+                kValue += i;    // Counting the sum of all the numbers in the kernel.
+            boolean Vert = false;
+            boolean Horiz = false;
+            switch(orientation){
+                case "Horizontal":
+                    Horiz = true;
+                    break;
+                case "Vertical":
+                    Vert = true;
+                    break;
+                default:
+                    Vert = true;
+                    Horiz = true;
+            }
+
+            GaussianBlurController(kernel, kSize, kValue, Vert, Horiz);
 
             ImageIcon icon = new ImageIcon(img);
             // Adding the ImageIcon to the Label.
@@ -1409,7 +1517,6 @@ public class ImageEditor extends javax.swing.JFrame {
             countUniqueColors();
             // Updating status bar.
             Estado.setText("Aplicando Suavizado Gaussiano | Colores Únicos en imagen: " + colorsCounter);
-            
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
