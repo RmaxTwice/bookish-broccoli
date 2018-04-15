@@ -372,6 +372,16 @@ public class ImageEditor extends javax.swing.JFrame {
         return null;
     }
 
+    private int clampColorValue(int val){
+        if(val > 255){
+            return 255;
+        }
+        if(val < 0){
+            return 0;
+        }
+        return val;
+    }
+
     private void writeRLEFile(String filename){
         int currentColor;
         int inColor;
@@ -801,13 +811,65 @@ public class ImageEditor extends javax.swing.JFrame {
             }
 
             rTotal /= krnlVal;
+            rTotal = clampColorValue(rTotal);
             gTotal /= krnlVal;
+            gTotal = clampColorValue(gTotal);
             bTotal /= krnlVal;
+            bTotal = clampColorValue(bTotal);
         }else{
         // Error: Can't calculate convolution.
           throw new RuntimeException("Error en la convolución.");  //JOptionPane.showMessageDialog(this, "¡ERROR: Error en la convolusion!");
         }
         return (255<<24) | (rTotal<<16) | (gTotal<<8) | bTotal;
+    }
+
+    /**
+    * Initialize the 3 color channels sliding windows(matrices) according to a given position (x,y) of an image.
+    *
+    * If any portion of the sliding windows is outside of the image boundaries, it will be filled with 0.
+    * @param kwidth Width of the kernel, also, the width of the sliding windows.
+    * @param kheigth Height of the kernel, also, the height of the sliding windows.
+    * @param ppixelX Pivot pixel's X position index in the kernel.
+    * @param ppixelY Pivot pixel's Y position index in the kernel.
+    * @param x Horizontal coordinate of the pivot pixel in the image.
+    * @param y Vertical coordinate of the pivot pixel in the image.
+    * @param r Reference of Red color's sliding window (serves as output).
+    * @param g Reference of Green color's sliding window (serves as output).
+    * @param b Reference of Blue color's sliding window (serves as output).
+    */
+    private void initSlidingWindows(int kwidth, int kheight, int ppixelX, int ppixelY, int x, int y, ArrayList r, ArrayList g, ArrayList b){
+        int fillerValue = 0;
+        int xg;
+        int yg;
+        int pvalue;
+
+        for (int i = 0; i < kheight; i++){
+            ArrayList redRow = new ArrayList();
+            ArrayList greenRow = new ArrayList();
+            ArrayList blueRow = new ArrayList();
+            for(int j = 0; j < kwidth; j++){
+                // Calculating the "image" coordinates of each windows pixels
+                xg = x - ppixelX + j;
+                yg = y - ppixelY + i;
+
+                // If any coordinate is negative or bigger than the image dimensions use the fillerValue
+                // else use the image pixels color values.
+                if ( xg < 0 || xg >= width || yg < 0 || yg >= height ){
+                    redRow.add(fillerValue);
+                    greenRow.add(fillerValue);
+                    blueRow.add(fillerValue);
+                }else{
+                    pvalue = img.getRGB(xg, yg);
+                    redRow.add((pvalue >> 16) & 0xff);
+                    greenRow.add((pvalue >> 8) & 0xff);
+                    blueRow.add(pvalue & 0xff);
+                }
+            }
+            // Adding a complete row to the matrix.
+            r.add(redRow);
+            g.add(greenRow);
+            b.add(blueRow);
+        }
     }
 
     private void GaussianBlurController(int[] kernel, int kernelSize, int kernelValue, boolean Vert, boolean Horiz ) throws RuntimeException{
@@ -824,6 +886,11 @@ public class ImageEditor extends javax.swing.JFrame {
             kernelPivotIndex = kernelSize/2;
             odd = true;
         }
+//        ArrayList red = new ArrayList();
+//        ArrayList green = new ArrayList();
+//        ArrayList blue = new ArrayList();
+//        initSlidingWindows(int kwidth, int kheight, int ppixelX, int ppixelY, int x, int y, red, green, blue);
+//        initSlidingWindows(3, 1, 2, 0, 0, 0, red, green, blue);
 
         if (Horiz){
             // These ArrayLists serve as sliding windows per color channel (Horizontal).
