@@ -821,11 +821,12 @@ public class ImageEditor extends javax.swing.JFrame {
         int k;
         int pvalue;
         int kernelPivotIndex = 0;
-
+        boolean odd = false;
         if (kernelSize%2 == 0){
             kernelPivotIndex = kernelSize/2 - 1;
         }else{
             kernelPivotIndex = kernelSize/2;
+            odd = true;
         }
 
         if (Horiz){
@@ -845,11 +846,20 @@ public class ImageEditor extends javax.swing.JFrame {
                     greenH.add(0);
                     blueH.add(0);
                 }
-                for(k = 0; k < kernelPivotIndex + 1; k++){
-                    pvalue = img.getRGB(k, i);
-                    redH.add((pvalue >> 16) & 0xff);
-                    greenH.add((pvalue >> 8) & 0xff);
-                    blueH.add(pvalue & 0xff);
+                if (odd){
+                    for(k = 0; k < kernelPivotIndex + 1; k++){
+                        pvalue = img.getRGB(k, i);
+                        redH.add((pvalue >> 16) & 0xff);
+                        greenH.add((pvalue >> 8) & 0xff);
+                        blueH.add(pvalue & 0xff);
+                    }
+                }else{
+                    for(k = 0; k < kernelPivotIndex + 2; k++){
+                        pvalue = img.getRGB(k, i);
+                        redH.add((pvalue >> 16) & 0xff);
+                        greenH.add((pvalue >> 8) & 0xff);
+                        blueH.add(pvalue & 0xff);
+                    }
                 }
 
                 for(j = 0; j < width; j++){
@@ -861,12 +871,19 @@ public class ImageEditor extends javax.swing.JFrame {
                     }
                     imgTemp.setRGB(j, i, newPixelValue);
                     // Shifting sliding windows to the right by one pixel, if the kernel is out of bounds, complete with 0's.
-                    if (j + 1 + kernelPivotIndex >= width){
+                    int x = 0;
+                    if(odd){
+                        x = j + 1 + kernelPivotIndex;
+                    }else{
+                        x = j + 2 + kernelPivotIndex;
+                    }
+
+                    if (x >= width){
                         redH.add(0);
                         greenH.add(0);
                         blueH.add(0);
                     }else{
-                        pvalue = img.getRGB(j + 1 + kernelPivotIndex, i);
+                        pvalue = img.getRGB(x, i);
                         redH.add((pvalue >> 16) & 0xff);
                         greenH.add((pvalue >> 8) & 0xff);
                         blueH.add(pvalue & 0xff);
@@ -900,11 +917,20 @@ public class ImageEditor extends javax.swing.JFrame {
                     greenV.add(0);
                     blueV.add(0);
                 }
-                for(k = 0; k < kernelPivotIndex + 1; k++){
-                    pvalue = img.getRGB(j, k);
-                    redV.add((pvalue >> 16) & 0xff);
-                    greenV.add((pvalue >> 8) & 0xff);
-                    blueV.add(pvalue & 0xff);
+                if (odd){
+                    for(k = 0; k < kernelPivotIndex + 1; k++){
+                        pvalue = img.getRGB(j, k);
+                        redV.add((pvalue >> 16) & 0xff);
+                        greenV.add((pvalue >> 8) & 0xff);
+                        blueV.add(pvalue & 0xff);
+                    }
+                }else{
+                    for(k = 0; k < kernelPivotIndex + 2; k++){
+                        pvalue = img.getRGB(j, k);
+                        redV.add((pvalue >> 16) & 0xff);
+                        greenV.add((pvalue >> 8) & 0xff);
+                        blueV.add(pvalue & 0xff);
+                    }
                 }
 
                 for(i = 0; i < height; i++){
@@ -916,12 +942,19 @@ public class ImageEditor extends javax.swing.JFrame {
                     }
                     imgTemp.setRGB(j, i, newPixelValue);
                     // Shifting sliding windows to the right by one pixel, if the kernel is out of bounds, complete with 0's.
-                    if (i + 1 + kernelPivotIndex >= height){
+                    int y = 0;
+                    if(odd){
+                        y = i + 1 + kernelPivotIndex;
+                    }else{
+                        y = i + 2 + kernelPivotIndex;
+                    }
+
+                    if (y >= height){
                         redV.add(0);
                         greenV.add(0);
                         blueV.add(0);
                     }else{
-                        pvalue = img.getRGB(j , i + 1 + kernelPivotIndex);
+                        pvalue = img.getRGB(j , y);
                         redV.add((pvalue >> 16) & 0xff);
                         greenV.add((pvalue >> 8) & 0xff);
                         blueV.add(pvalue & 0xff);
@@ -1522,6 +1555,10 @@ public class ImageEditor extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
                 return;
             }
+
+            // Setting the image format since if it was binary it would become grayscale.
+            if(format == 1)
+                format = 2; // grayscale
 
             ImageIcon icon = new ImageIcon(img);
             // Adding the ImageIcon to the Label.
