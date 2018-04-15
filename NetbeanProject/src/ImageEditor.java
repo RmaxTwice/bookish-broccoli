@@ -1,6 +1,5 @@
 
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import java.io.BufferedReader;
 import java.io.File;
@@ -15,7 +14,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -23,12 +21,10 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
@@ -45,11 +41,11 @@ import javax.swing.JRadioButton;
 public class ImageEditor extends javax.swing.JFrame {
     
     // Creating a JLabel to display image.
-    private JLabel imglabel;
+    private final JLabel imglabel;
     // Creating a file chooser to open files with
-    private JFileChooser fcOpen;
+    private final JFileChooser fcOpen;
     // Creating a file chooser to save files with
-    private JFileChooser fcSave;
+    private final JFileChooser fcSave;
     // Properties of the Image
     private int format;
     private int width;
@@ -57,10 +53,10 @@ public class ImageEditor extends javax.swing.JFrame {
     private int maxColor;
     private BufferedImage img = null;
     // Hashmap and counter used to count unique colors
-    private HashMap<Integer, Integer> uniqueCols;
+    private final HashMap<Integer, Integer> uniqueCols;
     private int colorsCounter;
-    private JSlider thresholdSlider;
-    private JSlider kernelSizeSlider;
+    private final JSlider thresholdSlider;
+    private final JSlider kernelSizeSlider;
     
     
     /**
@@ -820,7 +816,7 @@ public class ImageEditor extends javax.swing.JFrame {
         int j;
         int k;
         int pvalue;
-        int kernelPivotIndex = 0;
+        int kernelPivotIndex;
         boolean odd = false;
         if (kernelSize%2 == 0){
             kernelPivotIndex = kernelSize/2 - 1;
@@ -871,7 +867,7 @@ public class ImageEditor extends javax.swing.JFrame {
                     }
                     imgTemp.setRGB(j, i, newPixelValue);
                     // Shifting sliding windows to the right by one pixel, if the kernel is out of bounds, complete with 0's.
-                    int x = 0;
+                    int x;
                     if(odd){
                         x = j + 1 + kernelPivotIndex;
                     }else{
@@ -942,7 +938,7 @@ public class ImageEditor extends javax.swing.JFrame {
                     }
                     imgTemp.setRGB(j, i, newPixelValue);
                     // Shifting sliding windows to the right by one pixel, if the kernel is out of bounds, complete with 0's.
-                    int y = 0;
+                    int y;
                     if(odd){
                         y = i + 1 + kernelPivotIndex;
                     }else{
@@ -1015,13 +1011,10 @@ public class ImageEditor extends javax.swing.JFrame {
     // This function provides a ChangeListener based on a JOptionPane that will
     // listen anychanges made in a JOptionsPane
     private ChangeListener createChangeListener(JOptionPane Pane) {
-        ChangeListener changeListener = new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent changeEvent) {
-                JSlider theSlider = (JSlider) changeEvent.getSource();
-                if (!theSlider.getValueIsAdjusting()) {
-                    Pane.setInputValue(theSlider.getValue());
-                }
+        ChangeListener changeListener = (ChangeEvent changeEvent) -> {
+            JSlider theSlider = (JSlider) changeEvent.getSource();
+            if (!theSlider.getValueIsAdjusting()) {
+                Pane.setInputValue(theSlider.getValue());
             }
         };
         return changeListener;
@@ -1044,7 +1037,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 ImageIO.write(img, "bmp", new File(fcSave.getSelectedFile().getAbsolutePath()+".bmp"));
                 Estado.setText("Imagen guardada en: " + fcSave.getSelectedFile().getAbsolutePath()+".bmp");
             } catch ( IOException e) {
-                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "¡ERROR: Ocurrio un error al guardar el archivo!");
             }
         }
         
@@ -1290,7 +1283,6 @@ public class ImageEditor extends javax.swing.JFrame {
             }
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
-            return;
         }
     }//GEN-LAST:event_CompresionRLEActionPerformed
 
@@ -1342,7 +1334,6 @@ public class ImageEditor extends javax.swing.JFrame {
             }
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
-            return;
         } 
     }//GEN-LAST:event_SinCompresionActionPerformed
 
@@ -1445,7 +1436,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private void Rotar90CCWActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Rotar90CCWActionPerformed
         // TODO add your handling code here:
         //Declaring an auxiliary image for operations with Width and Height inverted
-        BufferedImage imgAux = null;
+        BufferedImage imgAux;
         if (img != null){
             int imgW = img.getWidth();
             int imgH = img.getHeight();
@@ -1594,16 +1585,9 @@ public class ImageEditor extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ImageEditor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ImageEditor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ImageEditor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(ImageEditor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
