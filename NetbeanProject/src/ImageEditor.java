@@ -839,27 +839,31 @@ public class ImageEditor extends javax.swing.JFrame {
     */
     private void initSlidingWindows(int kwidth, int kheight, int ppixelX, int ppixelY, int x, int y, ArrayList r, ArrayList g, ArrayList b){
         int fillerValue = 0;
-        int xg;
-        int yg;
+        // Calculating the "image" coordinates of each (0,0) windows pixels.
+        int xg = x - ppixelX;
+        int yg = y - ppixelY;
         int pvalue;
 
-        for (int i = 0; i < kheight; i++){
+        r.clear();
+        g.clear();
+        b.clear();
+        for (int i = yg; i < kheight + yg; i++){
             ArrayList redRow = new ArrayList();
             ArrayList greenRow = new ArrayList();
             ArrayList blueRow = new ArrayList();
-            for(int j = 0; j < kwidth; j++){
+            for(int j = xg; j < kwidth + xg; j++){
                 // Calculating the "image" coordinates of each windows pixels
-                xg = x - ppixelX + j;
-                yg = y - ppixelY + i;
+                //xg = x - ppixelX + j;
+                //yg = y - ppixelY + i;
 
                 // If any coordinate is negative or bigger than the image dimensions use the fillerValue
                 // else use the image pixels color values.
-                if ( xg < 0 || xg >= width || yg < 0 || yg >= height ){
+                if ( j < 0 || j >= width || i < 0 || i >= height ){
                     redRow.add(fillerValue);
                     greenRow.add(fillerValue);
                     blueRow.add(fillerValue);
                 }else{
-                    pvalue = img.getRGB(xg, yg);
+                    pvalue = img.getRGB(j, i);
                     redRow.add((pvalue >> 16) & 0xff);
                     greenRow.add((pvalue >> 8) & 0xff);
                     blueRow.add(pvalue & 0xff);
@@ -890,7 +894,12 @@ public class ImageEditor extends javax.swing.JFrame {
 //        ArrayList green = new ArrayList();
 //        ArrayList blue = new ArrayList();
 //        initSlidingWindows(int kwidth, int kheight, int ppixelX, int ppixelY, int x, int y, red, green, blue);
+//        initSlidingWindows(4, 4, 0, 0, 3, 5, red, green, blue);
 //        initSlidingWindows(3, 1, 2, 0, 0, 0, red, green, blue);
+//        initSlidingWindows(3, 1, 1, 0, 0, 0, red, green, blue);
+//        initSlidingWindows(3, 3, 1, 1, 3, 6, red, green, blue);
+//        initSlidingWindows(3, 3, 0, 0, 3, 6, red, green, blue);
+
 
         if (Horiz){
             // These ArrayLists serve as sliding windows per color channel (Horizontal).
