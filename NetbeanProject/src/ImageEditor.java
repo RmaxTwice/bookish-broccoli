@@ -824,11 +824,50 @@ public class ImageEditor extends javax.swing.JFrame {
     }
 
     /**
+    * Convolute 3 matrices(r,g and b) with a filter kernel to obtain a final single RGB integer value.
+    *
+    * If the given matrices have different dimensions this function will throw a RuntimeException.
+    * @param krnlVal Width of the kernel, also, the width of the sliding windows.
+    * @param kernl Height of the kernel, also, the height of the sliding windows.
+    * @param r Reference of Red color's sliding window(matrix).
+    * @param g Reference of Green color's sliding window(matrix).
+    * @param b Reference of Blue color's sliding window(matrix).
+    */
+    private int convolutionFunctionNew(int krnlVal, ArrayList<ArrayList<Integer>> kernl, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b) throws RuntimeException{
+        int krnlHeight = kernl.size();
+        int krnlWidth = kernl.get(0).size();
+        int rTotal = 0;
+        int gTotal = 0;
+        int bTotal = 0;
+        // If all matrices and the kernel have the same dimensions then we can convolute.
+        if(krnlHeight == r.size() && r.size() == g.size() && g.size() == b.size() && krnlWidth == r.get(0).size() && r.get(0).size() == g.get(0).size() && g.get(0).size() == b.get(0).size()){
+            for(int i = 0 ; i < krnlHeight; i++){
+                for(int j = 0 ; j < krnlWidth; j++){
+                    rTotal += r.get(i).get(j) * kernl.get(i).get(j);
+                    gTotal += g.get(i).get(j) * kernl.get(i).get(j);
+                    bTotal += b.get(i).get(j) * kernl.get(i).get(j);
+                }
+            }
+
+            rTotal /= krnlVal;
+            rTotal = clampColorValue(rTotal);
+            gTotal /= krnlVal;
+            gTotal = clampColorValue(gTotal);
+            bTotal /= krnlVal;
+            bTotal = clampColorValue(bTotal);
+        }else{
+        // Error: Can't calculate convolution.
+          throw new RuntimeException("Error en las dimensiones de la convolución.");  //JOptionPane.showMessageDialog(this, "¡ERROR: Error en la convolusion!");
+        }
+        return (255<<24) | (rTotal<<16) | (gTotal<<8) | bTotal;
+    }
+
+    /**
     * Initialize the 3 color channels sliding windows(matrices) according to a given position (x,y) of an image.
     *
     * If any portion of the sliding windows is outside of the image boundaries, it will be filled with fillerValue.
     * @param kwidth Width of the kernel, also, the width of the sliding windows.
-    * @param kheigth Height of the kernel, also, the height of the sliding windows.
+    * @param kheight Height of the kernel, also, the height of the sliding windows.
     * @param ppixelX Pivot pixel's X position index in the kernel.
     * @param ppixelY Pivot pixel's Y position index in the kernel.
     * @param x Horizontal coordinate of the pivot pixel in the image.
@@ -926,6 +965,7 @@ public class ImageEditor extends javax.swing.JFrame {
         int i;
         int j;
         int k;
+//        int kernelSize = kernel.length;
         int pvalue;
         int kernelPivotIndex;
         boolean odd = false;
@@ -935,17 +975,42 @@ public class ImageEditor extends javax.swing.JFrame {
             kernelPivotIndex = kernelSize/2;
             odd = true;
         }
-//        ArrayList<ArrayList<Integer>> red = new ArrayList();
-//        ArrayList<ArrayList<Integer>> green = new ArrayList();
-//        ArrayList<ArrayList<Integer>> blue = new ArrayList();
+
 //        initSlidingWindows(int kwidth, int kheight, int ppixelX, int ppixelY, int x, int y, red, green, blue);
-//        initSlidingWindows(4, 4, 0, 0, 0, 5, red, green, blue);
-//        slideSlidingWindowsRight(int ppixelX, int ppixelY, int x, int y, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b)
+//        slideSlidingWindowsRight(int kwidth, int ppixelX, int ppixelY, int x, int y, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b)
 //        slideRightSlidingWindows(red.get(0).size(), 0, 0, 0, 5, red, green, blue);
 //        initSlidingWindows(3, 1, 2, 0, 0, 0, red, green, blue);
 //        initSlidingWindows(3, 1, 1, 0, 0, 0, red, green, blue);
 //        initSlidingWindows(3, 3, 1, 1, 3, 6, red, green, blue);
 //        initSlidingWindows(3, 3, 0, 0, 3, 6, red, green, blue);
+
+//        ArrayList<ArrayList<Integer>> red = new ArrayList();
+//        ArrayList<ArrayList<Integer>> green = new ArrayList();
+//        ArrayList<ArrayList<Integer>> blue = new ArrayList();
+//        ArrayList<ArrayList<Integer>> kern = new ArrayList();
+//        ArrayList<Integer> aux = new ArrayList();
+//
+//        aux.add(1);aux.add(2);aux.add(1); kern.add(aux);
+//        aux = new ArrayList();
+//        aux.add(2);aux.add(4);aux.add(2); kern.add(aux);
+//        aux = new ArrayList();
+//        aux.add(1);aux.add(2);aux.add(1); kern.add(aux);
+//
+//        for(i = 0; i < height; i++){
+//            initSlidingWindows(3, 3, 1, 1, 0, i, red, green, blue);
+//            for(j = 0; j < width; j++){
+//                int newPixelValue = 0;
+//                try{
+//                    newPixelValue = convolutionFunctionNew(16, kern, red, green, blue);
+//                }catch(RuntimeException re){
+//                    throw new RuntimeException("No se pudo aplicar filtro gaussiano.",re);
+//                }
+//                imgTemp.setRGB(j, i, newPixelValue);
+//
+//                slideRightSlidingWindows(red.get(0).size(), 1, 1, j, i, red, green, blue);
+//            }
+//        }
+//        img = imgTemp;
 
 
         if (Horiz){
@@ -1278,6 +1343,7 @@ public class ImageEditor extends javax.swing.JFrame {
                                 img = readPPM(width, height, maxColor, parser);
                                 break;
                         }
+                        maxColor = 255;
                         break;
                     case "rle":
                         try {
@@ -1337,6 +1403,7 @@ public class ImageEditor extends javax.swing.JFrame {
                                 img = readPPMfromRLE(width, height, parser);
                                 break;
                         }
+                        maxColor = 255;
                         break;
                 }
                 
@@ -1671,8 +1738,10 @@ public class ImageEditor extends javax.swing.JFrame {
             }
 
             // Setting the image format since if it was binary it would become grayscale.
-            if(format == 1)
+            if(format == 1){
                 format = 2; // grayscale
+                maxColor = 255;
+            }
 
             ImageIcon icon = new ImageIcon(img);
             // Adding the ImageIcon to the Label.
