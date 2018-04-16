@@ -27,6 +27,7 @@ import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import MyUtils.*;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -36,7 +37,8 @@ import javax.swing.JRadioButton;
 
 /**
  *
- * @author Raquel Escalante, Rafael Vasquez
+ * @author Raquel Escalante
+ * @author Rafael Vasquez
  */
 public class ImageEditor extends javax.swing.JFrame {
     
@@ -827,8 +829,8 @@ public class ImageEditor extends javax.swing.JFrame {
     * Convolute 3 matrices(r,g and b) with a filter kernel to obtain a final single RGB integer value.
     *
     * If the given matrices have different dimensions this function will throw a RuntimeException.
-    * @param krnlVal Width of the kernel, also, the width of the sliding windows.
-    * @param kernl Height of the kernel, also, the height of the sliding windows.
+    * @param krnlVal Sum of all the absolute values of the kernel.
+    * @param kernl Matrix of in values of the kernel.
     * @param r Reference of Red color's sliding window(matrix).
     * @param g Reference of Green color's sliding window(matrix).
     * @param b Reference of Blue color's sliding window(matrix).
@@ -1177,6 +1179,83 @@ public class ImageEditor extends javax.swing.JFrame {
         return k;
     }
 
+    private Kernel getGaussianKernel2(int n, boolean vert){
+        Kernel k;
+        int[] values;
+        int ppx;
+        int ppy;
+        int w;
+        int h;
+
+        if(vert){
+            w = 1;
+            h = n;
+        }else{
+            w = n;
+            h = 1;
+        }
+
+        switch(n){
+            case 2:
+                ppx = ppy = 0;
+                values = new int[]{1, 1};
+                break;
+            case 3:
+                if(vert){       // Is it vertical?
+                    ppx = 1;
+                    ppy = 0;
+                }else{          // It is horizontal.
+                    ppx = 0;
+                    ppy = 1;
+                }
+                values = new int[]{1, 2, 1};
+                break;
+            case 4:
+                if(vert){       // Is it vertical?
+                    ppx = 1;
+                    ppy = 0;
+                }else{          // It is horizontal.
+                    ppx = 0;
+                    ppy = 1;
+                }
+                values = new int[]{1, 3, 3, 1};
+                break;
+            case 5:
+                if(vert){       // Is it vertical?
+                    ppx = 2;
+                    ppy = 0;
+                }else{          // It is horizontal.
+                    ppx = 0;
+                    ppy = 2;
+                }
+                values = new int[]{1, 4, 6, 4, 1};
+                break;
+            case 6:
+                if(vert){       // Is it vertical?
+                    ppx = 2;
+                    ppy = 0;
+                }else{          // It is horizontal.
+                    ppx = 0;
+                    ppy = 2;
+                }
+                values = new int[]{1, 5, 10, 10, 5, 1};
+                break;
+            case 7:
+                if(vert){       // Is it vertical?
+                    ppx = 3;
+                    ppy = 0;
+                }else{          // It is horizontal.
+                    ppx = 0;
+                    ppy = 3;
+                }
+                values = new int[]{1, 6, 15, 20, 15, 6, 1};
+                break;
+            default:
+                return null;
+        }
+        k = new Kernel(values, w, h, ppx, ppy);
+        return k;
+    }
     //Function to set parameters of B&W slider
     /**private JSlider getSlider(JOptionPane SliderPane) {
         JSlider sliderAux = new JSlider(0, 255);
