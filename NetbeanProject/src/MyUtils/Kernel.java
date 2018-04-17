@@ -25,7 +25,7 @@ public class Kernel {
         if (width * height == vals.length){
             ArrayList<Integer> tmp;
             int val;
-
+            this.values = new ArrayList();
             this.width = width;
             this.height = height;
             this.pivotX = pivotX;

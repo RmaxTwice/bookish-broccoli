@@ -799,63 +799,34 @@ public class ImageEditor extends javax.swing.JFrame {
         return imgTemp;
     }
 
-    private int convolutionFunction(int krnlVal, int[] kernl, ArrayList r, ArrayList g, ArrayList b) throws RuntimeException{
-        int krnlSize = kernl.length;
-        int rTotal = 0;
-        int gTotal = 0;
-        int bTotal = 0;
-        // If all the kernels have the same length then we can convolute.
-        if(krnlSize == r.size() && r.size() == g.size() && g.size() == b.size()){
-            for(int i = 0 ; i < krnlSize; i++){
-                rTotal += (int)r.get(i) * kernl[i];
-                gTotal += (int)g.get(i) * kernl[i];
-                bTotal += (int)b.get(i) * kernl[i];
-            }
-
-            rTotal /= krnlVal;
-            rTotal = clampColorValue(rTotal);
-            gTotal /= krnlVal;
-            gTotal = clampColorValue(gTotal);
-            bTotal /= krnlVal;
-            bTotal = clampColorValue(bTotal);
-        }else{
-        // Error: Can't calculate convolution.
-          throw new RuntimeException("Error en la convolución.");  //JOptionPane.showMessageDialog(this, "¡ERROR: Error en la convolusion!");
-        }
-        return (255<<24) | (rTotal<<16) | (gTotal<<8) | bTotal;
-    }
-
     /**
-    * Convolute 3 matrices(r,g and b) with a filter kernel to obtain a final single RGB integer value.
+    * Convolute 3 matrices(r,g and b) with a filter kernel to obtain a final single pixel's RGB integer value.
     *
     * If the given matrices have different dimensions this function will throw a RuntimeException.
-    * @param krnlVal Sum of all the absolute values of the kernel.
-    * @param kernl Matrix of in values of the kernel.
+    * @param k Reference to an instance of the Kernel class.
     * @param r Reference of Red color's sliding window(matrix).
     * @param g Reference of Green color's sliding window(matrix).
     * @param b Reference of Blue color's sliding window(matrix).
     */
-    private int convolutionFunctionNew(int krnlVal, ArrayList<ArrayList<Integer>> kernl, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b) throws RuntimeException{
-        int krnlHeight = kernl.size();
-        int krnlWidth = kernl.get(0).size();
+    private int convoluteOnePixel(Kernel k, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b) throws RuntimeException{
         int rTotal = 0;
         int gTotal = 0;
         int bTotal = 0;
         // If all matrices and the kernel have the same dimensions then we can convolute.
-        if(krnlHeight == r.size() && r.size() == g.size() && g.size() == b.size() && krnlWidth == r.get(0).size() && r.get(0).size() == g.get(0).size() && g.get(0).size() == b.get(0).size()){
-            for(int i = 0 ; i < krnlHeight; i++){
-                for(int j = 0 ; j < krnlWidth; j++){
-                    rTotal += r.get(i).get(j) * kernl.get(i).get(j);
-                    gTotal += g.get(i).get(j) * kernl.get(i).get(j);
-                    bTotal += b.get(i).get(j) * kernl.get(i).get(j);
+        if(k.getHeight() == r.size() && r.size() == g.size() && g.size() == b.size() && k.getWidth() == r.get(0).size() && r.get(0).size() == g.get(0).size() && g.get(0).size() == b.get(0).size()){
+            for(int i = 0 ; i < k.getHeight(); i++){
+                for(int j = 0 ; j < k.getWidth(); j++){
+                    rTotal += r.get(i).get(j) * k.getValue(j, i);
+                    gTotal += g.get(i).get(j) * k.getValue(j, i);
+                    bTotal += b.get(i).get(j) * k.getValue(j, i);
                 }
             }
 
-            rTotal /= krnlVal;
+            rTotal /= k.getSum();
             rTotal = clampColorValue(rTotal);
-            gTotal /= krnlVal;
+            gTotal /= k.getSum();
             gTotal = clampColorValue(gTotal);
-            bTotal /= krnlVal;
+            bTotal /= k.getSum();
             bTotal = clampColorValue(bTotal);
         }else{
         // Error: Can't calculate convolution.
@@ -868,31 +839,28 @@ public class ImageEditor extends javax.swing.JFrame {
     * Initialize the 3 color channels sliding windows(matrices) according to a given position (x,y) of an image.
     *
     * If any portion of the sliding windows is outside of the image boundaries, it will be filled with fillerValue.
-    * @param kwidth Width of the kernel, also, the width of the sliding windows.
-    * @param kheight Height of the kernel, also, the height of the sliding windows.
-    * @param ppixelX Pivot pixel's X position index in the kernel.
-    * @param ppixelY Pivot pixel's Y position index in the kernel.
+    * @param k Reference to an instance of the Kernel class.
     * @param x Horizontal coordinate of the pivot pixel in the image.
     * @param y Vertical coordinate of the pivot pixel in the image.
     * @param r Reference of Red color's sliding window (serves as output).
     * @param g Reference of Green color's sliding window (serves as output).
     * @param b Reference of Blue color's sliding window (serves as output).
     */
-    private void initSlidingWindows(int kwidth, int kheight, int ppixelX, int ppixelY, int x, int y, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
+    private void initWindows(Kernel k, int x, int y, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
         int fillerValue = 0;
         // Calculating the "image" coordinates of each (0,0) windows pixels.
-        int xg = x - ppixelX;
-        int yg = y - ppixelY;
+        int xg = x - k.getPivotX();
+        int yg = y - k.getPivotY();
         int pvalue;
 
         r.clear();
         g.clear();
         b.clear();
-        for (int i = yg; i < kheight + yg; i++){
+        for (int i = yg; i < k.getHeight() + yg; i++){
             ArrayList redRow = new ArrayList();
             ArrayList greenRow = new ArrayList();
             ArrayList blueRow = new ArrayList();
-            for(int j = xg; j < kwidth + xg; j++){
+            for(int j = xg; j < k.getWidth() + xg; j++){
                 // Calculating the "image" coordinates of each windows pixels
                 //xg = x - ppixelX + j;
                 //yg = y - ppixelY + i;
@@ -916,31 +884,29 @@ public class ImageEditor extends javax.swing.JFrame {
             b.add(blueRow);
         }
     }
-
+    
     /**
     * Slides the 3 color channels sliding windows(matrices) one pixel to the right according to a given position (x,y) of an image.
     *
     * If any portion of the sliding windows is outside of the image boundaries, it will be filled with fillerValue.
     * This method also assumes that all windows given have the same dimensions.(r, g and b)
-    * @param kwidth Width of the kernel, also, the width of the sliding windows.
-    * @param ppixelX Pivot pixel's X position index in the kernel.
-    * @param ppixelY Pivot pixel's Y position index in the kernel.
+    * @param k Reference to an instance of the Kernel class
     * @param x Horizontal coordinate of the pivot pixel in the image.
-    * @param r Reference of Red color's sliding window (serves as output).
+    * @param y Vertical coordinate of the pivot pixel in the image.
     * @param r Reference of Red color's sliding window (serves as output).
     * @param g Reference of Green color's sliding window (serves as output).
     * @param b Reference of Blue color's sliding window (serves as output).
     */
-    private void slideRightSlidingWindows(int kwidth, int ppixelX, int ppixelY, int x, int y, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
+    private void slideRightWindowsOnePixel(Kernel k, int x, int y, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
         int fillerValue = 0;
         // Calculating the "image" coordinates of each next-to-the-right windows pixels.
-        int xg = kwidth - ppixelX + x;
+        int xg = k.getWidth() - k.getPivotX() + x;
         int yg;
         int pvalue;
 
         for (int i = 0; i < r.size(); i++) {
             // Calculating the "image" coordinates of each next-to-the-right windows pixels.
-            yg = y - ppixelY + i;
+            yg = y - k.getPivotY() + i;
 
             // If any coordinate is negative or bigger than the image dimensions use the fillerValue
             // else use the image pixels color values.
@@ -961,225 +927,77 @@ public class ImageEditor extends javax.swing.JFrame {
             b.get(i).remove(0);
         }
     }
-
-    private void GaussianBlurController(int[] kernel, int kernelSize, int kernelValue, boolean Vert, boolean Horiz ) throws RuntimeException{
+    
+    /**
+    * Modifies an image giving it a Gaussian Blur effect with the kernel size and orientation provided.
+    *
+    * @param n Size of the kernel.
+    * @param Vert Boolean, if true Vertical Gaussian Blur will be applied.
+    * @param Horiz Boolean, if true Horizontal Gaussian Blur will be applied.
+    */
+    private void GaussianBlurController( int n, boolean Vert, boolean Horiz ) throws RuntimeException{
         BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
         int i;
         int j;
-        int k;
-//        int kernelSize = kernel.length;
-        int pvalue;
-        int kernelPivotIndex;
-        boolean odd = false;
-        if (kernelSize%2 == 0){
-            kernelPivotIndex = kernelSize/2 - 1;
-        }else{
-            kernelPivotIndex = kernelSize/2;
-            odd = true;
-        }
-
-//        initSlidingWindows(int kwidth, int kheight, int ppixelX, int ppixelY, int x, int y, red, green, blue);
-//        slideSlidingWindowsRight(int kwidth, int ppixelX, int ppixelY, int x, int y, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b)
-//        slideRightSlidingWindows(red.get(0).size(), 0, 0, 0, 5, red, green, blue);
-//        initSlidingWindows(3, 1, 2, 0, 0, 0, red, green, blue);
-//        initSlidingWindows(3, 1, 1, 0, 0, 0, red, green, blue);
-//        initSlidingWindows(3, 3, 1, 1, 3, 6, red, green, blue);
-//        initSlidingWindows(3, 3, 0, 0, 3, 6, red, green, blue);
-
-//        ArrayList<ArrayList<Integer>> red = new ArrayList();
-//        ArrayList<ArrayList<Integer>> green = new ArrayList();
-//        ArrayList<ArrayList<Integer>> blue = new ArrayList();
-//        ArrayList<ArrayList<Integer>> kern = new ArrayList();
-//        ArrayList<Integer> aux = new ArrayList();
-//
-//        aux.add(1);aux.add(2);aux.add(1); kern.add(aux);
-//        aux = new ArrayList();
-//        aux.add(2);aux.add(4);aux.add(2); kern.add(aux);
-//        aux = new ArrayList();
-//        aux.add(1);aux.add(2);aux.add(1); kern.add(aux);
-//
-//        for(i = 0; i < height; i++){
-//            initSlidingWindows(3, 3, 1, 1, 0, i, red, green, blue);
-//            for(j = 0; j < width; j++){
-//                int newPixelValue = 0;
-//                try{
-//                    newPixelValue = convolutionFunctionNew(16, kern, red, green, blue);
-//                }catch(RuntimeException re){
-//                    throw new RuntimeException("No se pudo aplicar filtro gaussiano.",re);
-//                }
-//                imgTemp.setRGB(j, i, newPixelValue);
-//
-//                slideRightSlidingWindows(red.get(0).size(), 1, 1, j, i, red, green, blue);
-//            }
-//        }
-//        img = imgTemp;
-
-
+      
         if (Horiz){
+            Kernel krnlHoriz = getGaussianKernel(n, false);
             // These ArrayLists serve as sliding windows per color channel (Horizontal).
-            ArrayList redH = new ArrayList();
-            ArrayList greenH = new ArrayList();
-            ArrayList blueH = new ArrayList();
+            ArrayList<ArrayList<Integer>> red = new ArrayList();
+            ArrayList<ArrayList<Integer>> green = new ArrayList();
+            ArrayList<ArrayList<Integer>> blue = new ArrayList();
 
-            //This cycles choose the pivot pixel and where to write in the temp image. (Row by Row)
             for(i = 0; i < height; i++){
-                redH.clear();
-                greenH.clear();
-                blueH.clear();
-                // The values outside of the kernel are equal to 0
-                for(k = 0; k < kernelPivotIndex; k++){
-                    redH.add(0);
-                    greenH.add(0);
-                    blueH.add(0);
-                }
-                if (odd){
-                    for(k = 0; k < kernelPivotIndex + 1; k++){
-                        pvalue = img.getRGB(k, i);
-                        redH.add((pvalue >> 16) & 0xff);
-                        greenH.add((pvalue >> 8) & 0xff);
-                        blueH.add(pvalue & 0xff);
-                    }
-                }else{
-                    for(k = 0; k < kernelPivotIndex + 2; k++){
-                        pvalue = img.getRGB(k, i);
-                        redH.add((pvalue >> 16) & 0xff);
-                        greenH.add((pvalue >> 8) & 0xff);
-                        blueH.add(pvalue & 0xff);
-                    }
-                }
-
+                initWindows(krnlHoriz, 0, i, red, green, blue);
                 for(j = 0; j < width; j++){
                     int newPixelValue = 0;
                     try{
-                        newPixelValue = convolutionFunction(kernelValue, kernel, redH, greenH, blueH);
+                        newPixelValue = convoluteOnePixel(krnlHoriz, red, green, blue);
                     }catch(RuntimeException re){
                         throw new RuntimeException("No se pudo aplicar filtro gaussiano.",re);
                     }
                     imgTemp.setRGB(j, i, newPixelValue);
-                    // Shifting sliding windows to the right by one pixel, if the kernel is out of bounds, complete with 0's.
-                    int x;
-                    if(odd){
-                        x = j + 1 + kernelPivotIndex;
-                    }else{
-                        x = j + 2 + kernelPivotIndex;
-                    }
 
-                    if (x >= width){
-                        redH.add(0);
-                        greenH.add(0);
-                        blueH.add(0);
-                    }else{
-                        pvalue = img.getRGB(x, i);
-                        redH.add((pvalue >> 16) & 0xff);
-                        greenH.add((pvalue >> 8) & 0xff);
-                        blueH.add(pvalue & 0xff);
-                    }
-
-                    redH.remove(0);
-                    greenH.remove(0);
-                    blueH.remove(0);
+                    slideRightWindowsOnePixel(krnlHoriz, j, i, red, green, blue);
                 }
             }
-            redH.clear();
-            greenH.clear();
-            blueH.clear();
             img = imgTemp;
         }
 
         if(Vert){
-            // These ArrayLists serve as sliding windows per color channel (Vertical).
-            ArrayList redV = new ArrayList();
-            ArrayList greenV = new ArrayList();
-            ArrayList blueV = new ArrayList();
+            Kernel krnlVert = getGaussianKernel(n, true);
+            // These ArrayLists serve as sliding windows per color channel (Horizontal).
+            ArrayList<ArrayList<Integer>> red = new ArrayList();
+            ArrayList<ArrayList<Integer>> green = new ArrayList();
+            ArrayList<ArrayList<Integer>> blue = new ArrayList();
 
-            //This cycles choose the pivot pixel and where to write in the temp image. (Column by Column)
-            for(j = 0; j < width; j++){
-                redV.clear();
-                greenV.clear();
-                blueV.clear();
-                // The values outside of the kernel are equal to 0
-                for(k = 0; k < kernelPivotIndex; k++){
-                    redV.add(0);
-                    greenV.add(0);
-                    blueV.add(0);
-                }
-                if (odd){
-                    for(k = 0; k < kernelPivotIndex + 1; k++){
-                        pvalue = img.getRGB(j, k);
-                        redV.add((pvalue >> 16) & 0xff);
-                        greenV.add((pvalue >> 8) & 0xff);
-                        blueV.add(pvalue & 0xff);
-                    }
-                }else{
-                    for(k = 0; k < kernelPivotIndex + 2; k++){
-                        pvalue = img.getRGB(j, k);
-                        redV.add((pvalue >> 16) & 0xff);
-                        greenV.add((pvalue >> 8) & 0xff);
-                        blueV.add(pvalue & 0xff);
-                    }
-                }
-
-                for(i = 0; i < height; i++){
+            for(i = 0; i < height; i++){
+                initWindows(krnlVert, 0, i, red, green, blue);
+                for(j = 0; j < width; j++){
                     int newPixelValue = 0;
                     try{
-                        newPixelValue = convolutionFunction(kernelValue, kernel, redV, greenV, blueV);
+                        newPixelValue = convoluteOnePixel(krnlVert, red, green, blue);
                     }catch(RuntimeException re){
                         throw new RuntimeException("No se pudo aplicar filtro gaussiano.",re);
                     }
                     imgTemp.setRGB(j, i, newPixelValue);
-                    // Shifting sliding windows to the right by one pixel, if the kernel is out of bounds, complete with 0's.
-                    int y;
-                    if(odd){
-                        y = i + 1 + kernelPivotIndex;
-                    }else{
-                        y = i + 2 + kernelPivotIndex;
-                    }
 
-                    if (y >= height){
-                        redV.add(0);
-                        greenV.add(0);
-                        blueV.add(0);
-                    }else{
-                        pvalue = img.getRGB(j , y);
-                        redV.add((pvalue >> 16) & 0xff);
-                        greenV.add((pvalue >> 8) & 0xff);
-                        blueV.add(pvalue & 0xff);
-                    }
-                    redV.remove(0);
-                    greenV.remove(0);
-                    blueV.remove(0);
+                    slideRightWindowsOnePixel(krnlVert, j, i, red, green, blue);
                 }
             }
             img = imgTemp;
         }
     }
-
-    private int[] getGaussianKernel(int n){
-        int[] k = null;
-        switch(n){
-            case 2:
-                k = new int[] {1,1};
-                return k;
-            case 3:
-                k = new int[] {1,2,1};
-                return k;
-            case 4:
-                k = new int[] {1,3,3,1};
-                return k;
-            case 5:
-                k = new int[] {1,4,6,4,1};
-                return k;
-            case 6:
-                k = new int[] {1,5,10,10,5,1};
-                return k;
-            case 7:
-                k = new int[] {1,6,15,20,15,6,1};
-                return k;
-        }
-        return k;
-    }
-
-    private Kernel getGaussianKernel2(int n, boolean vert){
+    
+    /**
+    * Returns the correct Gaussian blur kernel according to the size and orientation given.  
+    *
+    * If a size bigger than 7 or smaller than 2 is given this function returns a null pointer.
+    * Also this function returns only row or column shaped kernels.
+    * @param n Size of the kernel.
+    * @param vert Boolean, true returns Vertical kernel, else returns horizontal.
+    */
+    private Kernel getGaussianKernel(int n, boolean vert){
         Kernel k;
         int[] values;
         int ppx;
@@ -1202,51 +1020,51 @@ public class ImageEditor extends javax.swing.JFrame {
                 break;
             case 3:
                 if(vert){       // Is it vertical?
-                    ppx = 1;
-                    ppy = 0;
-                }else{          // It is horizontal.
                     ppx = 0;
                     ppy = 1;
+                }else{          // It is horizontal.
+                    ppx = 1;
+                    ppy = 0;
                 }
                 values = new int[]{1, 2, 1};
                 break;
             case 4:
                 if(vert){       // Is it vertical?
-                    ppx = 1;
-                    ppy = 0;
-                }else{          // It is horizontal.
                     ppx = 0;
                     ppy = 1;
+                }else{          // It is horizontal.
+                    ppx = 1;
+                    ppy = 0;
                 }
                 values = new int[]{1, 3, 3, 1};
                 break;
             case 5:
                 if(vert){       // Is it vertical?
-                    ppx = 2;
-                    ppy = 0;
-                }else{          // It is horizontal.
                     ppx = 0;
                     ppy = 2;
+                }else{          // It is horizontal.
+                    ppx = 2;
+                    ppy = 0;
                 }
                 values = new int[]{1, 4, 6, 4, 1};
                 break;
             case 6:
                 if(vert){       // Is it vertical?
-                    ppx = 2;
-                    ppy = 0;
-                }else{          // It is horizontal.
                     ppx = 0;
                     ppy = 2;
+                }else{          // It is horizontal.
+                    ppx = 2;
+                    ppy = 0;
                 }
                 values = new int[]{1, 5, 10, 10, 5, 1};
                 break;
             case 7:
                 if(vert){       // Is it vertical?
-                    ppx = 3;
-                    ppy = 0;
-                }else{          // It is horizontal.
                     ppx = 0;
                     ppy = 3;
+                }else{          // It is horizontal.
+                    ppx = 3;
+                    ppy = 0;
                 }
                 values = new int[]{1, 6, 15, 20, 15, 6, 1};
                 break;
@@ -1256,7 +1074,8 @@ public class ImageEditor extends javax.swing.JFrame {
         k = new Kernel(values, w, h, ppx, ppy);
         return k;
     }
-    //Function to set parameters of B&W slider
+    
+//Function to set parameters of B&W slider
     /**private JSlider getSlider(JOptionPane SliderPane) {
         JSlider sliderAux = new JSlider(0, 255);
         sliderAux.setMajorTickSpacing(50);
@@ -1749,10 +1568,9 @@ public class ImageEditor extends javax.swing.JFrame {
     }//GEN-LAST:event_AboutActionPerformed
 
     private void SuavizadoGaussianoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SuavizadoGaussianoActionPerformed
-        
         if (img != null){
-
-            // Creating radial buttons to use in the next interface:
+            // First, Creating an interface:
+            // Radial buttons
             JRadioButton VButton = new JRadioButton("Vertical");
             JRadioButton HButton = new JRadioButton("Horizontal");
             JRadioButton VHButton = new JRadioButton("Ambas");
@@ -1782,19 +1600,12 @@ public class ImageEditor extends javax.swing.JFrame {
             // Getting the orientation string from the radiobutton group.
             String orientation = getSelectedButtonText(orientationBGroup);
 
-            //JOptionPane.showMessageDialog(this, "Tamaño Kernel: " + kernelSizeSlider.getValue() + "\nOrientación: " + orientation);
-
             //If the operation was canceled do nothing.
             if (result == JOptionPane.NO_OPTION){
                 return;
             }
 
             // Parameters for the Gaussian Blur function
-            int[] kernel = getGaussianKernel(kernelSizeSlider.getValue());
-            int kSize = kernel.length;
-            int kValue = 0;
-            for (int i : kernel)
-                kValue += i;    // Counting the sum of all the numbers in the kernel.
             boolean Vert = false;
             boolean Horiz = false;
             switch(orientation){
@@ -1810,7 +1621,8 @@ public class ImageEditor extends javax.swing.JFrame {
             }
 
             try{
-                GaussianBlurController(kernel, kSize, kValue, Vert, Horiz);
+                // Passing orientation and size to the controller function. 
+                GaussianBlurController(kernelSizeSlider.getValue(), Vert, Horiz);
             }catch(RuntimeException re){
                 JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
                 return;
