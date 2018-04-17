@@ -28,6 +28,9 @@ import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import MyUtils.*;
+import java.util.Arrays;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -127,6 +130,7 @@ public class ImageEditor extends javax.swing.JFrame {
         Rotar90CCW = new javax.swing.JMenuItem();
         MenuFiltros = new javax.swing.JMenu();
         SuavizadoGaussiano = new javax.swing.JMenuItem();
+        SuavizadoPromedio = new javax.swing.JMenuItem();
         Ayuda = new javax.swing.JMenu();
         Readme = new javax.swing.JMenuItem();
         About = new javax.swing.JMenuItem();
@@ -310,6 +314,14 @@ public class ImageEditor extends javax.swing.JFrame {
             }
         });
         MenuFiltros.add(SuavizadoGaussiano);
+
+        SuavizadoPromedio.setText("Suavizado Promedio");
+        SuavizadoPromedio.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                SuavizadoPromedioActionPerformed(evt);
+            }
+        });
+        MenuFiltros.add(SuavizadoPromedio);
 
         MenuBar.add(MenuFiltros);
 
@@ -1074,8 +1086,48 @@ public class ImageEditor extends javax.swing.JFrame {
         k = new Kernel(values, w, h, ppx, ppy);
         return k;
     }
+
+    private Kernel getAverageKernel(int w, int h){
+        Kernel k;
+        int[] values = new int[w*h];
+        int ppx = (w % 2 == 0) ? w / 2 - 1 : w / 2;
+        int ppy = (h % 2 == 0) ? h / 2 - 1 : h / 2;
+
+        Arrays.fill(values, 1);
+        k = new Kernel(values, w, h, ppx, ppy);
+
+        return k;
+    }
+
+    private void AverageBlurController(int w, int h) throws RuntimeException {
+        BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+        int i;
+        int j;
+        
+        Kernel krnl = getAverageKernel(w, h);
+        // These ArrayLists serve as sliding windows per color channel (Horizontal).
+        ArrayList<ArrayList<Integer>> red = new ArrayList();
+        ArrayList<ArrayList<Integer>> green = new ArrayList();
+        ArrayList<ArrayList<Integer>> blue = new ArrayList();
+
+        for(i = 0; i < height; i++){
+            initWindows(krnl, 0, i, red, green, blue);
+            for(j = 0; j < width; j++){
+                int newPixelValue = 0;
+                try{
+                    newPixelValue = convoluteOnePixel(krnl, red, green, blue);
+                }catch(RuntimeException re){
+                    throw new RuntimeException("No se pudo aplicar filtro promedio.",re);
+                }
+                imgTemp.setRGB(j, i, newPixelValue);
+
+                slideRightWindowsOnePixel(krnl, j, i, red, green, blue);
+            }
+        }
+        img = imgTemp;
+    }
     
-//Function to set parameters of B&W slider
+    //Function to set parameters of B&W slider
     /**private JSlider getSlider(JOptionPane SliderPane) {
         JSlider sliderAux = new JSlider(0, 255);
         sliderAux.setMajorTickSpacing(50);
@@ -1130,20 +1182,19 @@ public class ImageEditor extends javax.swing.JFrame {
     }//GEN-LAST:event_GuardarBMPActionPerformed
 
     private void AbrirArchivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AbrirArchivoActionPerformed
-        // TODO add your handling code here:
-        // The image variable
-        img = null;
-        // Resetting unique colors container for new image.
-        uniqueCols.clear();
-        colorsCounter = 0;
-        
         FileInputStream in = null;
         StreamTokenizer parser;
         BufferedReader reader;
         //In response to a button click, the file chooser is displayed
         int returnVal = fcOpen.showOpenDialog(this);
-        
+
         if (returnVal == JFileChooser.APPROVE_OPTION) {
+            // The image variable
+            img = null;
+            // Resetting unique colors container for new image.
+            uniqueCols.clear();
+            colorsCounter = 0;
+
             File file = fcOpen.getSelectedFile();
             // Now open the file.
             //JOptionPane.showMessageDialog(this, file.getAbsolutePath());
@@ -1628,7 +1679,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 return;
             }
 
-            // Setting the image format since if it was binary it would become grayscale.
+            /// Changing the image format since binary becomes grayscale after a blur operation.
             if(format == 1){
                 format = 2; // grayscale
                 maxColor = 255;
@@ -1651,6 +1702,74 @@ public class ImageEditor extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
     }//GEN-LAST:event_SuavizadoGaussianoActionPerformed
+
+    private void SuavizadoPromedioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SuavizadoPromedioActionPerformed
+        if (img != null){
+            // Preparing and displaying components of the Filter's Options GUI
+            int w;
+            int h;
+            SpinnerNumberModel model1 = new SpinnerNumberModel(3, 1, 7, 1);  // Initial value, min, max, step
+            SpinnerNumberModel model2 = new SpinnerNumberModel(3, 1, 7, 1);
+            JSpinner spinWidth = new JSpinner(model1);
+            JSpinner spinHeight = new JSpinner(model2);
+            JLabel labelWidth = new JLabel("Ancho:");
+            JLabel labelHeight = new JLabel("Alto:");
+            JPanel spinPanel = new JPanel();
+
+            spinPanel.add(labelWidth);
+            spinPanel.add(spinWidth);
+            spinPanel.add(labelHeight);
+            spinPanel.add(spinHeight);
+
+            Object[] params = {spinPanel};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                                                        params,
+                                                        "Opciones de Suavizado Promedio",
+                                                        JOptionPane.YES_NO_OPTION,
+                                                        JOptionPane.QUESTION_MESSAGE,
+                                                        null,           // Don't use a custom Icon
+                                                        options,        // The strings of buttons
+                                                        options[0]);    // Default button title
+            w = (int)spinWidth.getValue();
+            h = (int)spinHeight.getValue();
+            if ((w == 1 && h == 1) || result == JOptionPane.NO_OPTION){
+                // If the kernel is 1x1 the image ends up the same or if the user cancels de action
+                // return at once.
+                return;
+            }
+
+            try{
+                // Passing dimensions to the controller function.
+                AverageBlurController(w, h);
+            }catch(RuntimeException re){
+                JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
+                return;
+            }
+
+            // Changing the image format since binary becomes grayscale after a blur operation.
+            if(format == 1){
+                format = 2; // grayscale
+                maxColor = 255;
+            }
+
+            ImageIcon icon = new ImageIcon(img);
+            // Adding the ImageIcon to the Label.
+            imglabel.setIcon( icon );
+            //Aligning the image to the center.
+            imglabel.setHorizontalAlignment(JLabel.CENTER);
+            //Adding the label to the Scrolling pane.
+            jScrollPane.getViewport().add(imglabel);
+            // Repainting the scroll pane to update the changes
+            jScrollPane.repaint();
+            // Recounting colors
+            countUniqueColors();
+            // Updating status bar.
+            Estado.setText("Aplicando Suavizado Promedio | Colores Únicos en imagen: " + colorsCounter);
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_SuavizadoPromedioActionPerformed
 
     /**
      * @param args the command line arguments
@@ -1704,6 +1823,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JPanel ScrollPanePanel;
     private javax.swing.JMenuItem SinCompresion;
     private javax.swing.JMenuItem SuavizadoGaussiano;
+    private javax.swing.JMenuItem SuavizadoPromedio;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JScrollPane jScrollPane;
