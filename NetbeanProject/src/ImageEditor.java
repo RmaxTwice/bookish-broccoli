@@ -396,6 +396,22 @@ public class ImageEditor extends javax.swing.JFrame {
         return val;
     }
 
+    private void refreshImageDisplayed(boolean count){
+        ImageIcon icon = new ImageIcon(img);
+        // Adding the ImageIcon to the Label.
+        imglabel.setIcon( icon );
+        //Aligning the image to the center.
+        imglabel.setHorizontalAlignment(JLabel.CENTER);
+        //Adding the label to the Scrolling pane.
+        jScrollPane.getViewport().add(imglabel);
+        // Repainting the scroll pane to update the changes
+        jScrollPane.repaint();
+
+        if(count)
+            // Recounting colors
+            countUniqueColors();
+    }
+
     private void writeRLEFile(String filename){
         int currentColor;
         int inColor;
@@ -542,6 +558,8 @@ public class ImageEditor extends javax.swing.JFrame {
     }
     
     private void countUniqueColors(){
+        colorsCounter = 0;
+        uniqueCols.clear();
         int key;
         if (img != null){
             for(int y = 0; y < height; y++){
@@ -1103,7 +1121,7 @@ public class ImageEditor extends javax.swing.JFrame {
         BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
         int i;
         int j;
-        
+
         Kernel krnl = getAverageKernel(w, h);
         // These ArrayLists serve as sliding windows per color channel (Horizontal).
         ArrayList<ArrayList<Integer>> red = new ArrayList();
@@ -1191,9 +1209,6 @@ public class ImageEditor extends javax.swing.JFrame {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             // The image variable
             img = null;
-            // Resetting unique colors container for new image.
-            uniqueCols.clear();
-            colorsCounter = 0;
 
             File file = fcOpen.getSelectedFile();
             // Now open the file.
@@ -1355,18 +1370,7 @@ public class ImageEditor extends javax.swing.JFrame {
                         maxColor = 255;
                         break;
                 }
-                
-                ImageIcon icon = new ImageIcon(img);
-                // Adding the ImageIcon to the Label.
-                imglabel.setIcon( icon );
-                //Aligning the image to the center.
-                imglabel.setHorizontalAlignment(JLabel.CENTER);
-                //Adding the label to the Scrolling pane.
-                jScrollPane.getViewport().add(imglabel);
-
-                // Counting unique colors
-                countUniqueColors();
-                
+                refreshImageDisplayed(true);
                 //Changing Estado Label
                 Estado.setText("Abriendo " + file.getAbsolutePath() + " | Colores Únicos en imagen: " + colorsCounter);
             }
@@ -1388,22 +1392,18 @@ public class ImageEditor extends javax.swing.JFrame {
                     int r = (p >> 16) & 0xff;
                     int g = (p >> 8) & 0xff;
                     int b = p & 0xff;
-
                     // Inverting the colors of the pixel per sample.
                     r = 255 - r;
                     g = 255 - g;
                     b = 255 - b;
-
                     // Packing back the pixel data
                     p = (a<<24) | (r<<16) | (g<<8) | b;
                     img.setRGB(x, y, p);
-
-                    // Repainting the scroll pane to update the changes
-                    jScrollPane.repaint();
-                    // Updating status bar.
-                    Estado.setText("Aplicando Negativo | Colores Únicos en imagen: " + colorsCounter);
                 }
-            }    
+            }
+            refreshImageDisplayed(false);
+            // Updating status bar.
+            Estado.setText("Aplicando Negativo | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1437,22 +1437,14 @@ public class ImageEditor extends javax.swing.JFrame {
                     int r = (p>>16)&0xff;
                     int g = (p>>8)&0xff;
                     int b = p&0xff;
-                    
                     //Calculating average per pixel
                     avg = (r+g+b)/3;
-                    
                     // Packing back the pixel data
                     p = (a<<24) | (avg<<16) | (avg<<8) | avg;
                     img.setRGB(x, y, p);
-                            
-                    //Repainting scroll pane to update the changes
-                    jScrollPane.repaint();                                      
                 }
             }
-            //Calculate Unique Colors and Update Status Bar
-            uniqueCols.clear();
-            colorsCounter = 0;
-            countUniqueColors();
+            refreshImageDisplayed(true);
             format = 2;
             Estado.setText("Aplicando Escala de Grises | Colores Únicos en imagen: " + colorsCounter);
         }else{
@@ -1507,7 +1499,6 @@ public class ImageEditor extends javax.swing.JFrame {
 
             for(int y = 0; y < height; y++){
                 for(int x = 0; x < width; x++){
-                    
                     int avg;
                     // Unpacking the data of each pixel with masks.
                     int p = img.getRGB(x,y);
@@ -1515,10 +1506,8 @@ public class ImageEditor extends javax.swing.JFrame {
                     int r = (p>>16)&0xff;
                     int g = (p>>8)&0xff;
                     int b = p&0xff;
-                    
                     //Calculating average per pixel
                     avg = (r+g+b)/3;
-					
                     //Sorting average into range according to threshold
                     if (avg < thr){
                         avg = 0;
@@ -1528,15 +1517,9 @@ public class ImageEditor extends javax.swing.JFrame {
                     //Packing back the pixel data
                     p = (a<<24) | (avg<<16) | (avg<<8) | avg;
                     img.setRGB(x, y, p);
-                            
-                    //Repainting scroll pane to update the changes
-                    jScrollPane.repaint();
                 }
             }
-            //Calculate Unique Colors and Update Status Bar
-            uniqueCols.clear();
-            colorsCounter = 0;
-            countUniqueColors();
+            refreshImageDisplayed(true);
             format = 1;
             Estado.setText("Aplicando Blanco y Negro | Colores Únicos en imagen: " + colorsCounter);
         }else{
@@ -1557,19 +1540,11 @@ public class ImageEditor extends javax.swing.JFrame {
                 }
             }
             img = imgAux;
-            ImageIcon icon = new ImageIcon(img);
-            // Adding the ImageIcon to the Label.
-            imglabel.setIcon( icon );
-            //Aligning the image to the center.
-            imglabel.setHorizontalAlignment(JLabel.CENTER);
-            //Adding the label to the Scrolling pane.
-            jScrollPane.getViewport().add(imglabel);
+            refreshImageDisplayed(false);
             Estado.setText("Aplicando Rotación 90°CW | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
-        
-        
     }//GEN-LAST:event_Rotar90CWActionPerformed
 
     private void Rotar90CCWActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Rotar90CCWActionPerformed
@@ -1587,13 +1562,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 }
             }
             img = imgAux;
-            ImageIcon icon = new ImageIcon(img);
-            // Adding the ImageIcon to the Label.
-            imglabel.setIcon( icon );
-            //Aligning the image to the center.
-            imglabel.setHorizontalAlignment(JLabel.CENTER);
-            //Adding the label to the Scrolling pane.
-            jScrollPane.getViewport().add(imglabel);
+            refreshImageDisplayed(false);
             Estado.setText("Aplicando Rotación 90°CCW | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
@@ -1684,19 +1653,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 format = 2; // grayscale
                 maxColor = 255;
             }
-
-            ImageIcon icon = new ImageIcon(img);
-            // Adding the ImageIcon to the Label.
-            imglabel.setIcon( icon );
-            //Aligning the image to the center.
-            imglabel.setHorizontalAlignment(JLabel.CENTER);
-            //Adding the label to the Scrolling pane.
-            jScrollPane.getViewport().add(imglabel);
-            // Repainting the scroll pane to update the changes
-            jScrollPane.repaint();
-            // Recounting colors
-            countUniqueColors();
-            // Updating status bar.
+            refreshImageDisplayed(true);
             Estado.setText("Aplicando Suavizado Gaussiano | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
@@ -1738,7 +1695,6 @@ public class ImageEditor extends javax.swing.JFrame {
                 // return at once.
                 return;
             }
-
             try{
                 // Passing dimensions to the controller function.
                 AverageBlurController(w, h);
@@ -1746,24 +1702,12 @@ public class ImageEditor extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
                 return;
             }
-
             // Changing the image format since binary becomes grayscale after a blur operation.
             if(format == 1){
                 format = 2; // grayscale
                 maxColor = 255;
             }
-
-            ImageIcon icon = new ImageIcon(img);
-            // Adding the ImageIcon to the Label.
-            imglabel.setIcon( icon );
-            //Aligning the image to the center.
-            imglabel.setHorizontalAlignment(JLabel.CENTER);
-            //Adding the label to the Scrolling pane.
-            jScrollPane.getViewport().add(imglabel);
-            // Repainting the scroll pane to update the changes
-            jScrollPane.repaint();
-            // Recounting colors
-            countUniqueColors();
+            refreshImageDisplayed(true);
             // Updating status bar.
             Estado.setText("Aplicando Suavizado Promedio | Colores Únicos en imagen: " + colorsCounter);
         }else{
