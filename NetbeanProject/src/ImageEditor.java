@@ -875,7 +875,7 @@ public class ImageEditor extends javax.swing.JFrame {
     * @param b Reference of Blue color's sliding window(matrix).
     * @param normal indicates if the result should be averaged/normalized.
     */
-    private int convoluteOnePixel(Kernel k, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b, boolean normal) throws RuntimeException{
+    private int convolveOnePixel(Kernel k, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b, boolean normal) throws RuntimeException{
         int rTotal = 0;
         int gTotal = 0;
         int bTotal = 0;
@@ -1021,7 +1021,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 for(j = 0; j < width; j++){
                     int newPixelValue = 0;
                     try{
-                        newPixelValue = convoluteOnePixel(krnlHoriz, red, green, blue, true);
+                        newPixelValue = convolveOnePixel(krnlHoriz, red, green, blue, true);
                     }catch(RuntimeException re){
                         throw new RuntimeException("No se pudo aplicar filtro gaussiano.",re);
                     }
@@ -1045,7 +1045,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 for(j = 0; j < width; j++){
                     int newPixelValue = 0;
                     try{
-                        newPixelValue = convoluteOnePixel(krnlVert, red, green, blue, true);
+                        newPixelValue = convolveOnePixel(krnlVert, red, green, blue, true);
                     }catch(RuntimeException re){
                         throw new RuntimeException("No se pudo aplicar filtro gaussiano.",re);
                     }
@@ -1172,7 +1172,7 @@ public class ImageEditor extends javax.swing.JFrame {
             for(j = 0; j < width; j++){
                 int newPixelValue = 0;
                 try{
-                    newPixelValue = convoluteOnePixel(krnl, red, green, blue, true);
+                    newPixelValue = convolveOnePixel(krnl, red, green, blue, true);
                 }catch(RuntimeException re){
                     throw new RuntimeException("No se pudo aplicar filtro promedio.",re);
                 }
@@ -1208,20 +1208,12 @@ public class ImageEditor extends javax.swing.JFrame {
 
     private void PrewittController(int orientation){
         BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-        BufferedImage imgTemp2 = null;
-        BufferedImage imgTemp3 = null;
-        BufferedImage imgTemp4 = null;
         int i;
         int j;
         int[] vals;
         Kernel krnl = null;
         Kernel krnl1, krnl2, krnl3, krnl4;
 
-        if(orientation == 5){
-            imgTemp2 = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-            imgTemp3 = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-            imgTemp4 = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-        }
         vals = new int[]{-1, 0, 1, -1, 0, 1, -1, 0, 1};
         krnl1 = new Kernel(vals, 3, 3, 1, 1);           //"Vertical |"
         vals = new int[]{-1, -1, -1, 0, 0, 0, 1, 1, 1};
@@ -1258,10 +1250,10 @@ public class ImageEditor extends javax.swing.JFrame {
 
                 if(orientation == 5){
                     try{
-                        newPixelValue1 = convoluteOnePixel(krnl1, red, green, blue, false);
-                        newPixelValue2 = convoluteOnePixel(krnl2, red, green, blue, false);
-                        newPixelValue3 = convoluteOnePixel(krnl3, red, green, blue, false);
-                        newPixelValue4 = convoluteOnePixel(krnl4, red, green, blue, false);
+                        newPixelValue1 = convolveOnePixel(krnl1, red, green, blue, false);
+                        newPixelValue2 = convolveOnePixel(krnl2, red, green, blue, false);
+                        newPixelValue3 = convolveOnePixel(krnl3, red, green, blue, false);
+                        newPixelValue4 = convolveOnePixel(krnl4, red, green, blue, false);
                     }catch(RuntimeException re){
                         throw new RuntimeException("No se pudo aplicar filtro Prewitt.",re);
                     }
@@ -1270,12 +1262,54 @@ public class ImageEditor extends javax.swing.JFrame {
                     imgTemp.setRGB(j, i, newPixelVal);
                 }else{
                     try{
-                        newPixelValue1 = convoluteOnePixel(krnl, red, green, blue, false);
+                        newPixelValue1 = convolveOnePixel(krnl, red, green, blue, false);
                     }catch(RuntimeException re){
                         throw new RuntimeException("No se pudo aplicar filtro Prewitt.",re);
                     }
                     imgTemp.setRGB(j, i, newPixelValue1);
                 }
+                slideRightWindowsOnePixel(krnl1, j, i, red, green, blue);
+            }
+        }
+        img = imgTemp;
+    }
+
+    private void RobertsController(){
+        BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+        int i;
+        int j;
+        int[] vals;
+        Kernel krnl1, krnl2;
+
+        vals = new int[]{1, 0, 0, -1};
+        krnl1 = new Kernel(vals, 2, 2, 0, 0);   //"Vertical |"
+        vals = new int[]{0, 1, -1, 0};
+        krnl2 = new Kernel(vals, 2, 2, 0, 0);   //"Horizontal -"
+
+        // These ArrayLists serve as sliding windows per color channel (Horizontal).
+        ArrayList<ArrayList<Integer>> red = new ArrayList();
+        ArrayList<ArrayList<Integer>> green = new ArrayList();
+        ArrayList<ArrayList<Integer>> blue = new ArrayList();
+
+        for(i = 0; i < height; i++){
+            initWindows(krnl1, 0, i, red, green, blue);
+            for(j = 0; j < width; j++){
+                int newPixelVal = 0;
+                int newPixelValue1 = 0;
+                int newPixelValue2 = 0;
+
+                try{
+                    newPixelValue1 = convolveOnePixel(krnl1, red, green, blue, false);
+                    newPixelValue2 = convolveOnePixel(krnl2, red, green, blue, false);
+                }catch(RuntimeException re){
+                    throw new RuntimeException("No se pudo aplicar filtro Prewitt.",re);
+                }
+
+                //newPixelVal = (int)Math.sqrt((newPixelValue1 * newPixelValue1 + newPixelValue2 * newPixelValue2)) ;
+                //newPixelVal = clampColorValue(newPixelVal);
+                newPixelVal = Math.max(newPixelValue1, newPixelValue2);
+                imgTemp.setRGB(j, i, newPixelVal);
+
                 slideRightWindowsOnePixel(krnl1, j, i, red, green, blue);
             }
         }
@@ -2019,7 +2053,25 @@ public class ImageEditor extends javax.swing.JFrame {
     }//GEN-LAST:event_PrewittActionPerformed
 
     private void RobertsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RobertsActionPerformed
-        // TODO add your handling code here:
+        if (img != null){
+            try{
+                // Passing dimensions to the controller function.
+                RobertsController();
+            }catch(RuntimeException re){
+                JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
+                return;
+            }
+            // Changing the image format since binary becomes grayscale after a blur operation.
+            if(format == 1){
+                format = 2; // grayscale
+                maxColor = 255;
+            }
+            refreshImageDisplayed(true);
+            // Updating status bar.
+            Estado.setText("Aplicando filtro de Roberts | Colores Únicos en imagen: " + colorsCounter);
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
     }//GEN-LAST:event_RobertsActionPerformed
 
     /**
