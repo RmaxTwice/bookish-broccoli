@@ -110,6 +110,8 @@ public class ImageEditor extends javax.swing.JFrame {
 
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem2 = new javax.swing.JMenuItem();
+        jMenuItem3 = new javax.swing.JMenuItem();
         ScrollPanePanel = new javax.swing.JPanel();
         jScrollPane = new javax.swing.JScrollPane();
         BarraEstadoPanel = new javax.swing.JPanel();
@@ -133,6 +135,9 @@ public class ImageEditor extends javax.swing.JFrame {
         SuavizadoGaussiano = new javax.swing.JMenuItem();
         SuavizadoPromedio = new javax.swing.JMenuItem();
         Mediana = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        Roberts = new javax.swing.JMenuItem();
+        Prewitt = new javax.swing.JMenuItem();
         Ayuda = new javax.swing.JMenu();
         Readme = new javax.swing.JMenuItem();
         About = new javax.swing.JMenuItem();
@@ -140,6 +145,10 @@ public class ImageEditor extends javax.swing.JFrame {
         jMenu1.setText("jMenu1");
 
         jMenuItem1.setText("jMenuItem1");
+
+        jMenuItem2.setText("jMenuItem2");
+
+        jMenuItem3.setText("jMenuItem3");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Editor de Imagenes | by Raquel Escalante & Rafael Vasquez");
@@ -332,6 +341,23 @@ public class ImageEditor extends javax.swing.JFrame {
             }
         });
         MenuFiltros.add(Mediana);
+        MenuFiltros.add(jSeparator1);
+
+        Roberts.setText("Roberts");
+        Roberts.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RobertsActionPerformed(evt);
+            }
+        });
+        MenuFiltros.add(Roberts);
+
+        Prewitt.setText("Prewitt");
+        Prewitt.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                PrewittActionPerformed(evt);
+            }
+        });
+        MenuFiltros.add(Prewitt);
 
         MenuBar.add(MenuFiltros);
 
@@ -1180,6 +1206,82 @@ public class ImageEditor extends javax.swing.JFrame {
         img = imgTemp;
     }
 
+    private void PrewittController(int orientation){
+        BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+        BufferedImage imgTemp2 = null;
+        BufferedImage imgTemp3 = null;
+        BufferedImage imgTemp4 = null;
+        int i;
+        int j;
+        int[] vals;
+        Kernel krnl = null;
+        Kernel krnl1, krnl2, krnl3, krnl4;
+
+        if(orientation == 5){
+            imgTemp2 = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+            imgTemp3 = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+            imgTemp4 = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+        }
+        vals = new int[]{-1, 0, 1, -1, 0, 1, -1, 0, 1};
+        krnl1 = new Kernel(vals, 3, 3, 1, 1);           //"Vertical |"
+        vals = new int[]{-1, -1, -1, 0, 0, 0, 1, 1, 1};
+        krnl2 = new Kernel(vals, 3, 3, 1, 1);           //"Horizontal -"
+        vals = new int[]{-1, -1, 0, -1, 0, 1, 0, 1, 1};
+        krnl3 = new Kernel(vals, 3, 3, 1, 1);           //"Diagonal /":
+        vals = new int[]{0, 1, 1, -1, 0, 1, -1, -1, 0};
+        krnl4 = new Kernel(vals, 3, 3, 1, 1);           //"Diagonal \\"
+        switch(orientation){
+            case 1:
+                krnl = krnl1;
+                break;
+            case 2:
+                krnl = krnl2;
+                break;
+            case 3:
+                krnl = krnl3;
+                break;
+            case 4:
+                krnl = krnl4;
+        }
+        // These ArrayLists serve as sliding windows per color channel (Horizontal).
+        ArrayList<ArrayList<Integer>> red = new ArrayList();
+        ArrayList<ArrayList<Integer>> green = new ArrayList();
+        ArrayList<ArrayList<Integer>> blue = new ArrayList();
+
+        for(i = 0; i < height; i++){
+            initWindows(krnl1, 0, i, red, green, blue);
+            for(j = 0; j < width; j++){
+                int newPixelValue1 = 0;
+                int newPixelValue2 = 0;
+                int newPixelValue3 = 0;
+                int newPixelValue4 = 0;
+
+                if(orientation == 5){
+                    try{
+                        newPixelValue1 = convoluteOnePixel(krnl1, red, green, blue, false);
+                        newPixelValue2 = convoluteOnePixel(krnl2, red, green, blue, false);
+                        newPixelValue3 = convoluteOnePixel(krnl3, red, green, blue, false);
+                        newPixelValue4 = convoluteOnePixel(krnl4, red, green, blue, false);
+                    }catch(RuntimeException re){
+                        throw new RuntimeException("No se pudo aplicar filtro Prewitt.",re);
+                    }
+
+                    int newPixelVal = Math.max(newPixelValue1, Math.max(newPixelValue2, Math.max(newPixelValue3, newPixelValue4)));
+                    imgTemp.setRGB(j, i, newPixelVal);
+                }else{
+                    try{
+                        newPixelValue1 = convoluteOnePixel(krnl, red, green, blue, false);
+                    }catch(RuntimeException re){
+                        throw new RuntimeException("No se pudo aplicar filtro Prewitt.",re);
+                    }
+                    imgTemp.setRGB(j, i, newPixelValue1);
+                }
+                slideRightWindowsOnePixel(krnl1, j, i, red, green, blue);
+            }
+        }
+        img = imgTemp;
+    }
+
     private int medianOperationOnePixel(ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
         ArrayList<Integer> tmpR = new ArrayList();
         ArrayList<Integer> tmpG = new ArrayList();
@@ -1838,6 +1940,88 @@ public class ImageEditor extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_MedianaActionPerformed
 
+    private void PrewittActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_PrewittActionPerformed
+       if (img != null){
+            // Preparing and displaying components of the Filter's Options GUI
+            JRadioButton VButton = new JRadioButton("Vertical |");
+            JRadioButton HButton = new JRadioButton("Horizontal -");
+            JRadioButton DiagRightButton = new JRadioButton("Diagonal /"); // DiagRight because the upper part is the right one
+            JRadioButton DiagLeftButton = new JRadioButton("Diagonal \\");
+            JRadioButton AllButton = new JRadioButton("Todas");
+            ButtonGroup orientationBGroup = new ButtonGroup();
+            JPanel panel1 = new JPanel();
+            JPanel panel2 = new JPanel();
+            JPanel panel3 = new JPanel();
+
+            orientationBGroup.add(VButton);
+            orientationBGroup.add(HButton);
+            orientationBGroup.add(DiagRightButton);
+            orientationBGroup.add(DiagLeftButton);
+            orientationBGroup.add(AllButton);
+            AllButton.setSelected(true);         // "Todas" is the default button.
+            panel1.add(VButton);
+            panel1.add(HButton);
+            panel2.add(DiagRightButton);
+            panel2.add(DiagLeftButton);
+            panel3.add(AllButton);
+
+            Object[] params = {"Orientación:", panel1, panel2, panel3};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                                                        params,
+                                                        "Opciones de Filtro Prewitt",
+                                                        JOptionPane.YES_NO_OPTION,
+                                                        JOptionPane.QUESTION_MESSAGE,
+                                                        null,           // Don't use a custom Icon
+                                                        options,        // The strings of buttons
+                                                        options[0]);    // Default button title
+            // Getting the orientation from the radiobutton group.
+            int orientation;
+            switch(getSelectedButtonText(orientationBGroup)){
+                case "Vertical |":
+                    orientation = 1;
+                    break;
+                case "Horizontal -":
+                    orientation = 2;
+                    break;
+                case "Diagonal /":
+                    orientation = 3;
+                    break;
+                case "Diagonal \\":
+                    orientation = 4;
+                    break;
+                default:
+                    orientation = 5;
+            }
+
+            //If the operation was canceled do nothing.
+            if (result == JOptionPane.NO_OPTION){
+                return;
+            }
+            try{
+                // Passing dimensions to the controller function.
+                PrewittController( orientation );
+            }catch(RuntimeException re){
+                JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
+                return;
+            }
+            // Changing the image format since binary becomes grayscale after a blur operation.
+            if(format == 1){
+                format = 2; // grayscale
+                maxColor = 255;
+            }
+            refreshImageDisplayed(true);
+            // Updating status bar.
+            Estado.setText("Aplicando filtro de Prewitt | Colores Únicos en imagen: " + colorsCounter);
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_PrewittActionPerformed
+
+    private void RobertsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RobertsActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_RobertsActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -1884,7 +2068,9 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JMenu MenuEditar;
     private javax.swing.JMenu MenuFiltros;
     private javax.swing.JMenuItem Negativo;
+    private javax.swing.JMenuItem Prewitt;
     private javax.swing.JMenuItem Readme;
+    private javax.swing.JMenuItem Roberts;
     private javax.swing.JMenu Rotacion;
     private javax.swing.JMenuItem Rotar90CCW;
     private javax.swing.JMenuItem Rotar90CW;
@@ -1894,7 +2080,10 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JMenuItem SuavizadoPromedio;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JScrollPane jScrollPane;
+    private javax.swing.JPopupMenu.Separator jSeparator1;
     // End of variables declaration//GEN-END:variables
 
 }
