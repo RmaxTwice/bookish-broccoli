@@ -137,6 +137,7 @@ public class ImageEditor extends javax.swing.JFrame {
         Mediana = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         Roberts = new javax.swing.JMenuItem();
+        Sobel = new javax.swing.JMenuItem();
         Prewitt = new javax.swing.JMenuItem();
         Ayuda = new javax.swing.JMenu();
         Readme = new javax.swing.JMenuItem();
@@ -350,6 +351,14 @@ public class ImageEditor extends javax.swing.JFrame {
             }
         });
         MenuFiltros.add(Roberts);
+
+        Sobel.setText("Sobel");
+        Sobel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                SobelActionPerformed(evt);
+            }
+        });
+        MenuFiltros.add(Sobel);
 
         Prewitt.setText("Prewitt");
         Prewitt.addActionListener(new java.awt.event.ActionListener() {
@@ -904,6 +913,41 @@ public class ImageEditor extends javax.swing.JFrame {
         return (255<<24) | (rTotal<<16) | (gTotal<<8) | bTotal;
     }
 
+    private int convolveAndCompareOnePixel(Kernel kx, Kernel ky, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b) throws RuntimeException{
+        int rx = 0;
+        int ry = 0;
+        int rTotal = 0;
+        int gx = 0;
+        int gy = 0;
+        int gTotal = 0;
+        int bx = 0;
+        int by = 0;
+        int bTotal = 0;
+        // If all matrices and the kernel have the same dimensions then we can convolute.
+        if(kx.getHeight() == ky.getHeight() && kx.getHeight() == r.size() && r.size() == g.size() && g.size() == b.size() && kx.getWidth() == ky.getWidth() && kx.getWidth() == r.get(0).size() && r.get(0).size() == g.get(0).size() && g.get(0).size() == b.get(0).size()){
+            for(int i = 0 ; i < kx.getHeight(); i++){
+                for(int j = 0 ; j < kx.getWidth(); j++){
+                    rx += r.get(i).get(j) * kx.getValue(j, i);
+                    gx += g.get(i).get(j) * kx.getValue(j, i);
+                    bx += b.get(i).get(j) * kx.getValue(j, i);
+                    ry += r.get(i).get(j) * ky.getValue(j, i);
+                    gy += g.get(i).get(j) * ky.getValue(j, i);
+                    by += b.get(i).get(j) * ky.getValue(j, i);
+                }
+            }
+            rTotal = Math.abs(rx)+  Math.abs(ry);
+            gTotal = Math.abs(gx)+  Math.abs(gy);
+            bTotal = Math.abs(bx)+  Math.abs(by);
+            rTotal = clampColorValue(rTotal);
+            gTotal = clampColorValue(gTotal);
+            bTotal = clampColorValue(bTotal);
+        }else{
+        // Error: Can't calculate convolution.
+          throw new RuntimeException("Error en las dimensiones de la convolución.");  //JOptionPane.showMessageDialog(this, "¡ERROR: Error en la convolusion!");
+        }
+        return (255<<24) | (rTotal<<16) | (gTotal<<8) | bTotal;
+    }
+
     /**
     * Initialize the 3 color channels sliding windows(matrices) according to a given position (x,y) of an image.
     *
@@ -1274,6 +1318,58 @@ public class ImageEditor extends javax.swing.JFrame {
         img = imgTemp;
     }
 
+    private void SobelController(int orientation){
+        BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+        int i;
+        int j;
+        int[] vals;
+        Kernel krnl = null;
+        Kernel krnl1, krnl2;
+
+        vals = new int[]{-1, 0, 1, -2, 0, 2, -1, 0, 1};
+        krnl1 = new Kernel(vals, 3, 3, 1, 1);           //"Vertical"
+        vals = new int[]{-1, -2, -1, 0, 0, 0, 1, 2, 1};
+        krnl2 = new Kernel(vals, 3, 3, 1, 1);           //"Horizontal"
+        switch(orientation){
+            case 1:
+                krnl = krnl1;
+                break;
+            case 2:
+                krnl = krnl2;
+                break;
+        }
+        // These ArrayLists serve as sliding windows per color channel (Horizontal).
+        ArrayList<ArrayList<Integer>> red = new ArrayList();
+        ArrayList<ArrayList<Integer>> green = new ArrayList();
+        ArrayList<ArrayList<Integer>> blue = new ArrayList();
+
+        for(i = 0; i < height; i++){
+            initWindows(krnl1, 0, i, red, green, blue);
+            for(j = 0; j < width; j++){
+                int newPixelVal = 0;
+
+                if(orientation == 5){
+                    try{
+                        newPixelVal = convolveAndCompareOnePixel(krnl2, krnl1, red, green, blue);
+                        //newPixelValue2 = convolveOnePixel(krnl2, red, green, blue, false);
+                    }catch(RuntimeException re){
+                        throw new RuntimeException("No se pudo aplicar filtro Sobel.",re);
+                    }
+                    imgTemp.setRGB(j, i, newPixelVal);
+                }else{
+                    try{
+                        newPixelVal = convolveOnePixel(krnl, red, green, blue, false);
+                    }catch(RuntimeException re){
+                        throw new RuntimeException("No se pudo aplicar filtro Sobel.",re);
+                    }
+                    imgTemp.setRGB(j, i, newPixelVal);
+                }
+                slideRightWindowsOnePixel(krnl1, j, i, red, green, blue);
+            }
+        }
+        img = imgTemp;
+    }
+
     private void RobertsController(){
         BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
         int i;
@@ -1294,20 +1390,14 @@ public class ImageEditor extends javax.swing.JFrame {
         for(i = 0; i < height; i++){
             initWindows(krnl1, 0, i, red, green, blue);
             for(j = 0; j < width; j++){
-                int newPixelVal = 0;
-                int newPixelValue1 = 0;
-                int newPixelValue2 = 0;
+                int newPixelVal;
 
                 try{
-                    newPixelValue1 = convolveOnePixel(krnl1, red, green, blue, false);
-                    newPixelValue2 = convolveOnePixel(krnl2, red, green, blue, false);
+                    newPixelVal = convolveAndCompareOnePixel(krnl2, krnl1, red, green, blue);
+                    //newPixelValue2 = convolveOnePixel(krnl2, red, green, blue, false);
                 }catch(RuntimeException re){
                     throw new RuntimeException("No se pudo aplicar filtro Prewitt.",re);
                 }
-
-                //newPixelVal = (int)Math.sqrt((newPixelValue1 * newPixelValue1 + newPixelValue2 * newPixelValue2)) ;
-                //newPixelVal = clampColorValue(newPixelVal);
-                newPixelVal = Math.max(newPixelValue1, newPixelValue2);
                 imgTemp.setRGB(j, i, newPixelVal);
 
                 slideRightWindowsOnePixel(krnl1, j, i, red, green, blue);
@@ -1975,7 +2065,7 @@ public class ImageEditor extends javax.swing.JFrame {
     }//GEN-LAST:event_MedianaActionPerformed
 
     private void PrewittActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_PrewittActionPerformed
-       if (img != null){
+        if (img != null){
             // Preparing and displaying components of the Filter's Options GUI
             JRadioButton VButton = new JRadioButton("Vertical |");
             JRadioButton HButton = new JRadioButton("Horizontal -");
@@ -2074,6 +2164,70 @@ public class ImageEditor extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_RobertsActionPerformed
 
+    private void SobelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SobelActionPerformed
+        if (img != null){
+            // Preparing and displaying components of the Filter's Options GUI
+            JRadioButton VButton = new JRadioButton("Vertical");
+            JRadioButton HButton = new JRadioButton("Horizontal");
+            JRadioButton AllButton = new JRadioButton("Ambas");
+            ButtonGroup orientationBGroup = new ButtonGroup();
+            JPanel panel1 = new JPanel();
+
+            orientationBGroup.add(VButton);
+            orientationBGroup.add(HButton);
+            orientationBGroup.add(AllButton);
+            AllButton.setSelected(true);         // "Todas" is the default button.
+            panel1.add(VButton);
+            panel1.add(HButton);
+            panel1.add(AllButton);
+
+            Object[] params = {"Orientación:", panel1};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                                                        params,
+                                                        "Opciones de Filtro Sobel",
+                                                        JOptionPane.YES_NO_OPTION,
+                                                        JOptionPane.QUESTION_MESSAGE,
+                                                        null,           // Don't use a custom Icon
+                                                        options,        // The strings of buttons
+                                                        options[0]);    // Default button title
+            // Getting the orientation from the radiobutton group.
+            int orientation;
+            switch(getSelectedButtonText(orientationBGroup)){
+                case "Vertical":
+                    orientation = 1;
+                    break;
+                case "Horizontal":
+                    orientation = 2;
+                    break;
+                default:
+                    orientation = 5;
+            }
+
+            //If the operation was canceled do nothing.
+            if (result == JOptionPane.NO_OPTION){
+                return;
+            }
+            try{
+                // Passing dimensions to the controller function.
+                SobelController( orientation );
+            }catch(RuntimeException re){
+                JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
+                return;
+            }
+            // Changing the image format since binary becomes grayscale after a blur operation.
+            if(format == 1){
+                format = 2; // grayscale
+                maxColor = 255;
+            }
+            refreshImageDisplayed(true);
+            // Updating status bar.
+            Estado.setText("Aplicando filtro de Sobel | Colores Únicos en imagen: " + colorsCounter);
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_SobelActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -2128,6 +2282,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JMenuItem Rotar90CW;
     private javax.swing.JPanel ScrollPanePanel;
     private javax.swing.JMenuItem SinCompresion;
+    private javax.swing.JMenuItem Sobel;
     private javax.swing.JMenuItem SuavizadoGaussiano;
     private javax.swing.JMenuItem SuavizadoPromedio;
     private javax.swing.JMenu jMenu1;
