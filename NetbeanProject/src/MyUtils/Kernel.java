@@ -45,31 +45,35 @@ public class Kernel {
             this.values = null;
         }
     }
-    
+
     public int getValue(int x, int y){
         if(x < 0 || y < 0 || x >= this.width || y >= this.height ){
             return -999999;
         }
         return this.values.get(y).get(x);
     }
-    
+
     public int getWidth(){
         return this.width;
     }
-    
+
     public int getHeight(){
         return this.height;
     }
-    
+
     public int getPivotX(){
         return this.pivotX;
     }
-    
+
     public int getPivotY(){
         return this.pivotY;
     }
-    
+
     public int getSum(){
         return this.sumValues;
+    }
+
+    public void setSum(int s){
+        this.sumValues = s;
     }
 }

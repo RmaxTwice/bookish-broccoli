@@ -29,6 +29,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import MyUtils.*;
 import java.util.Arrays;
+import java.util.Collections;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 
@@ -131,6 +132,7 @@ public class ImageEditor extends javax.swing.JFrame {
         MenuFiltros = new javax.swing.JMenu();
         SuavizadoGaussiano = new javax.swing.JMenuItem();
         SuavizadoPromedio = new javax.swing.JMenuItem();
+        Mediana = new javax.swing.JMenuItem();
         Ayuda = new javax.swing.JMenu();
         Readme = new javax.swing.JMenuItem();
         About = new javax.swing.JMenuItem();
@@ -322,6 +324,14 @@ public class ImageEditor extends javax.swing.JFrame {
             }
         });
         MenuFiltros.add(SuavizadoPromedio);
+
+        Mediana.setText("Mediana");
+        Mediana.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MedianaActionPerformed(evt);
+            }
+        });
+        MenuFiltros.add(Mediana);
 
         MenuBar.add(MenuFiltros);
 
@@ -1145,6 +1155,66 @@ public class ImageEditor extends javax.swing.JFrame {
         img = imgTemp;
     }
     
+    private void medianFilterController(int w, int h){
+        BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+        int i;
+        int j;
+
+        Kernel krnl = getAverageKernel(w, h);
+        // These ArrayLists serve as sliding windows per color channel (Horizontal).
+        ArrayList<ArrayList<Integer>> red = new ArrayList();
+        ArrayList<ArrayList<Integer>> green = new ArrayList();
+        ArrayList<ArrayList<Integer>> blue = new ArrayList();
+
+        for(i = 0; i < height; i++){
+            initWindows(krnl, 0, i, red, green, blue);
+            for(j = 0; j < width; j++){
+                int newPixelValue = medianOperationOnePixel(red, green, blue);
+                imgTemp.setRGB(j, i, newPixelValue);
+                slideRightWindowsOnePixel(krnl, j, i, red, green, blue);
+            }
+        }
+        img = imgTemp;
+    }
+
+    private int medianOperationOnePixel(ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
+        ArrayList<Integer> tmpR = new ArrayList();
+        ArrayList<Integer> tmpG = new ArrayList();
+        ArrayList<Integer> tmpB = new ArrayList();
+        boolean odd = true;
+        int rTotal;
+        int gTotal;
+        int bTotal;
+
+        if(r.size()*r.get(0).size() % 2 == 0){ // If h * w of the windows is an even number...
+            odd = false;
+        }
+        for(int i = 0; i < r.size(); i++){
+            tmpR.addAll(r.get(i));
+            tmpG.addAll(g.get(i));
+            tmpB.addAll(b.get(i));
+
+            Collections.sort(tmpR);
+            Collections.sort(tmpG);
+            Collections.sort(tmpB);
+        }
+        int indx = tmpR.size() / 2;
+        if(odd){
+              rTotal = tmpR.get(indx);
+              gTotal = tmpG.get(indx);
+              bTotal = tmpB.get(indx);
+        }else{
+              rTotal = (tmpR.get(indx) + tmpR.get(indx-1)) / 2;
+              gTotal = (tmpG.get(indx) + tmpG.get(indx-1)) / 2;
+              bTotal = (tmpB.get(indx) + tmpB.get(indx-1)) / 2;
+        }
+        rTotal = clampColorValue(rTotal);
+        gTotal = clampColorValue(gTotal);
+        bTotal = clampColorValue(bTotal);
+
+        return (255<<24) | (rTotal<<16) | (gTotal<<8) | bTotal;
+    }
+
     //Function to set parameters of B&W slider
     /**private JSlider getSlider(JOptionPane SliderPane) {
         JSlider sliderAux = new JSlider(0, 255);
@@ -1715,6 +1785,56 @@ public class ImageEditor extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_SuavizadoPromedioActionPerformed
 
+    private void MedianaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MedianaActionPerformed
+        if (img != null){
+            // Preparing and displaying components of the Filter's Options GUI
+            int w;
+            int h;
+            SpinnerNumberModel model1 = new SpinnerNumberModel(3, 1, 7, 1);  // Initial value, min, max, step
+            SpinnerNumberModel model2 = new SpinnerNumberModel(3, 1, 7, 1);
+            JSpinner spinWidth = new JSpinner(model1);
+            JSpinner spinHeight = new JSpinner(model2);
+            JLabel labelWidth = new JLabel("Ancho:");
+            JLabel labelHeight = new JLabel("Alto:");
+            JPanel spinPanel = new JPanel();
+
+            spinPanel.add(labelWidth);
+            spinPanel.add(spinWidth);
+            spinPanel.add(labelHeight);
+            spinPanel.add(spinHeight);
+
+            Object[] params = {spinPanel};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                                                        params,
+                                                        "Opciones del Filtro de la Mediana",
+                                                        JOptionPane.YES_NO_OPTION,
+                                                        JOptionPane.QUESTION_MESSAGE,
+                                                        null,           // Don't use a custom Icon
+                                                        options,        // The strings of buttons
+                                                        options[0]);    // Default button title
+            w = (int)spinWidth.getValue();
+            h = (int)spinHeight.getValue();
+            if ((w == 1 && h == 1) || result == JOptionPane.NO_OPTION){
+                // If the kernel is 1x1 the image ends up the same or if the user cancels de action
+                // return at once.
+                return;
+            }
+            // Passing dimensions to the controller function.
+            medianFilterController(w, h);
+            // Changing the image format since binary becomes grayscale after a blur operation.
+            if(format == 1){
+                format = 2; // grayscale
+                maxColor = 255;
+            }
+            refreshImageDisplayed(true);
+            // Updating status bar.
+            Estado.setText("Aplicando filtro Mediana | Colores Únicos en imagen: " + colorsCounter);
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_MedianaActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -1755,6 +1875,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JLabel Estado;
     private javax.swing.JMenuItem GuardarBMP;
     private javax.swing.JMenu GuardarNetpbm;
+    private javax.swing.JMenuItem Mediana;
     private javax.swing.JMenu MenuArchivo;
     private javax.swing.JMenuBar MenuBar;
     private javax.swing.JMenu MenuEditar;
