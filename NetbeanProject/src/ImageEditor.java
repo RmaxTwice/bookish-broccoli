@@ -847,8 +847,9 @@ public class ImageEditor extends javax.swing.JFrame {
     * @param r Reference of Red color's sliding window(matrix).
     * @param g Reference of Green color's sliding window(matrix).
     * @param b Reference of Blue color's sliding window(matrix).
+    * @param normal indicates if the result should be averaged/normalized.
     */
-    private int convoluteOnePixel(Kernel k, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b) throws RuntimeException{
+    private int convoluteOnePixel(Kernel k, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b, boolean normal) throws RuntimeException{
         int rTotal = 0;
         int gTotal = 0;
         int bTotal = 0;
@@ -862,11 +863,13 @@ public class ImageEditor extends javax.swing.JFrame {
                 }
             }
 
-            rTotal /= k.getSum();
+            if(normal){
+                rTotal /= k.getSum();
+                gTotal /= k.getSum();
+                bTotal /= k.getSum();
+            }
             rTotal = clampColorValue(rTotal);
-            gTotal /= k.getSum();
             gTotal = clampColorValue(gTotal);
-            bTotal /= k.getSum();
             bTotal = clampColorValue(bTotal);
         }else{
         // Error: Can't calculate convolution.
@@ -992,7 +995,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 for(j = 0; j < width; j++){
                     int newPixelValue = 0;
                     try{
-                        newPixelValue = convoluteOnePixel(krnlHoriz, red, green, blue);
+                        newPixelValue = convoluteOnePixel(krnlHoriz, red, green, blue, true);
                     }catch(RuntimeException re){
                         throw new RuntimeException("No se pudo aplicar filtro gaussiano.",re);
                     }
@@ -1016,7 +1019,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 for(j = 0; j < width; j++){
                     int newPixelValue = 0;
                     try{
-                        newPixelValue = convoluteOnePixel(krnlVert, red, green, blue);
+                        newPixelValue = convoluteOnePixel(krnlVert, red, green, blue, true);
                     }catch(RuntimeException re){
                         throw new RuntimeException("No se pudo aplicar filtro gaussiano.",re);
                     }
@@ -1143,7 +1146,7 @@ public class ImageEditor extends javax.swing.JFrame {
             for(j = 0; j < width; j++){
                 int newPixelValue = 0;
                 try{
-                    newPixelValue = convoluteOnePixel(krnl, red, green, blue);
+                    newPixelValue = convoluteOnePixel(krnl, red, green, blue, true);
                 }catch(RuntimeException re){
                     throw new RuntimeException("No se pudo aplicar filtro promedio.",re);
                 }
