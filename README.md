@@ -47,16 +47,16 @@ The application must have the following features implemented:
 - **(Pending)** Contrast and Brightness adjustment.
 - Dynamic Thresholding
 - **(Pending)** Scaling and free rotation (no angle constraint).
-- **(Pending)** Zoom in & Zoom out.
+- *(Refactor possible)*Zoom in & Zoom out.
 - *(Refactor possible)* Gradient calculation using Sobel, Roberts and Prewitt filters.
-- **(Pending)** Average, median and Laplacian of Gaussian (LoG) filters.
-- **(Pending)** Apply a custom kernel filter to the image, there should be a simple and elegant way to choose the size and values of it. (Said kernel must be minimun 2x1 or 1x2 to a maximun of 7x7).
+- *(Refactor possible)* Average, median and Laplacian of Gaussian (LoG) filters.
+- *(Refactor possible)* Apply a custom kernel filter to the image, there should be a simple and elegant way to choose the size and values of it. (Said kernel must be minimun 2x1 or 1x2 to a maximun of 7x7).
 - **(Optional & Pending)** Thread based acceleration of the application in java, will only be taken into account if the rest of the features were successfully implemented.
 
 
 ### Future Ideas / Observations
 - **(Pending)** Real-time image change while selecting threshold dynamically.
-
+- **(Pending)** Super-Sampling in Scaling operation.
 *(WIP)*
 
 
