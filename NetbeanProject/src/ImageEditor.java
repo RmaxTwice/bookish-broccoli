@@ -113,6 +113,7 @@ public class ImageEditor extends javax.swing.JFrame {
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
+        jMenu2 = new javax.swing.JMenu();
         ScrollPanePanel = new javax.swing.JPanel();
         jScrollPane = new javax.swing.JScrollPane();
         BarraEstadoPanel = new javax.swing.JPanel();
@@ -126,15 +127,17 @@ public class ImageEditor extends javax.swing.JFrame {
         SinCompresion = new javax.swing.JMenuItem();
         CompresionRLE = new javax.swing.JMenuItem();
         MenuEditar = new javax.swing.JMenu();
-        Negativo = new javax.swing.JMenuItem();
-        BlancoNegro = new javax.swing.JMenuItem();
-        EscalaDeGrises = new javax.swing.JMenuItem();
         Rotacion = new javax.swing.JMenu();
         Rotar90CW = new javax.swing.JMenuItem();
         Rotar90CCW = new javax.swing.JMenuItem();
+        Escalamiento = new javax.swing.JMenuItem();
         MenuVer = new javax.swing.JMenu();
         Zoom = new javax.swing.JMenuItem();
         MenuFiltros = new javax.swing.JMenu();
+        ColorMenu = new javax.swing.JMenu();
+        Negativo = new javax.swing.JMenuItem();
+        EscalaDeGrises = new javax.swing.JMenuItem();
+        BlancoNegro = new javax.swing.JMenuItem();
         SuavizadoMenu = new javax.swing.JMenu();
         SuavizadoGaussiano = new javax.swing.JMenuItem();
         SuavizadoPromedio = new javax.swing.JMenuItem();
@@ -158,6 +161,8 @@ public class ImageEditor extends javax.swing.JFrame {
         jMenuItem2.setText("jMenuItem2");
 
         jMenuItem3.setText("jMenuItem3");
+
+        jMenu2.setText("jMenu2");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Editor de Imagenes | by Raquel Escalante & Rafael Vasquez");
@@ -274,33 +279,6 @@ public class ImageEditor extends javax.swing.JFrame {
 
         MenuEditar.setText("Editar");
 
-        Negativo.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
-        Negativo.setText("Negativo");
-        Negativo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                NegativoActionPerformed(evt);
-            }
-        });
-        MenuEditar.add(Negativo);
-
-        BlancoNegro.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_MASK));
-        BlancoNegro.setText("Blanco y Negro");
-        BlancoNegro.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                BlancoNegroActionPerformed(evt);
-            }
-        });
-        MenuEditar.add(BlancoNegro);
-
-        EscalaDeGrises.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.CTRL_MASK));
-        EscalaDeGrises.setText("Escala de Grises");
-        EscalaDeGrises.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                EscalaDeGrisesActionPerformed(evt);
-            }
-        });
-        MenuEditar.add(EscalaDeGrises);
-
         Rotacion.setText("Rotación");
 
         Rotar90CW.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_RIGHT, java.awt.event.InputEvent.CTRL_MASK));
@@ -323,10 +301,19 @@ public class ImageEditor extends javax.swing.JFrame {
 
         MenuEditar.add(Rotacion);
 
+        Escalamiento.setText("Escalamiento");
+        Escalamiento.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                EscalamientoActionPerformed(evt);
+            }
+        });
+        MenuEditar.add(Escalamiento);
+
         MenuBar.add(MenuEditar);
 
         MenuVer.setText("Ver");
 
+        Zoom.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.ALT_MASK));
         Zoom.setText("Aplicar Zoom");
         Zoom.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -339,7 +326,38 @@ public class ImageEditor extends javax.swing.JFrame {
 
         MenuFiltros.setText("Filtros");
 
-        SuavizadoMenu.setText("Suavizados");
+        ColorMenu.setText("Color");
+
+        Negativo.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
+        Negativo.setText("Negativo");
+        Negativo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                NegativoActionPerformed(evt);
+            }
+        });
+        ColorMenu.add(Negativo);
+
+        EscalaDeGrises.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.CTRL_MASK));
+        EscalaDeGrises.setText("Escala de Grises");
+        EscalaDeGrises.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                EscalaDeGrisesActionPerformed(evt);
+            }
+        });
+        ColorMenu.add(EscalaDeGrises);
+
+        BlancoNegro.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_MASK));
+        BlancoNegro.setText("Blanco y Negro");
+        BlancoNegro.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BlancoNegroActionPerformed(evt);
+            }
+        });
+        ColorMenu.add(BlancoNegro);
+
+        MenuFiltros.add(ColorMenu);
+
+        SuavizadoMenu.setText("Suavizado");
 
         SuavizadoGaussiano.setText("Suavizado Gaussiano");
         SuavizadoGaussiano.addActionListener(new java.awt.event.ActionListener() {
@@ -509,9 +527,26 @@ public class ImageEditor extends javax.swing.JFrame {
         // Repainting the scroll pane to update the changes
         jScrollPane.repaint();
 
-        if(count)
+        if(count){
             // Recounting colors
             countUniqueColors();
+        }
+    }
+
+    private int bilinealInterpolation(int colorNW, int colorNE, int colorSW, int colorSE, float a, float b){
+        int NWNEr = (int)((1 - a) * ((colorNW >> 16) & 0xff) + a * ((colorNE >> 16) & 0xff));
+        int NWNEg = (int)((1 - a) * ((colorNW >> 8) & 0xff) + a * ((colorNE >> 8) & 0xff));
+        int NWNEb = (int)((1 - a) * (colorNW & 0xff) + a * (colorNE & 0xff));
+
+        int SWSEr = (int)((1 - a) * ((colorSW >> 16) & 0xff) + a * ((colorSE >> 16) & 0xff));
+        int SWSEg = (int)((1 - a) * ((colorSW >> 8) & 0xff) + a * ((colorSE >> 8) & 0xff));
+        int SWSEb = (int)((1 - a) * (colorSW & 0xff) + a * (colorSE & 0xff));
+
+        int rTotal = clampColorValue((int)((1 - a) * NWNEr  + a * SWSEr));
+        int gTotal = clampColorValue((int)((1 - a) * NWNEg  + a * SWSEg));
+        int bTotal = clampColorValue((int)((1 - a) * NWNEb  + a * SWSEb));
+
+        return (255<<24) | (rTotal<<16) | (gTotal<<8) | bTotal;
     }
 
     private Kernel generateCustomKernel(int w, int h){
@@ -1595,6 +1630,62 @@ public class ImageEditor extends javax.swing.JFrame {
         imgZoom = imgTemp;
     }
 
+    private void ScalingController(int wPctg, int hPctg){
+        float scalingFactorX = (float)wPctg / 100;
+        float scalingFactorY = (float)hPctg / 100;
+        int newWidth = Math.round(width * scalingFactorX);
+        int newHeight = Math.round(height * scalingFactorY);
+        BufferedImage imgTemp = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_3BYTE_BGR);
+        int  pvalue;
+        float ycoord,xcoord;
+        int nwX, nwY, neX, neY, swX, swY, seX, seY;
+        float a, b;
+        int colorNW, colorNE, colorSW, colorSE;
+
+        for(int i = 0; i < newHeight; i++){
+            for(int j = 0; j < newWidth; j++){
+                // USING NEAREST NEIGHBOR OR PIXEL REPLICATION
+                ycoord = i / scalingFactorY;
+                xcoord = j / scalingFactorX;
+                pvalue = img.getRGB((int)xcoord, (int)ycoord);
+                imgTemp.setRGB(j, i, pvalue);
+                // USING BILINEAR INTERPOLATION
+//                nwX = (int)(j / scalingFactorX);
+//                nwY = (int)(i / scalingFactorY);
+//                colorNW = img.getRGB(nwX, nwY);
+//                if(nwX + 1 < width){
+//                    neX = nwX + 1;
+//                    a = (neX - nwX) * scalingFactorX;
+//                    a = j / a;
+//                }else{
+//                    neX =nwX;
+//                    a = 1;
+//                }
+//                neY = nwY;
+//                colorNE = img.getRGB(neX, neY);
+//                swX = nwX;
+//                if(nwY + 1 < height){
+//                    swY = nwY + 1;
+//                    b = (swY - nwY) * scalingFactorY;
+//                    b = i / b;
+//                }else{
+//                    swY = nwY;
+//                    b = 1;
+//                }
+//                colorSW = img.getRGB(swX, swY);
+//                seX = neX;
+//                seY = swY;
+//                colorSE = img.getRGB(seX, seY);
+//
+//                pvalue = bilinealInterpolation(colorNW, colorNE, colorSW, colorSE, a, b);
+//                imgTemp.setRGB(j, i, pvalue);
+            }
+        }
+        img = imgTemp;
+        width = img.getWidth();
+        height = img.getHeight();
+    }
+
     private int medianOperationOnePixel(ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
         ArrayList<Integer> tmpR = new ArrayList();
         ArrayList<Integer> tmpG = new ArrayList();
@@ -2487,7 +2578,7 @@ public class ImageEditor extends javax.swing.JFrame {
             }
             refreshImageDisplayed(true, true);
             // Updating status bar.
-            Estado.setText("Aplicando Suavizado Promedio | Colores Únicos en imagen: " + colorsCounter);
+            Estado.setText("Aplicando Filtro Personalizado | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -2495,10 +2586,10 @@ public class ImageEditor extends javax.swing.JFrame {
 
     private void ZoomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ZoomActionPerformed
         if (img != null){
-            SpinnerNumberModel model1 = new SpinnerNumberModel(100, 1, 500, 1);  // Initial value, min, max, step
+            SpinnerNumberModel model1 = new SpinnerNumberModel(100, 1, 1000, 1);  // Initial value, min, max, step
             JSpinner spinZoomFactor = new JSpinner(model1);
             JLabel labelZoomFactor = new JLabel("Zoom de Imagen original:");
-            JLabel labelPercentange = new JLabel(" % (1-500)");
+            JLabel labelPercentange = new JLabel(" % (1-1000)");
             JPanel spinPanel = new JPanel();
 
             spinPanel.add(labelZoomFactor);
@@ -2527,8 +2618,54 @@ public class ImageEditor extends javax.swing.JFrame {
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
-        
     }//GEN-LAST:event_ZoomActionPerformed
+
+    private void EscalamientoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EscalamientoActionPerformed
+        if (img != null){
+            SpinnerNumberModel model1 = new SpinnerNumberModel(100, 1, 1000, 1);  // Initial value, min, max, step
+            SpinnerNumberModel model2 = new SpinnerNumberModel(100, 1, 1000, 1);  // Initial value, min, max, step
+            JSpinner spinZoomFactorX = new JSpinner(model1);
+            JSpinner spinZoomFactorY = new JSpinner(model2);
+            JLabel labelZoomFactorX = new JLabel("Ancho:");
+            JLabel labelZoomFactorY = new JLabel("  Alto:");
+            JLabel labelpctg1 = new JLabel(" %");
+            JLabel labelpctg2 = new JLabel(" %");
+            JLabel labelValidValues = new JLabel("(Valores válidos entre 1 y 1000)");
+            JPanel spinPanel1 = new JPanel();
+            JPanel spinPanel2 = new JPanel();
+
+            labelValidValues.setHorizontalAlignment(JLabel.CENTER);
+            spinPanel1.add(labelZoomFactorX);
+            spinPanel1.add(spinZoomFactorX);
+            spinPanel1.add(labelpctg1);
+            spinPanel2.add(labelZoomFactorY);
+            spinPanel2.add(spinZoomFactorY);
+            spinPanel2.add(labelpctg2);
+
+            Object[] params = {spinPanel1, spinPanel2, labelValidValues};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                                                        params,
+                                                        "Opciones de Escalamiento",
+                                                        JOptionPane.YES_NO_OPTION,
+                                                        JOptionPane.QUESTION_MESSAGE,
+                                                        null,           // Don't use a custom Icon
+                                                        options,        // The strings of buttons
+                                                        options[0]);    // Default button title
+            if (result == JOptionPane.NO_OPTION){
+                return;
+            }
+            if ((int)spinZoomFactorX.getValue() != 100 || (int)spinZoomFactorY.getValue() != 100){
+                ScalingController((int)spinZoomFactorX.getValue(), (int)spinZoomFactorY.getValue());
+                refreshImageDisplayed(true, true);
+            }else{
+                refreshImageDisplayed(false, true);
+            }
+            Estado.setText("Aplicando Escalamiento de " + (int)spinZoomFactorX.getValue() +"% x " + (int)spinZoomFactorY.getValue() + "% | Colores Únicos en imagen: " + colorsCounter);
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_EscalamientoActionPerformed
 
     /**
      * @param args the command line arguments
@@ -2565,9 +2702,11 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JPanel BarraEstado;
     private javax.swing.JPanel BarraEstadoPanel;
     private javax.swing.JMenuItem BlancoNegro;
+    private javax.swing.JMenu ColorMenu;
     private javax.swing.JMenuItem CompresionRLE;
     private javax.swing.JMenu DetectarBordesMenu;
     private javax.swing.JMenuItem EscalaDeGrises;
+    private javax.swing.JMenuItem Escalamiento;
     private javax.swing.JLabel Estado;
     private javax.swing.JMenuItem GuardarBMP;
     private javax.swing.JMenu GuardarNetpbm;
@@ -2594,6 +2733,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JMenuItem SuavizadoPromedio;
     private javax.swing.JMenuItem Zoom;
     private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
