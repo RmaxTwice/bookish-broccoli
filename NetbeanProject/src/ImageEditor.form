@@ -172,62 +172,86 @@
             <Property name="text" type="java.lang.String" value="Filtros"/>
           </Properties>
           <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="SuavizadoGaussiano">
+            <Menu class="javax.swing.JMenu" name="SuavizadoMenu">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Suavizado Gaussiano"/>
+                <Property name="text" type="java.lang.String" value="Suavizados"/>
               </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="SuavizadoGaussianoActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="SuavizadoPromedio">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Suavizado Promedio"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="SuavizadoPromedioActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="Mediana">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Mediana"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MedianaActionPerformed"/>
-              </Events>
-            </MenuItem>
+              <SubComponents>
+                <MenuItem class="javax.swing.JMenuItem" name="SuavizadoGaussiano">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Suavizado Gaussiano"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="SuavizadoGaussianoActionPerformed"/>
+                  </Events>
+                </MenuItem>
+                <MenuItem class="javax.swing.JMenuItem" name="SuavizadoPromedio">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Suavizado Promedio"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="SuavizadoPromedioActionPerformed"/>
+                  </Events>
+                </MenuItem>
+                <MenuItem class="javax.swing.JMenuItem" name="Mediana">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Mediana"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="MedianaActionPerformed"/>
+                  </Events>
+                </MenuItem>
+              </SubComponents>
+            </Menu>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator1">
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="Roberts">
+            <Menu class="javax.swing.JMenu" name="DetectarBordesMenu">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Roberts"/>
+                <Property name="text" type="java.lang.String" value="Deteccion de Bordes"/>
               </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RobertsActionPerformed"/>
-              </Events>
+              <SubComponents>
+                <MenuItem class="javax.swing.JMenuItem" name="Roberts">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Roberts"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="RobertsActionPerformed"/>
+                  </Events>
+                </MenuItem>
+                <MenuItem class="javax.swing.JMenuItem" name="Sobel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Sobel"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="SobelActionPerformed"/>
+                  </Events>
+                </MenuItem>
+                <MenuItem class="javax.swing.JMenuItem" name="Prewitt">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Prewitt"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="PrewittActionPerformed"/>
+                  </Events>
+                </MenuItem>
+                <MenuItem class="javax.swing.JMenuItem" name="Laplaciano">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Laplaciano del Gaussiano"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="LaplacianoActionPerformed"/>
+                  </Events>
+                </MenuItem>
+              </SubComponents>
+            </Menu>
+            <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator2">
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="Sobel">
+            <MenuItem class="javax.swing.JMenuItem" name="Personalizado">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Sobel"/>
+                <Property name="text" type="java.lang.String" value="Personalizado"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="SobelActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="Prewitt">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Prewitt"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="PrewittActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="Laplaciano">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Laplaciano del Gaussiano"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="LaplacianoActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="PersonalizadoActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>

@@ -132,14 +132,18 @@ public class ImageEditor extends javax.swing.JFrame {
         Rotar90CW = new javax.swing.JMenuItem();
         Rotar90CCW = new javax.swing.JMenuItem();
         MenuFiltros = new javax.swing.JMenu();
+        SuavizadoMenu = new javax.swing.JMenu();
         SuavizadoGaussiano = new javax.swing.JMenuItem();
         SuavizadoPromedio = new javax.swing.JMenuItem();
         Mediana = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        DetectarBordesMenu = new javax.swing.JMenu();
         Roberts = new javax.swing.JMenuItem();
         Sobel = new javax.swing.JMenuItem();
         Prewitt = new javax.swing.JMenuItem();
         Laplaciano = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        Personalizado = new javax.swing.JMenuItem();
         Ayuda = new javax.swing.JMenu();
         Readme = new javax.swing.JMenuItem();
         About = new javax.swing.JMenuItem();
@@ -320,13 +324,15 @@ public class ImageEditor extends javax.swing.JFrame {
 
         MenuFiltros.setText("Filtros");
 
+        SuavizadoMenu.setText("Suavizados");
+
         SuavizadoGaussiano.setText("Suavizado Gaussiano");
         SuavizadoGaussiano.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 SuavizadoGaussianoActionPerformed(evt);
             }
         });
-        MenuFiltros.add(SuavizadoGaussiano);
+        SuavizadoMenu.add(SuavizadoGaussiano);
 
         SuavizadoPromedio.setText("Suavizado Promedio");
         SuavizadoPromedio.addActionListener(new java.awt.event.ActionListener() {
@@ -334,7 +340,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 SuavizadoPromedioActionPerformed(evt);
             }
         });
-        MenuFiltros.add(SuavizadoPromedio);
+        SuavizadoMenu.add(SuavizadoPromedio);
 
         Mediana.setText("Mediana");
         Mediana.addActionListener(new java.awt.event.ActionListener() {
@@ -342,8 +348,12 @@ public class ImageEditor extends javax.swing.JFrame {
                 MedianaActionPerformed(evt);
             }
         });
-        MenuFiltros.add(Mediana);
+        SuavizadoMenu.add(Mediana);
+
+        MenuFiltros.add(SuavizadoMenu);
         MenuFiltros.add(jSeparator1);
+
+        DetectarBordesMenu.setText("Deteccion de Bordes");
 
         Roberts.setText("Roberts");
         Roberts.addActionListener(new java.awt.event.ActionListener() {
@@ -351,7 +361,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 RobertsActionPerformed(evt);
             }
         });
-        MenuFiltros.add(Roberts);
+        DetectarBordesMenu.add(Roberts);
 
         Sobel.setText("Sobel");
         Sobel.addActionListener(new java.awt.event.ActionListener() {
@@ -359,7 +369,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 SobelActionPerformed(evt);
             }
         });
-        MenuFiltros.add(Sobel);
+        DetectarBordesMenu.add(Sobel);
 
         Prewitt.setText("Prewitt");
         Prewitt.addActionListener(new java.awt.event.ActionListener() {
@@ -367,7 +377,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 PrewittActionPerformed(evt);
             }
         });
-        MenuFiltros.add(Prewitt);
+        DetectarBordesMenu.add(Prewitt);
 
         Laplaciano.setText("Laplaciano del Gaussiano");
         Laplaciano.addActionListener(new java.awt.event.ActionListener() {
@@ -375,7 +385,18 @@ public class ImageEditor extends javax.swing.JFrame {
                 LaplacianoActionPerformed(evt);
             }
         });
-        MenuFiltros.add(Laplaciano);
+        DetectarBordesMenu.add(Laplaciano);
+
+        MenuFiltros.add(DetectarBordesMenu);
+        MenuFiltros.add(jSeparator2);
+
+        Personalizado.setText("Personalizado");
+        Personalizado.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                PersonalizadoActionPerformed(evt);
+            }
+        });
+        MenuFiltros.add(Personalizado);
 
         MenuBar.add(MenuFiltros);
 
@@ -464,6 +485,57 @@ public class ImageEditor extends javax.swing.JFrame {
         if(count)
             // Recounting colors
             countUniqueColors();
+    }
+
+    private Kernel generateCustomKernel(int w, int h){
+        SpinnerNumberModel[] spinnerModels = new SpinnerNumberModel[w*h];
+        JSpinner[] kValues = new JSpinner[w*h];
+        int[] vals;
+        JPanel[] panels = new JPanel[h];
+        JPanel pivotPanel = new JPanel();
+        Object[] options = {"Aceptar", "Cancelar"};
+        Object[] params;
+        Kernel k;
+        SpinnerNumberModel pivotXModel = new SpinnerNumberModel(w/2, 0, w-1, 1);  // Initial value, min, max, step
+        SpinnerNumberModel pivotYModel = new SpinnerNumberModel(h/2, 0, h-1, 1);
+        JSpinner pivotX = new JSpinner(pivotXModel);
+        JSpinner pivotY = new JSpinner(pivotYModel);
+        JLabel labelPivotX = new JLabel("X:");
+        JLabel labelPivotY = new JLabel("Y:");
+
+        pivotPanel.add(labelPivotX);
+        pivotPanel.add(pivotX);
+        pivotPanel.add(labelPivotY);
+        pivotPanel.add(pivotY);
+        for(int i = 0; i < w * h; i++){
+            spinnerModels[i] = new SpinnerNumberModel(1, -100, 100, 1);  // Initial value, min, max, step
+            kValues[i] = new JSpinner(spinnerModels[i]);
+        }
+        for(int i = 0; i < h; i++){
+            panels[i] = new JPanel();
+            for(int j = 0; j < w ; j++){
+                panels[i].add(kValues[i * w + j]);
+            }
+        }
+        params = new Object[]{"Valores del Kernel:",panels,"Coordenadas del Pixel Pivote:", pivotPanel};
+        int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                                                    params,
+                                                    "Valores del Kernel Personalizado",
+                                                    JOptionPane.YES_NO_OPTION,
+                                                    JOptionPane.QUESTION_MESSAGE,
+                                                    null,           // Don't use a custom Icon
+                                                    options,        // The strings of buttons
+                                                    options[0]);    // Default button title
+        if ( result == JOptionPane.NO_OPTION){
+            return null;
+        }
+        //Obtaining each spinner value and adding it to a int array.
+        vals = new int[w*h];
+        for(int i = 0; i < w * h; i++){
+            vals[i] = (int)kValues[i].getValue();
+        }
+        k = new Kernel(vals, w, h, (int)pivotX.getValue(), (int)pivotY.getValue());
+        return k;
     }
 
     private void writeRLEFile(String filename){
@@ -1449,6 +1521,33 @@ public class ImageEditor extends javax.swing.JFrame {
         img = imgTemp;
     }
 
+    private void CustomController(Kernel k){
+        BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+        int i;
+        int j;
+        // These ArrayLists serve as sliding windows per color channel (Horizontal).
+        ArrayList<ArrayList<Integer>> red = new ArrayList();
+        ArrayList<ArrayList<Integer>> green = new ArrayList();
+        ArrayList<ArrayList<Integer>> blue = new ArrayList();
+
+        for(i = 0; i < height; i++){
+            initWindows(k, 0, i, red, green, blue);
+            for(j = 0; j < width; j++){
+                int newPixelValue = 0;
+
+                try{
+                    newPixelValue = convolveOnePixel(k, red, green, blue, false);
+                }catch(RuntimeException re){
+                    throw new RuntimeException("No se pudo aplicar filtro Prewitt.",re);
+                }
+                imgTemp.setRGB(j, i, newPixelValue);
+
+                slideRightWindowsOnePixel(k, j, i, red, green, blue);
+            }
+        }
+        img = imgTemp;
+    }
+
     private int medianOperationOnePixel(ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
         ArrayList<Integer> tmpR = new ArrayList();
         ArrayList<Integer> tmpG = new ArrayList();
@@ -2293,6 +2392,64 @@ public class ImageEditor extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_LaplacianoActionPerformed
 
+    private void PersonalizadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_PersonalizadoActionPerformed
+        if (img != null){
+            // Preparing and displaying components of the Filter's Options First GUI (Dimensions)
+            int w;
+            int h;
+            SpinnerNumberModel model1 = new SpinnerNumberModel(3, 1, 7, 1);  // Initial value, min, max, step
+            SpinnerNumberModel model2 = new SpinnerNumberModel(3, 1, 7, 1);
+            JSpinner spinWidth = new JSpinner(model1);
+            JSpinner spinHeight = new JSpinner(model2);
+            JLabel labelWidth = new JLabel("Ancho:");
+            JLabel labelHeight = new JLabel("Alto:");
+            JPanel spinPanel = new JPanel();
+
+            spinPanel.add(labelWidth);
+            spinPanel.add(spinWidth);
+            spinPanel.add(labelHeight);
+            spinPanel.add(spinHeight);
+
+            Object[] params = {spinPanel};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                                                        params,
+                                                        "Opciones del Kernel Personalizado",
+                                                        JOptionPane.YES_NO_OPTION,
+                                                        JOptionPane.QUESTION_MESSAGE,
+                                                        null,           // Don't use a custom Icon
+                                                        options,        // The strings of buttons
+                                                        options[0]);    // Default button title
+            w = (int)spinWidth.getValue();
+            h = (int)spinHeight.getValue();
+            if ((w == 1 && h == 1) || result == JOptionPane.NO_OPTION){
+                // If the kernel is 1x1 the image ends up the same or if the user cancels the action
+                // return at once.
+                return;
+            }
+
+            Kernel k = generateCustomKernel(w, h);
+
+            try{
+                // Passing dimensions to the controller function.
+                CustomController(k);
+            }catch(RuntimeException re){
+                JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
+                return;
+            }
+            // Changing the image format since binary becomes grayscale after a blur operation.
+            if(format == 1){
+                format = 2; // grayscale
+                maxColor = 255;
+            }
+            refreshImageDisplayed(true);
+            // Updating status bar.
+            Estado.setText("Aplicando Suavizado Promedio | Colores Únicos en imagen: " + colorsCounter);
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_PersonalizadoActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -2329,6 +2486,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JPanel BarraEstadoPanel;
     private javax.swing.JMenuItem BlancoNegro;
     private javax.swing.JMenuItem CompresionRLE;
+    private javax.swing.JMenu DetectarBordesMenu;
     private javax.swing.JMenuItem EscalaDeGrises;
     private javax.swing.JLabel Estado;
     private javax.swing.JMenuItem GuardarBMP;
@@ -2340,6 +2498,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JMenu MenuEditar;
     private javax.swing.JMenu MenuFiltros;
     private javax.swing.JMenuItem Negativo;
+    private javax.swing.JMenuItem Personalizado;
     private javax.swing.JMenuItem Prewitt;
     private javax.swing.JMenuItem Readme;
     private javax.swing.JMenuItem Roberts;
@@ -2350,6 +2509,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JMenuItem SinCompresion;
     private javax.swing.JMenuItem Sobel;
     private javax.swing.JMenuItem SuavizadoGaussiano;
+    private javax.swing.JMenu SuavizadoMenu;
     private javax.swing.JMenuItem SuavizadoPromedio;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuItem jMenuItem1;
@@ -2357,6 +2517,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JScrollPane jScrollPane;
     private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
     // End of variables declaration//GEN-END:variables
 
 }
