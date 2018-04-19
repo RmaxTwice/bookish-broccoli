@@ -57,6 +57,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private int width;
     private int height;
     private int maxColor;
+    private BufferedImage imgZoom = null;
     private BufferedImage img = null;
     // Hashmap and counter used to count unique colors
     private final HashMap<Integer, Integer> uniqueCols;
@@ -131,6 +132,8 @@ public class ImageEditor extends javax.swing.JFrame {
         Rotacion = new javax.swing.JMenu();
         Rotar90CW = new javax.swing.JMenuItem();
         Rotar90CCW = new javax.swing.JMenuItem();
+        MenuVer = new javax.swing.JMenu();
+        Zoom = new javax.swing.JMenuItem();
         MenuFiltros = new javax.swing.JMenu();
         SuavizadoMenu = new javax.swing.JMenu();
         SuavizadoGaussiano = new javax.swing.JMenuItem();
@@ -322,6 +325,18 @@ public class ImageEditor extends javax.swing.JFrame {
 
         MenuBar.add(MenuEditar);
 
+        MenuVer.setText("Ver");
+
+        Zoom.setText("Aplicar Zoom");
+        Zoom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ZoomActionPerformed(evt);
+            }
+        });
+        MenuVer.add(Zoom);
+
+        MenuBar.add(MenuVer);
+
         MenuFiltros.setText("Filtros");
 
         SuavizadoMenu.setText("Suavizados");
@@ -449,6 +464,15 @@ public class ImageEditor extends javax.swing.JFrame {
      * @param evt 
      */
     
+    private static BufferedImage duplicate3BYTEBGR(BufferedImage image) {
+        if (image == null){
+            throw new NullPointerException();
+        }
+        BufferedImage copyImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+        copyImage.setData(image.getData());
+        return copyImage;
+    }
+
     private String getSelectedButtonText(ButtonGroup buttonGroup) {
         for (Enumeration<AbstractButton> buttons = buttonGroup.getElements(); buttons.hasMoreElements();) {
             AbstractButton button = buttons.nextElement();
@@ -471,8 +495,11 @@ public class ImageEditor extends javax.swing.JFrame {
         return val;
     }
 
-    private void refreshImageDisplayed(boolean count){
-        ImageIcon icon = new ImageIcon(img);
+    private void refreshImageDisplayed(boolean count, boolean duplicate){
+        if(duplicate){
+            imgZoom = duplicate3BYTEBGR(img);
+        }
+        ImageIcon icon = new ImageIcon(imgZoom);
         // Adding the ImageIcon to the Label.
         imglabel.setIcon( icon );
         //Aligning the image to the center.
@@ -1548,6 +1575,26 @@ public class ImageEditor extends javax.swing.JFrame {
         img = imgTemp;
     }
 
+    private void ZoomController(int percentage){
+        float zoomFactor = (float)percentage / 100;
+        int newWidth = Math.round(width * zoomFactor);
+        int newHeight = Math.round(height * zoomFactor);
+        BufferedImage imgTemp = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_3BYTE_BGR);
+        int  pvalue;
+        float ycoord,xcoord;
+
+        // USING NEAREST NEIGHBOR OR PIXEL REPLICATION
+        for(int i = 0; i < newHeight; i++){
+            for(int j = 0; j < newWidth; j++){
+                ycoord = i / zoomFactor;
+                xcoord = j / zoomFactor;
+                pvalue = img.getRGB((int)xcoord, (int)ycoord);
+                imgTemp.setRGB(j, i, pvalue);
+            }
+        }
+        imgZoom = imgTemp;
+    }
+
     private int medianOperationOnePixel(ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
         ArrayList<Integer> tmpR = new ArrayList();
         ArrayList<Integer> tmpG = new ArrayList();
@@ -1617,9 +1664,7 @@ public class ImageEditor extends javax.swing.JFrame {
     }
 
     private void GuardarBMPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GuardarBMPActionPerformed
-        // TODO add your handling code here:
         int returnVal;
-        
         if ( img != null ){
             returnVal = fcSave.showSaveDialog(this); 
         }else{
@@ -1627,7 +1672,6 @@ public class ImageEditor extends javax.swing.JFrame {
             return;
         }
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            
             try {
                 //RenderedImage rendImage = bi;
                 ImageIO.write(img, "bmp", new File(fcSave.getSelectedFile().getAbsolutePath()+".bmp"));
@@ -1636,7 +1680,6 @@ public class ImageEditor extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "¡ERROR: Ocurrio un error al guardar el archivo!");
             }
         }
-        
     }//GEN-LAST:event_GuardarBMPActionPerformed
 
     private void AbrirArchivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AbrirArchivoActionPerformed
@@ -1810,7 +1853,7 @@ public class ImageEditor extends javax.swing.JFrame {
                         maxColor = 255;
                         break;
                 }
-                refreshImageDisplayed(true);
+                refreshImageDisplayed(true, true);
                 //Changing Estado Label
                 Estado.setText("Abriendo " + file.getAbsolutePath() + " | Colores Únicos en imagen: " + colorsCounter);
             }
@@ -1841,7 +1884,7 @@ public class ImageEditor extends javax.swing.JFrame {
                     img.setRGB(x, y, p);
                 }
             }
-            refreshImageDisplayed(false);
+            refreshImageDisplayed(false, true);
             // Updating status bar.
             Estado.setText("Aplicando Negativo | Colores Únicos en imagen: " + colorsCounter);
         }else{
@@ -1884,7 +1927,7 @@ public class ImageEditor extends javax.swing.JFrame {
                     img.setRGB(x, y, p);
                 }
             }
-            refreshImageDisplayed(true);
+            refreshImageDisplayed(true, true);
             format = 2;
             Estado.setText("Aplicando Escala de Grises | Colores Únicos en imagen: " + colorsCounter);
         }else{
@@ -1959,7 +2002,7 @@ public class ImageEditor extends javax.swing.JFrame {
                     img.setRGB(x, y, p);
                 }
             }
-            refreshImageDisplayed(true);
+            refreshImageDisplayed(true, true);
             format = 1;
             Estado.setText("Aplicando Blanco y Negro | Colores Únicos en imagen: " + colorsCounter);
         }else{
@@ -1980,7 +2023,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 }
             }
             img = imgAux;
-            refreshImageDisplayed(false);
+            refreshImageDisplayed(false, true);
             Estado.setText("Aplicando Rotación 90°CW | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
@@ -2002,7 +2045,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 }
             }
             img = imgAux;
-            refreshImageDisplayed(false);
+            refreshImageDisplayed(false, true);
             Estado.setText("Aplicando Rotación 90°CCW | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
@@ -2093,7 +2136,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 format = 2; // grayscale
                 maxColor = 255;
             }
-            refreshImageDisplayed(true);
+            refreshImageDisplayed(true, true);
             Estado.setText("Aplicando Suavizado Gaussiano | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
@@ -2147,7 +2190,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 format = 2; // grayscale
                 maxColor = 255;
             }
-            refreshImageDisplayed(true);
+            refreshImageDisplayed(true, true);
             // Updating status bar.
             Estado.setText("Aplicando Suavizado Promedio | Colores Únicos en imagen: " + colorsCounter);
         }else{
@@ -2197,7 +2240,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 format = 2; // grayscale
                 maxColor = 255;
             }
-            refreshImageDisplayed(true);
+            refreshImageDisplayed(true, true);
             // Updating status bar.
             Estado.setText("Aplicando filtro Mediana | Colores Únicos en imagen: " + colorsCounter);
         }else{
@@ -2275,7 +2318,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 format = 2; // grayscale
                 maxColor = 255;
             }
-            refreshImageDisplayed(true);
+            refreshImageDisplayed(true, true);
             // Updating status bar.
             Estado.setText("Aplicando filtro de Prewitt | Colores Únicos en imagen: " + colorsCounter);
         }else{
@@ -2297,7 +2340,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 format = 2; // grayscale
                 maxColor = 255;
             }
-            refreshImageDisplayed(true);
+            refreshImageDisplayed(true, true);
             // Updating status bar.
             Estado.setText("Aplicando filtro de Roberts | Colores Únicos en imagen: " + colorsCounter);
         }else{
@@ -2361,7 +2404,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 format = 2; // grayscale
                 maxColor = 255;
             }
-            refreshImageDisplayed(true);
+            refreshImageDisplayed(true, true);
             // Updating status bar.
             Estado.setText("Aplicando filtro de Sobel | Colores Únicos en imagen: " + colorsCounter);
         }else{
@@ -2384,7 +2427,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 format = 2; // grayscale
                 maxColor = 255;
             }
-            refreshImageDisplayed(true);
+            refreshImageDisplayed(true, true);
             // Updating status bar.
             Estado.setText("Aplicando filtro Laplaciano del Gaussiano | Colores Únicos en imagen: " + colorsCounter);
         }else{
@@ -2442,13 +2485,50 @@ public class ImageEditor extends javax.swing.JFrame {
                 format = 2; // grayscale
                 maxColor = 255;
             }
-            refreshImageDisplayed(true);
+            refreshImageDisplayed(true, true);
             // Updating status bar.
             Estado.setText("Aplicando Suavizado Promedio | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
     }//GEN-LAST:event_PersonalizadoActionPerformed
+
+    private void ZoomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ZoomActionPerformed
+        if (img != null){
+            SpinnerNumberModel model1 = new SpinnerNumberModel(100, 1, 500, 1);  // Initial value, min, max, step
+            JSpinner spinZoomFactor = new JSpinner(model1);
+            JLabel labelZoomFactor = new JLabel("Zoom de Imagen original:");
+            JLabel labelPercentange = new JLabel(" % (1-500)");
+            JPanel spinPanel = new JPanel();
+
+            spinPanel.add(labelZoomFactor);
+            spinPanel.add(spinZoomFactor);
+            spinPanel.add(labelPercentange);
+
+            Object[] params = {spinPanel};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                                                        params,
+                                                        "Opción de Zoom",
+                                                        JOptionPane.YES_NO_OPTION,
+                                                        JOptionPane.QUESTION_MESSAGE,
+                                                        null,           // Don't use a custom Icon
+                                                        options,        // The strings of buttons
+                                                        options[0]);    // Default button title
+            if (result == JOptionPane.NO_OPTION){
+                return;
+            }
+            if ((int)spinZoomFactor.getValue() != 100){
+                ZoomController((int)spinZoomFactor.getValue());
+                refreshImageDisplayed(false, false);
+            }else{
+                refreshImageDisplayed(false, true);
+            }
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+        
+    }//GEN-LAST:event_ZoomActionPerformed
 
     /**
      * @param args the command line arguments
@@ -2497,6 +2577,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JMenuBar MenuBar;
     private javax.swing.JMenu MenuEditar;
     private javax.swing.JMenu MenuFiltros;
+    private javax.swing.JMenu MenuVer;
     private javax.swing.JMenuItem Negativo;
     private javax.swing.JMenuItem Personalizado;
     private javax.swing.JMenuItem Prewitt;
@@ -2511,6 +2592,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JMenuItem SuavizadoGaussiano;
     private javax.swing.JMenu SuavizadoMenu;
     private javax.swing.JMenuItem SuavizadoPromedio;
+    private javax.swing.JMenuItem Zoom;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
