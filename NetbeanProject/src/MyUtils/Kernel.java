@@ -14,7 +14,7 @@ import java.util.ArrayList;
  * @author Rafael Vasquez
  */
 public class Kernel {
-    private ArrayList<ArrayList<Integer>> values;
+    private final ArrayList<ArrayList<Integer>> values;
     private int width;
     private int height;
     private int pivotX;

@@ -139,6 +139,7 @@ public class ImageEditor extends javax.swing.JFrame {
         Roberts = new javax.swing.JMenuItem();
         Sobel = new javax.swing.JMenuItem();
         Prewitt = new javax.swing.JMenuItem();
+        Laplaciano = new javax.swing.JMenuItem();
         Ayuda = new javax.swing.JMenu();
         Readme = new javax.swing.JMenuItem();
         About = new javax.swing.JMenuItem();
@@ -367,6 +368,14 @@ public class ImageEditor extends javax.swing.JFrame {
             }
         });
         MenuFiltros.add(Prewitt);
+
+        Laplaciano.setText("Laplaciano del Gaussiano");
+        Laplaciano.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                LaplacianoActionPerformed(evt);
+            }
+        });
+        MenuFiltros.add(Laplaciano);
 
         MenuBar.add(MenuFiltros);
 
@@ -1406,6 +1415,40 @@ public class ImageEditor extends javax.swing.JFrame {
         img = imgTemp;
     }
 
+    private void LaplacianoController(){
+        BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+        int i;
+        int j;
+        int[] vals;
+        Kernel krnl;
+
+        vals = new int[]{-1, -1, -1, -1, 8, -1, -1, -1, -1};
+        //vals = new int[]{0, -1, 0, -1, 4, -1, 0, -1, 0};
+        krnl = new Kernel(vals, 3, 3, 1, 1);
+
+        // These ArrayLists serve as sliding windows per color channel (Horizontal).
+        ArrayList<ArrayList<Integer>> red = new ArrayList();
+        ArrayList<ArrayList<Integer>> green = new ArrayList();
+        ArrayList<ArrayList<Integer>> blue = new ArrayList();
+
+        for(i = 0; i < height; i++){
+            initWindows(krnl, 0, i, red, green, blue);
+            for(j = 0; j < width; j++){
+                int newPixelVal;
+
+                try{
+                    newPixelVal = convolveOnePixel(krnl, red, green, blue, false);
+                }catch(RuntimeException re){
+                    throw new RuntimeException("No se pudo aplicar filtro Laplaciano del Gaussiano.",re);
+                }
+                imgTemp.setRGB(j, i, newPixelVal);
+
+                slideRightWindowsOnePixel(krnl, j, i, red, green, blue);
+            }
+        }
+        img = imgTemp;
+    }
+
     private int medianOperationOnePixel(ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
         ArrayList<Integer> tmpR = new ArrayList();
         ArrayList<Integer> tmpG = new ArrayList();
@@ -1422,11 +1465,10 @@ public class ImageEditor extends javax.swing.JFrame {
             tmpR.addAll(r.get(i));
             tmpG.addAll(g.get(i));
             tmpB.addAll(b.get(i));
-
-            Collections.sort(tmpR);
-            Collections.sort(tmpG);
-            Collections.sort(tmpB);
         }
+        Collections.sort(tmpR);
+        Collections.sort(tmpG);
+        Collections.sort(tmpB);
         int indx = tmpR.size() / 2;
         if(odd){
               rTotal = tmpR.get(indx);
@@ -1990,7 +2032,7 @@ public class ImageEditor extends javax.swing.JFrame {
             w = (int)spinWidth.getValue();
             h = (int)spinHeight.getValue();
             if ((w == 1 && h == 1) || result == JOptionPane.NO_OPTION){
-                // If the kernel is 1x1 the image ends up the same or if the user cancels de action
+                // If the kernel is 1x1 the image ends up the same or if the user cancels the action
                 // return at once.
                 return;
             }
@@ -2228,6 +2270,29 @@ public class ImageEditor extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_SobelActionPerformed
 
+    private void LaplacianoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LaplacianoActionPerformed
+        if (img != null){
+            try{
+                // Passing dimensions to the controller function.
+                GaussianBlurController(3, true, true);
+                LaplacianoController();
+            }catch(RuntimeException re){
+                JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
+                return;
+            }
+            // Changing the image format since binary becomes grayscale after a blur operation.
+            if(format == 1){
+                format = 2; // grayscale
+                maxColor = 255;
+            }
+            refreshImageDisplayed(true);
+            // Updating status bar.
+            Estado.setText("Aplicando filtro Laplaciano del Gaussiano | Colores Únicos en imagen: " + colorsCounter);
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_LaplacianoActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -2268,6 +2333,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JLabel Estado;
     private javax.swing.JMenuItem GuardarBMP;
     private javax.swing.JMenu GuardarNetpbm;
+    private javax.swing.JMenuItem Laplaciano;
     private javax.swing.JMenuItem Mediana;
     private javax.swing.JMenu MenuArchivo;
     private javax.swing.JMenuBar MenuBar;
