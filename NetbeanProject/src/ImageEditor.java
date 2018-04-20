@@ -542,9 +542,9 @@ public class ImageEditor extends javax.swing.JFrame {
         int SWSEg = (int)((1 - a) * ((colorSW >> 8) & 0xff) + a * ((colorSE >> 8) & 0xff));
         int SWSEb = (int)((1 - a) * (colorSW & 0xff) + a * (colorSE & 0xff));
 
-        int rTotal = clampColorValue((int)((1 - a) * NWNEr  + a * SWSEr));
-        int gTotal = clampColorValue((int)((1 - a) * NWNEg  + a * SWSEg));
-        int bTotal = clampColorValue((int)((1 - a) * NWNEb  + a * SWSEb));
+        int rTotal = clampColorValue((int)((1 - b) * NWNEr  + b * SWSEr));
+        int gTotal = clampColorValue((int)((1 - b) * NWNEg  + b * SWSEg));
+        int bTotal = clampColorValue((int)((1 - b) * NWNEb  + b * SWSEb));
 
         return (255<<24) | (rTotal<<16) | (gTotal<<8) | bTotal;
     }
@@ -1645,40 +1645,40 @@ public class ImageEditor extends javax.swing.JFrame {
         for(int i = 0; i < newHeight; i++){
             for(int j = 0; j < newWidth; j++){
                 // USING NEAREST NEIGHBOR OR PIXEL REPLICATION
-                ycoord = i / scalingFactorY;
-                xcoord = j / scalingFactorX;
-                pvalue = img.getRGB((int)xcoord, (int)ycoord);
-                imgTemp.setRGB(j, i, pvalue);
-                // USING BILINEAR INTERPOLATION
-//                nwX = (int)(j / scalingFactorX);
-//                nwY = (int)(i / scalingFactorY);
-//                colorNW = img.getRGB(nwX, nwY);
-//                if(nwX + 1 < width){
-//                    neX = nwX + 1;
-//                    a = (neX - nwX) * scalingFactorX;
-//                    a = j / a;
-//                }else{
-//                    neX =nwX;
-//                    a = 1;
-//                }
-//                neY = nwY;
-//                colorNE = img.getRGB(neX, neY);
-//                swX = nwX;
-//                if(nwY + 1 < height){
-//                    swY = nwY + 1;
-//                    b = (swY - nwY) * scalingFactorY;
-//                    b = i / b;
-//                }else{
-//                    swY = nwY;
-//                    b = 1;
-//                }
-//                colorSW = img.getRGB(swX, swY);
-//                seX = neX;
-//                seY = swY;
-//                colorSE = img.getRGB(seX, seY);
-//
-//                pvalue = bilinealInterpolation(colorNW, colorNE, colorSW, colorSE, a, b);
+//                ycoord = i / scalingFactorY;
+//                xcoord = j / scalingFactorX;
+//                pvalue = img.getRGB((int)xcoord, (int)ycoord);
 //                imgTemp.setRGB(j, i, pvalue);
+                // USING BILINEAR INTERPOLATION
+                nwX = (int)(j / scalingFactorX);
+                nwY = (int)(i / scalingFactorY);
+                colorNW = img.getRGB(nwX, nwY);
+                if(nwX + 1 < width){
+                    neX = nwX + 1;
+                    a = (neX - nwX) * scalingFactorX;
+                    a = (j % a)/ a;
+                }else{
+                    neX =nwX;
+                    a = 1;
+                }
+                neY = nwY;
+                colorNE = img.getRGB(neX, neY);
+                swX = nwX;
+                if(nwY + 1 < height){
+                    swY = nwY + 1;
+                    b = (swY - nwY) * scalingFactorY;
+                    b = (i % b) / b;
+                }else{
+                    swY = nwY;
+                    b = 1;
+                }
+                colorSW = img.getRGB(swX, swY);
+                seX = neX;
+                seY = swY;
+                colorSE = img.getRGB(seX, seY);
+
+                pvalue = bilinealInterpolation(colorNW, colorNE, colorSW, colorSE, a, b);
+                imgTemp.setRGB(j, i, pvalue);
             }
         }
         img = imgTemp;
