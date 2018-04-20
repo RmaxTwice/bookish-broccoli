@@ -30,6 +30,7 @@ import javax.swing.JRadioButton;
 import MyUtils.*;
 import java.util.Arrays;
 import java.util.Collections;
+import javax.swing.JComboBox;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 
@@ -1630,13 +1631,14 @@ public class ImageEditor extends javax.swing.JFrame {
         imgZoom = imgTemp;
     }
 
-    private void ScalingController(int wPctg, int hPctg){
+    private void ScalingController(int wPctg, int hPctg, int TYPE){
+        // TYPE: 0 = pixel replication, 1 = bilineal interpolation
         float scalingFactorX = (float)wPctg / 100;
         float scalingFactorY = (float)hPctg / 100;
         int newWidth = Math.round(width * scalingFactorX);
         int newHeight = Math.round(height * scalingFactorY);
         BufferedImage imgTemp = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_3BYTE_BGR);
-        int  pvalue;
+        int  pvalue = 0;
         float ycoord,xcoord;
         int nwX, nwY, neX, neY, swX, swY, seX, seY;
         float a, b;
@@ -1644,40 +1646,44 @@ public class ImageEditor extends javax.swing.JFrame {
 
         for(int i = 0; i < newHeight; i++){
             for(int j = 0; j < newWidth; j++){
-                // USING NEAREST NEIGHBOR OR PIXEL REPLICATION
-//                ycoord = i / scalingFactorY;
-//                xcoord = j / scalingFactorX;
-//                pvalue = img.getRGB((int)xcoord, (int)ycoord);
-//                imgTemp.setRGB(j, i, pvalue);
-                // USING BILINEAR INTERPOLATION
-                nwX = (int)(j / scalingFactorX);
-                nwY = (int)(i / scalingFactorY);
-                colorNW = img.getRGB(nwX, nwY);
-                if(nwX + 1 < width){
-                    neX = nwX + 1;
-                    a = (neX - nwX) * scalingFactorX;
-                    a = (j % a)/ a;
-                }else{
-                    neX =nwX;
-                    a = 1;
-                }
-                neY = nwY;
-                colorNE = img.getRGB(neX, neY);
-                swX = nwX;
-                if(nwY + 1 < height){
-                    swY = nwY + 1;
-                    b = (swY - nwY) * scalingFactorY;
-                    b = (i % b) / b;
-                }else{
-                    swY = nwY;
-                    b = 1;
-                }
-                colorSW = img.getRGB(swX, swY);
-                seX = neX;
-                seY = swY;
-                colorSE = img.getRGB(seX, seY);
+                switch(TYPE){
+                    case 0:
+                        //USING NEAREST NEIGHBOR OR PIXEL REPLICATION
+                        ycoord = i / scalingFactorY;
+                        xcoord = j / scalingFactorX;
+                        pvalue = img.getRGB((int)xcoord, (int)ycoord);
+                        break;
+                    case 1:
+                        // USING BILINEAR INTERPOLATION
+                        nwX = (int)(j / scalingFactorX);
+                        nwY = (int)(i / scalingFactorY);
+                        colorNW = img.getRGB(nwX, nwY);
+                        if(nwX + 1 < width){
+                            neX = nwX + 1;
+                            a = (neX - nwX) * scalingFactorX;
+                            a = (j % a)/ a;
+                        }else{
+                            neX =nwX;
+                            a = 1;
+                        }
+                        neY = nwY;
+                        colorNE = img.getRGB(neX, neY);
+                        swX = nwX;
+                        if(nwY + 1 < height){
+                            swY = nwY + 1;
+                            b = (swY - nwY) * scalingFactorY;
+                            b = (i % b) / b;
+                        }else{
+                            swY = nwY;
+                            b = 1;
+                        }
+                        colorSW = img.getRGB(swX, swY);
+                        seX = neX;
+                        seY = swY;
+                        colorSE = img.getRGB(seX, seY);
 
-                pvalue = bilinealInterpolation(colorNW, colorNE, colorSW, colorSE, a, b);
+                        pvalue = bilinealInterpolation(colorNW, colorNE, colorSW, colorSE, a, b);
+                }
                 imgTemp.setRGB(j, i, pvalue);
             }
         }
@@ -2630,9 +2636,12 @@ public class ImageEditor extends javax.swing.JFrame {
             JLabel labelZoomFactorY = new JLabel("  Alto:");
             JLabel labelpctg1 = new JLabel(" %");
             JLabel labelpctg2 = new JLabel(" %");
-            JLabel labelValidValues = new JLabel("(Valores válidos entre 1 y 1000)");
+            JLabel labelComboBox = new JLabel("Tipo de Escalamiento: ");
+            JLabel labelValidValues = new JLabel("Valores válidos entre 1 y 1000");
             JPanel spinPanel1 = new JPanel();
             JPanel spinPanel2 = new JPanel();
+            String[] scalingTypes = { "Vecino más cercano", "Interpolación Bilineal" };
+            JComboBox scalingTypeList = new JComboBox(scalingTypes);
 
             labelValidValues.setHorizontalAlignment(JLabel.CENTER);
             spinPanel1.add(labelZoomFactorX);
@@ -2641,8 +2650,8 @@ public class ImageEditor extends javax.swing.JFrame {
             spinPanel2.add(labelZoomFactorY);
             spinPanel2.add(spinZoomFactorY);
             spinPanel2.add(labelpctg2);
-
-            Object[] params = {spinPanel1, spinPanel2, labelValidValues};
+            scalingTypeList.setSelectedIndex(1);
+            Object[] params = {labelValidValues, spinPanel1, spinPanel2,  labelComboBox, scalingTypeList};
             Object[] options = {"Aceptar", "Cancelar"};
             int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
                                                         params,
@@ -2656,7 +2665,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 return;
             }
             if ((int)spinZoomFactorX.getValue() != 100 || (int)spinZoomFactorY.getValue() != 100){
-                ScalingController((int)spinZoomFactorX.getValue(), (int)spinZoomFactorY.getValue());
+                ScalingController((int)spinZoomFactorX.getValue(), (int)spinZoomFactorY.getValue(), scalingTypeList.getSelectedIndex());
                 refreshImageDisplayed(true, true);
             }else{
                 refreshImageDisplayed(false, true);
