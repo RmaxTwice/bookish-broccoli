@@ -32,8 +32,6 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1519,198 +1517,6 @@ private void getBitsPerPixel(){
             b.get(i).remove(0);
         }
     }
- 
-    
-
-    private void PrewittController(int orientation){
-        BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-        int i;
-        int j;
-        int[] vals;
-        Kernel krnl = null;
-        Kernel krnl1, krnl2, krnl3, krnl4;
-
-        vals = new int[]{-1, 0, 1, -1, 0, 1, -1, 0, 1};
-        krnl1 = new Kernel(vals, 3, 3, 1, 1);           //"Vertical |"
-        vals = new int[]{-1, -1, -1, 0, 0, 0, 1, 1, 1};
-        krnl2 = new Kernel(vals, 3, 3, 1, 1);           //"Horizontal -"
-        vals = new int[]{-1, -1, 0, -1, 0, 1, 0, 1, 1};
-        krnl3 = new Kernel(vals, 3, 3, 1, 1);           //"Diagonal /":
-        vals = new int[]{0, 1, 1, -1, 0, 1, -1, -1, 0};
-        krnl4 = new Kernel(vals, 3, 3, 1, 1);           //"Diagonal \\"
-        switch(orientation){
-            case 1:
-                krnl = krnl1;
-                break;
-            case 2:
-                krnl = krnl2;
-                break;
-            case 3:
-                krnl = krnl3;
-                break;
-            case 4:
-                krnl = krnl4;
-        }
-        // These ArrayLists serve as sliding windows per color channel (Horizontal).
-        ArrayList<ArrayList<Integer>> red = new ArrayList();
-        ArrayList<ArrayList<Integer>> green = new ArrayList();
-        ArrayList<ArrayList<Integer>> blue = new ArrayList();
-
-        for(i = 0; i < height; i++){
-            initWindows(krnl1, 0, i, red, green, blue);
-            for(j = 0; j < width; j++){
-                int newPixelValue1 = 0;
-                int newPixelValue2 = 0;
-                int newPixelValue3 = 0;
-                int newPixelValue4 = 0;
-
-                if(orientation == 5){
-                    try{
-                        newPixelValue1 = convolveOnePixel(krnl1, red, green, blue, false);
-                        newPixelValue2 = convolveOnePixel(krnl2, red, green, blue, false);
-                        newPixelValue3 = convolveOnePixel(krnl3, red, green, blue, false);
-                        newPixelValue4 = convolveOnePixel(krnl4, red, green, blue, false);
-                    }catch(RuntimeException re){
-                        throw new RuntimeException("No se pudo aplicar filtro Prewitt.",re);
-                    }
-
-                    int newPixelVal = Math.max(newPixelValue1, Math.max(newPixelValue2, Math.max(newPixelValue3, newPixelValue4)));
-                    imgTemp.setRGB(j, i, newPixelVal);
-                }else{
-                    try{
-                        newPixelValue1 = convolveOnePixel(krnl, red, green, blue, false);
-                    }catch(RuntimeException re){
-                        throw new RuntimeException("No se pudo aplicar filtro Prewitt.",re);
-                    }
-                    imgTemp.setRGB(j, i, newPixelValue1);
-                }
-                slideRightWindowsOnePixel(krnl1, j, i, red, green, blue);
-            }
-        }
-        img = imgTemp;
-    }
-
-    private void SobelController(int orientation){
-        BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-        int i;
-        int j;
-        int[] vals;
-        Kernel krnl = null;
-        Kernel krnl1, krnl2;
-
-        vals = new int[]{-1, 0, 1, -2, 0, 2, -1, 0, 1};
-        krnl1 = new Kernel(vals, 3, 3, 1, 1);           //"Vertical"
-        vals = new int[]{-1, -2, -1, 0, 0, 0, 1, 2, 1};
-        krnl2 = new Kernel(vals, 3, 3, 1, 1);           //"Horizontal"
-        switch(orientation){
-            case 1:
-                krnl = krnl1;
-                break;
-            case 2:
-                krnl = krnl2;
-                break;
-        }
-        // These ArrayLists serve as sliding windows per color channel (Horizontal).
-        ArrayList<ArrayList<Integer>> red = new ArrayList();
-        ArrayList<ArrayList<Integer>> green = new ArrayList();
-        ArrayList<ArrayList<Integer>> blue = new ArrayList();
-
-        for(i = 0; i < height; i++){
-            initWindows(krnl1, 0, i, red, green, blue);
-            for(j = 0; j < width; j++){
-                int newPixelVal = 0;
-
-                if(orientation == 5){
-                    try{
-                        newPixelVal = convolveAndCompareOnePixel(krnl2, krnl1, red, green, blue);
-                        //newPixelValue2 = convolveOnePixel(krnl2, red, green, blue, false);
-                    }catch(RuntimeException re){
-                        throw new RuntimeException("No se pudo aplicar filtro Sobel.",re);
-                    }
-                    imgTemp.setRGB(j, i, newPixelVal);
-                }else{
-                    try{
-                        newPixelVal = convolveOnePixel(krnl, red, green, blue, false);
-                    }catch(RuntimeException re){
-                        throw new RuntimeException("No se pudo aplicar filtro Sobel.",re);
-                    }
-                    imgTemp.setRGB(j, i, newPixelVal);
-                }
-                slideRightWindowsOnePixel(krnl1, j, i, red, green, blue);
-            }
-        }
-        img = imgTemp;
-    }
-
-    private void RobertsController(){
-        BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-        int i;
-        int j;
-        int[] vals;
-        Kernel krnl1, krnl2;
-
-        vals = new int[]{1, 0, 0, -1};
-        krnl1 = new Kernel(vals, 2, 2, 0, 0);   //"Vertical |"
-        vals = new int[]{0, 1, -1, 0};
-        krnl2 = new Kernel(vals, 2, 2, 0, 0);   //"Horizontal -"
-
-        // These ArrayLists serve as sliding windows per color channel (Horizontal).
-        ArrayList<ArrayList<Integer>> red = new ArrayList();
-        ArrayList<ArrayList<Integer>> green = new ArrayList();
-        ArrayList<ArrayList<Integer>> blue = new ArrayList();
-
-        for(i = 0; i < height; i++){
-            initWindows(krnl1, 0, i, red, green, blue);
-            for(j = 0; j < width; j++){
-                int newPixelVal;
-
-                try{
-                    newPixelVal = convolveAndCompareOnePixel(krnl2, krnl1, red, green, blue);
-                    //newPixelValue2 = convolveOnePixel(krnl2, red, green, blue, false);
-                }catch(RuntimeException re){
-                    throw new RuntimeException("No se pudo aplicar filtro Prewitt.",re);
-                }
-                imgTemp.setRGB(j, i, newPixelVal);
-
-                slideRightWindowsOnePixel(krnl1, j, i, red, green, blue);
-            }
-        }
-        img = imgTemp;
-    }
-
-    private void LaplacianoController(){
-        BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-        int i;
-        int j;
-        int[] vals;
-        Kernel krnl;
-
-        vals = new int[]{-1, -1, -1, -1, 8, -1, -1, -1, -1};
-        //vals = new int[]{0, -1, 0, -1, 4, -1, 0, -1, 0};
-        krnl = new Kernel(vals, 3, 3, 1, 1);
-
-        // These ArrayLists serve as sliding windows per color channel (Horizontal).
-        ArrayList<ArrayList<Integer>> red = new ArrayList();
-        ArrayList<ArrayList<Integer>> green = new ArrayList();
-        ArrayList<ArrayList<Integer>> blue = new ArrayList();
-
-        for(i = 0; i < height; i++){
-            initWindows(krnl, 0, i, red, green, blue);
-            for(j = 0; j < width; j++){
-                int newPixelVal;
-
-                try{
-                    newPixelVal = convolveOnePixel(krnl, red, green, blue, false);
-                }catch(RuntimeException re){
-                    throw new RuntimeException("No se pudo aplicar filtro Laplaciano del Gaussiano.",re);
-                }
-                imgTemp.setRGB(j, i, newPixelVal);
-
-                slideRightWindowsOnePixel(krnl, j, i, red, green, blue);
-            }
-        }
-        img = imgTemp;
-    }
 
     private void CustomController(Kernel k){
         BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
@@ -2599,8 +2405,9 @@ private void getBitsPerPixel(){
                 return;
             }
             try{
-                // Passing dimensions to the controller function.
-                PrewittController( orientation );
+                // Passing dimensions to the filter function.
+                //PrewittController( orientation );
+                img = myFilters.Prewitt(img, orientation);
             }catch(RuntimeException re){
                 JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
                 return;
@@ -2621,8 +2428,8 @@ private void getBitsPerPixel(){
     private void RobertsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RobertsActionPerformed
         if (img != null){
             try{
-                // Passing dimensions to the controller function.
-                RobertsController();
+                // Passing dimensions to the filter function.
+                img = myFilters.Roberts(img);
             }catch(RuntimeException re){
                 JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
                 return;
@@ -2685,8 +2492,9 @@ private void getBitsPerPixel(){
                 return;
             }
             try{
-                // Passing dimensions to the controller function.
-                SobelController( orientation );
+                // Passing dimensions to the filter function.
+                //SobelController( orientation );
+                img = myFilters.Sobel(img, orientation);
             }catch(RuntimeException re){
                 JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
                 return;
@@ -2707,9 +2515,10 @@ private void getBitsPerPixel(){
     private void LaplacianoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LaplacianoActionPerformed
         if (img != null){
             try{
-                // Passing dimensions to the controller function.
+                // Passing dimensions to the filter function.
                 img = myFilters.GaussianBlur(img, 3, true, true);
-                LaplacianoController();
+                img = myFilters.Laplacian(img);
+                //LaplacianoController();
             }catch(RuntimeException re){
                 JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
                 return;

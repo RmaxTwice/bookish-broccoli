@@ -17,7 +17,7 @@ import java.util.Collections;
 public class FiltersController {
 
     public FiltersController() {}
-    
+
     private int clampColorValue(int val){
         if(val > 255){
             return 255;
@@ -27,7 +27,7 @@ public class FiltersController {
         }
         return val;
     }
-    
+
     private int convolveOnePixel(Kernel k, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b, boolean normal) throws RuntimeException{
         int rTotal = 0;
         int gTotal = 0;
@@ -56,7 +56,42 @@ public class FiltersController {
         }
         return (255<<24) | (rTotal<<16) | (gTotal<<8) | bTotal;
     }
-    
+
+    private int convolveAndCompareOnePixel(Kernel kx, Kernel ky, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b) throws RuntimeException{
+        int rx = 0;
+        int ry = 0;
+        int rTotal = 0;
+        int gx = 0;
+        int gy = 0;
+        int gTotal = 0;
+        int bx = 0;
+        int by = 0;
+        int bTotal = 0;
+        // If all matrices and the kernel have the same dimensions then we can convolute.
+        if(kx.getHeight() == ky.getHeight() && kx.getHeight() == r.size() && r.size() == g.size() && g.size() == b.size() && kx.getWidth() == ky.getWidth() && kx.getWidth() == r.get(0).size() && r.get(0).size() == g.get(0).size() && g.get(0).size() == b.get(0).size()){
+            for(int i = 0 ; i < kx.getHeight(); i++){
+                for(int j = 0 ; j < kx.getWidth(); j++){
+                    rx += r.get(i).get(j) * kx.getValue(j, i);
+                    gx += g.get(i).get(j) * kx.getValue(j, i);
+                    bx += b.get(i).get(j) * kx.getValue(j, i);
+                    ry += r.get(i).get(j) * ky.getValue(j, i);
+                    gy += g.get(i).get(j) * ky.getValue(j, i);
+                    by += b.get(i).get(j) * ky.getValue(j, i);
+                }
+            }
+            rTotal = Math.abs(rx)+  Math.abs(ry);
+            gTotal = Math.abs(gx)+  Math.abs(gy);
+            bTotal = Math.abs(bx)+  Math.abs(by);
+            rTotal = clampColorValue(rTotal);
+            gTotal = clampColorValue(gTotal);
+            bTotal = clampColorValue(bTotal);
+        }else{
+        // Error: Can't calculate convolution.
+          throw new RuntimeException("Error en las dimensiones de la convolución.");  //JOptionPane.showMessageDialog(this, "¡ERROR: Error en la convolusion!");
+        }
+        return (255<<24) | (rTotal<<16) | (gTotal<<8) | bTotal;
+    }
+
     private int medianOperationOnePixel(ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
         ArrayList<Integer> tmpR = new ArrayList();
         ArrayList<Integer> tmpG = new ArrayList();
@@ -93,7 +128,7 @@ public class FiltersController {
 
         return (255<<24) | (rTotal<<16) | (gTotal<<8) | bTotal;
     }
-    
+
     private Kernel getGaussianKernel(int n, boolean vert){
         Kernel k;
         int[] values;
@@ -171,7 +206,7 @@ public class FiltersController {
         k = new Kernel(values, w, h, ppx, ppy);
         return k;
     }
-    
+
     private Kernel getAverageKernel(int w, int h){
         Kernel k;
         int[] values = new int[w*h];
@@ -183,7 +218,7 @@ public class FiltersController {
 
         return k;
     }
-    
+
     private void initWindows(Kernel k, int x, int y, BufferedImage img, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
         int fillerValue = 0;
         // Calculating the "image" coordinates of each (0,0) windows pixels.
@@ -222,7 +257,7 @@ public class FiltersController {
             b.add(blueRow);
         }
     }
-    
+
     private void slideRightWindowsOnePixel(Kernel k, int x, int y, BufferedImage img, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
         int fillerValue = 0;
         // Calculating the "image" coordinates of each next-to-the-right windows pixels.
@@ -253,7 +288,7 @@ public class FiltersController {
             b.get(i).remove(0);
         }
     }
-    
+
     /**
     * Modifies an image giving it a Gaussian Blur effect with the kernel size and orientation provided.
     *
@@ -318,7 +353,7 @@ public class FiltersController {
         }
         return destImage;
     }
-    
+
     /**
     * Modifies an image giving it a Mean Blur effect with the kernel dimensions provided.
     *
@@ -354,7 +389,15 @@ public class FiltersController {
         }
         return destImage;
     }
-    
+
+    /**
+    * Modifies an image giving it a Median effect with the kernel dimensions provided.
+    *
+    * @param srcImage BufferedImage reference to the source image to be affected by the filter.
+    * @param w width of the kernel to be applied.
+    * @param h height of the kernel to be applied.
+    * @return A BufferedImage reference modified with a Median blur.
+    */
     public BufferedImage MedianFilter(BufferedImage srcImage, int w, int h){
         BufferedImage destImage = new BufferedImage(srcImage.getWidth(), srcImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
         int i;
@@ -376,5 +419,235 @@ public class FiltersController {
         }
         return destImage;
     }
-    
+
+    /**
+    * Calculates an images border gradients based on the orientation provided using Prewitt kernels.
+    *
+    * Orientation must be one of the following parameters or a null pointer will be returned.
+    * 1 = Vertical ; 2 = Horizontal; 3 = Diagonal (/); 4 = Diagonal (\); 5 = All combined 
+    * @param srcImage BufferedImage reference to the source image to be affected by the filter.
+    * @param orientation orientation of the kernel to be applied.
+    * @return A BufferedImage reference to an image detailing the given images border gradients against a black background.
+    */
+    public BufferedImage Prewitt(BufferedImage srcImage, int orientation){
+        BufferedImage destImage = new BufferedImage(srcImage.getWidth(), srcImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+        int i;
+        int j;
+        int[] vals;
+        Kernel krnl = null;
+        Kernel krnl1, krnl2, krnl3, krnl4;
+
+        vals = new int[]{-1, 0, 1, -1, 0, 1, -1, 0, 1};
+        krnl1 = new Kernel(vals, 3, 3, 1, 1);           //"Vertical |"
+        vals = new int[]{-1, -1, -1, 0, 0, 0, 1, 1, 1};
+        krnl2 = new Kernel(vals, 3, 3, 1, 1);           //"Horizontal -"
+        vals = new int[]{-1, -1, 0, -1, 0, 1, 0, 1, 1};
+        krnl3 = new Kernel(vals, 3, 3, 1, 1);           //"Diagonal /":
+        vals = new int[]{0, 1, 1, -1, 0, 1, -1, -1, 0};
+        krnl4 = new Kernel(vals, 3, 3, 1, 1);           //"Diagonal \\"
+
+        switch(orientation){
+            case 1:
+                krnl = krnl1;
+                break;
+            case 2:
+                krnl = krnl2;
+                break;
+            case 3:
+                krnl = krnl3;
+                break;
+            case 4:
+                krnl = krnl4;
+            case 5:
+                break;
+            default:
+                return null;
+        }
+
+        // These ArrayLists serve as sliding windows per color channel (Horizontal).
+        ArrayList<ArrayList<Integer>> red = new ArrayList();
+        ArrayList<ArrayList<Integer>> green = new ArrayList();
+        ArrayList<ArrayList<Integer>> blue = new ArrayList();
+
+        for(i = 0; i < srcImage.getHeight(); i++){
+            initWindows(krnl1, 0, i, srcImage, red, green, blue);
+            for(j = 0; j < srcImage.getWidth(); j++){
+                int newPixelValue1 = 0;
+                int newPixelValue2 = 0;
+                int newPixelValue3 = 0;
+                int newPixelValue4 = 0;
+
+                if(orientation == 5){
+                    try{
+                        newPixelValue1 = convolveOnePixel(krnl1, red, green, blue, false);
+                        newPixelValue2 = convolveOnePixel(krnl2, red, green, blue, false);
+                        newPixelValue3 = convolveOnePixel(krnl3, red, green, blue, false);
+                        newPixelValue4 = convolveOnePixel(krnl4, red, green, blue, false);
+                    }catch(RuntimeException re){
+                        throw new RuntimeException("No se pudo aplicar filtro Prewitt.",re);
+                    }
+
+                    int newPixelVal = Math.max(newPixelValue1, Math.max(newPixelValue2, Math.max(newPixelValue3, newPixelValue4)));
+                    destImage.setRGB(j, i, newPixelVal);
+                }else{
+                    try{
+                        newPixelValue1 = convolveOnePixel(krnl, red, green, blue, false);
+                    }catch(RuntimeException re){
+                        throw new RuntimeException("No se pudo aplicar filtro Prewitt.",re);
+                    }
+                    destImage.setRGB(j, i, newPixelValue1);
+                }
+                slideRightWindowsOnePixel(krnl1, j, i, srcImage, red, green, blue);
+            }
+        }
+        return destImage;
+    }
+
+    /**
+    * Calculates an images border gradients based on the orientation provided using Sobel kernels.
+    *
+    * Orientation must be one of the following parameters or a null pointer will be returned.
+    * 1 = Vertical ; 2 = Horizontal; 5 = All combined.
+    * @param srcImage BufferedImage reference to the source image to be affected by the filter.
+    * @param orientation orientation of the kernel to be applied.
+    * @return A BufferedImage reference to an image detailing the given images border gradients against a black background.
+    */
+    public BufferedImage Sobel(BufferedImage srcImage, int orientation){
+        BufferedImage destImage = new BufferedImage(srcImage.getWidth(), srcImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+        int i;
+        int j;
+        int[] vals;
+        Kernel krnl = null;
+        Kernel krnl1, krnl2;
+
+        vals = new int[]{-1, 0, 1, -2, 0, 2, -1, 0, 1};
+        krnl1 = new Kernel(vals, 3, 3, 1, 1);           //"Vertical"
+        vals = new int[]{-1, -2, -1, 0, 0, 0, 1, 2, 1};
+        krnl2 = new Kernel(vals, 3, 3, 1, 1);           //"Horizontal"
+        switch(orientation){
+            case 1:
+                krnl = krnl1;
+                break;
+            case 2:
+                krnl = krnl2;
+            case 5:
+                break;
+            default:
+                return null;
+        }
+        // These ArrayLists serve as sliding windows per color channel (Horizontal).
+        ArrayList<ArrayList<Integer>> red = new ArrayList();
+        ArrayList<ArrayList<Integer>> green = new ArrayList();
+        ArrayList<ArrayList<Integer>> blue = new ArrayList();
+
+        for(i = 0; i < srcImage.getHeight(); i++){
+            initWindows(krnl1, 0, i, srcImage, red, green, blue);
+            for(j = 0; j < srcImage.getWidth(); j++){
+                int newPixelVal = 0;
+
+                if(orientation == 5){
+                    try{
+                        newPixelVal = convolveAndCompareOnePixel(krnl2, krnl1, red, green, blue);
+                        //newPixelValue2 = convolveOnePixel(krnl2, red, green, blue, false);
+                    }catch(RuntimeException re){
+                        throw new RuntimeException("No se pudo aplicar filtro Sobel.",re);
+                    }
+                    destImage.setRGB(j, i, newPixelVal);
+                }else{
+                    try{
+                        newPixelVal = convolveOnePixel(krnl, red, green, blue, false);
+                    }catch(RuntimeException re){
+                        throw new RuntimeException("No se pudo aplicar filtro Sobel.",re);
+                    }
+                    destImage.setRGB(j, i, newPixelVal);
+                }
+                slideRightWindowsOnePixel(krnl1, j, i, srcImage, red, green, blue);
+            }
+        }
+        return destImage;
+    }
+
+    /**
+    * Calculates an images border gradients using the result from both Roberts kernels (\ and /).
+    *
+    * @param srcImage BufferedImage reference to the source image to be affected by the filter.
+    * @return A BufferedImage reference to an image detailing the given images border gradients against a black background.
+    */
+    public BufferedImage Roberts(BufferedImage srcImage){
+        BufferedImage destImage = new BufferedImage(srcImage.getWidth(), srcImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+        int i;
+        int j;
+        int[] vals;
+        Kernel krnl1, krnl2;
+
+        vals = new int[]{1, 0, 0, -1};
+        krnl1 = new Kernel(vals, 2, 2, 0, 0);   //"Vertical |"
+        vals = new int[]{0, 1, -1, 0};
+        krnl2 = new Kernel(vals, 2, 2, 0, 0);   //"Horizontal -"
+
+        // These ArrayLists serve as sliding windows per color channel (Horizontal).
+        ArrayList<ArrayList<Integer>> red = new ArrayList();
+        ArrayList<ArrayList<Integer>> green = new ArrayList();
+        ArrayList<ArrayList<Integer>> blue = new ArrayList();
+
+        for(i = 0; i < srcImage.getHeight(); i++){
+            initWindows(krnl1, 0, i, srcImage, red, green, blue);
+            for(j = 0; j < srcImage.getWidth(); j++){
+                int newPixelVal;
+
+                try{
+                    newPixelVal = convolveAndCompareOnePixel(krnl2, krnl1, red, green, blue);
+                    //newPixelValue2 = convolveOnePixel(krnl2, red, green, blue, false);
+                }catch(RuntimeException re){
+                    throw new RuntimeException("No se pudo aplicar filtro Prewitt.",re);
+                }
+                destImage.setRGB(j, i, newPixelVal);
+
+                slideRightWindowsOnePixel(krnl1, j, i, srcImage, red, green, blue);
+            }
+        }
+        return destImage;
+    }
+
+    /**
+    * Calculates an images border gradients using the Laplacian 3x3 kernel.
+    *
+    *  The kernel used is: {-1, -1, -1, -1, 8, -1, -1, -1, -1}
+    * @param srcImage BufferedImage reference to the source image to be affected by the filter.
+    * @return A BufferedImage reference to an image detailing the given images border gradients against a black background.
+    */
+    public BufferedImage Laplacian(BufferedImage srcImage){
+        BufferedImage destImage = new BufferedImage(srcImage.getWidth(), srcImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+        int i;
+        int j;
+        int[] vals;
+        Kernel krnl;
+
+        vals = new int[]{-1, -1, -1, -1, 8, -1, -1, -1, -1};
+        //vals = new int[]{0, -1, 0, -1, 4, -1, 0, -1, 0};
+        krnl = new Kernel(vals, 3, 3, 1, 1);
+
+        // These ArrayLists serve as sliding windows per color channel (Horizontal).
+        ArrayList<ArrayList<Integer>> red = new ArrayList();
+        ArrayList<ArrayList<Integer>> green = new ArrayList();
+        ArrayList<ArrayList<Integer>> blue = new ArrayList();
+
+        for(i = 0; i < srcImage.getHeight(); i++){
+            initWindows(krnl, 0, i, srcImage, red, green, blue);
+            for(j = 0; j < srcImage.getWidth(); j++){
+                int newPixelVal;
+
+                try{
+                    newPixelVal = convolveOnePixel(krnl, red, green, blue, false);
+                }catch(RuntimeException re){
+                    throw new RuntimeException("No se pudo aplicar filtro Laplaciano del Gaussiano.",re);
+                }
+                destImage.setRGB(j, i, newPixelVal);
+
+                slideRightWindowsOnePixel(krnl, j, i, srcImage, red, green, blue);
+            }
+        }
+        return destImage;
+    }
+
 }
