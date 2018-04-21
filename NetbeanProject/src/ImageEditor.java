@@ -544,7 +544,7 @@ public class ImageEditor extends javax.swing.JFrame {
         }
     }
 
-    private int bilinealInterpolation(int colorNW, int colorNE, int colorSW, int colorSE, float a, float b){
+    private int bilinealInterpolation(int colorNW, int colorNE, int colorSW, int colorSE, double a, double b){
         int NWNEr = (int)((1 - a) * ((colorNW >> 16) & 0xff) + a * ((colorNE >> 16) & 0xff));
         int NWNEg = (int)((1 - a) * ((colorNW >> 8) & 0xff) + a * ((colorNE >> 8) & 0xff));
         int NWNEb = (int)((1 - a) * (colorNW & 0xff) + a * (colorNE & 0xff));
@@ -1760,7 +1760,8 @@ public class ImageEditor extends javax.swing.JFrame {
         height = img.getHeight();
     }
 
-    private void FreeRotationController(int degrees, boolean crop){
+    private void FreeRotationController(int degrees, boolean crop, int TYPE){
+        // TYPE: 0 = pixel replication, 1 = bilineal interpolation
         double cosDegrees = Math.cos(Math.toRadians(degrees));
         double sinDegrees = Math.sin(Math.toRadians(degrees));
         int newWidth;
@@ -1770,9 +1771,15 @@ public class ImageEditor extends javax.swing.JFrame {
         double cy = height / 2  + 0.5;
         int newX;
         int newY;
+        double trueX;
+        double trueY;
+        int nwX, nwY, neX, neY, swX, swY, seX, seY;
+        double a, b;
+        int colorNW , colorNE, colorSW, colorSE;
         int[] coordsBB = new int[]{0,0,0,0,0,0,0,0};
         BufferedImage imgTemp;
 
+        //colorNW = colorNE = colorSW = colorSE = -16777216;
         if(crop){
             newWidth = width;
             newHeight = height;
@@ -1782,23 +1789,60 @@ public class ImageEditor extends javax.swing.JFrame {
             int[] dims = getRotatedImageDimensions(coordsBB);
             newWidth = dims[0];
             newHeight = dims[1];
-            //cx += coordsBB[0];
-            //cy += coordsBB[2];
         }
-
         imgTemp = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_3BYTE_BGR);
-        for(int y = 0 + coordsBB[2]; y < newHeight + coordsBB[2]; y++){
-            for(int x = 0 + coordsBB[0]; x < newWidth + coordsBB[0]; x++){
-                // Backwards Mapping
-                newX = (int)(cosDegrees * (x - cx) + sinDegrees * (y - cy) + cx );
-                newY = (int)(-sinDegrees * (x - cx) + cosDegrees * (y - cy )+ cy );
-                if(newX >= 0 && newX < width && newY >= 0 && newY < height){
-                    pvalue = img.getRGB(newX, newY);
-                    imgTemp.setRGB(x - coordsBB[0] , y - coordsBB[2], pvalue);
-                }
-            }
-        }
 
+        switch(TYPE){
+            case 0: //USING NEAREST NEIGHBOR OR PIXEL REPLICATION
+                for(int y = 0 + coordsBB[2]; y < newHeight + coordsBB[2]; y++){
+                    for(int x = 0 + coordsBB[0]; x < newWidth + coordsBB[0]; x++){
+                        // Backwards Mapping
+                        newX = (int)(cosDegrees * (x - cx) + sinDegrees * (y - cy) + cx );
+                        newY = (int)(-sinDegrees * (x - cx) + cosDegrees * (y - cy )+ cy );
+                        if(newX >= 0 && newX < width && newY >= 0 && newY < height){
+                            pvalue = img.getRGB(newX, newY);
+                            imgTemp.setRGB(x - coordsBB[0] , y - coordsBB[2], pvalue);
+                        }
+                    }
+                }
+                break;
+            case 1: //USING Bilineal Interpolation
+                for(int y = 0 + coordsBB[2]; y < newHeight + coordsBB[2]; y++){
+                    for(int x = 0 + coordsBB[0]; x < newWidth + coordsBB[0]; x++){
+                        trueX = cosDegrees * (x - cx) + sinDegrees * (y - cy) + cx;
+                        trueY = -sinDegrees * (x - cx) + cosDegrees * (y - cy )+ cy;
+                        nwX = (int)Math.floor(trueX);
+                        nwY = (int)Math.floor(trueY);
+                        if(nwX < 0 || nwX >= width || nwY < 0 || nwY >= height){
+                            continue;
+                        }
+                        colorNW = img.getRGB(nwX, nwY);
+                        if(nwX + 1 < width){
+                            neX = nwX + 1;
+                            a = trueX - (double)nwX;
+                        }else{
+                            neX =nwX;
+                            a = 1;
+                        }
+                        neY = nwY;
+                        colorNE = img.getRGB(neX, neY);
+                        swX = nwX;
+                        if(nwY + 1 < height){
+                            swY = nwY + 1;
+                            b = trueY - (double)nwY;
+                        }else{
+                            swY = nwY;
+                            b = 1;
+                        }
+                        colorSW = img.getRGB(swX, swY);
+                        seX = neX;
+                        seY = swY;
+                        colorSE = img.getRGB(seX, seY);
+                        pvalue = bilinealInterpolation(colorNW, colorNE, colorSW, colorSE, a, b);
+                        imgTemp.setRGB(x - coordsBB[0] , y - coordsBB[2], pvalue);
+                    }
+                }
+        }
         img  = imgTemp;
         if(!crop){
             width = img.getWidth();
@@ -2750,11 +2794,11 @@ public class ImageEditor extends javax.swing.JFrame {
             JLabel labelZoomFactorY = new JLabel("  Alto:");
             JLabel labelpctg1 = new JLabel(" %");
             JLabel labelpctg2 = new JLabel(" %");
-            JLabel labelComboBox = new JLabel("Tipo de Escalamiento: ");
+            JLabel labelComboBox = new JLabel("Interpolación: ");
             JLabel labelValidValues = new JLabel("Valores válidos entre 1 y 1000");
             JPanel spinPanel1 = new JPanel();
             JPanel spinPanel2 = new JPanel();
-            String[] scalingTypes = { "Vecino más cercano", "Interpolación Bilineal" };
+            String[] scalingTypes = { "Vecino más cercano", "Bilineal" };
             JComboBox scalingTypeList = new JComboBox(scalingTypes);
 
             labelValidValues.setHorizontalAlignment(JLabel.CENTER);
@@ -2793,18 +2837,21 @@ public class ImageEditor extends javax.swing.JFrame {
     private void RotacionLibreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RotacionLibreActionPerformed
         if (img != null){
             JCheckBox cropCB = new JCheckBox("Recortar imagen");
-            SpinnerNumberModel model1 = new SpinnerNumberModel(90, 0, 360, 1);  // Initial value, min, max, step
+            SpinnerNumberModel model1 = new SpinnerNumberModel(35, 0, 360, 1);  // Initial value, min, max, step
             JSpinner spinDegrees = new JSpinner(model1);
             JLabel labelDegrees = new JLabel("Grados :");
             JLabel labelRotationDirection = new JLabel("Giro en sentido CW");
             JPanel panel1 = new JPanel();
+            JLabel labelComboBox = new JLabel("Interpolación: ");
+            String[] scalingTypes = { "Vecino más cercano", "Bilineal" };
+            JComboBox scalingTypeList = new JComboBox(scalingTypes);
 
             labelRotationDirection.setHorizontalAlignment(JLabel.CENTER);
             panel1.add(labelDegrees);
             panel1.add(spinDegrees);
             panel1.add(cropCB);
-            cropCB.setSelected(false);
-            Object[] params = {labelRotationDirection, panel1, };
+            cropCB.setSelected(true);
+            Object[] params = {labelRotationDirection, panel1, labelComboBox, scalingTypeList};
             Object[] options = {"Aceptar", "Cancelar"};
             int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
                                                         params,
@@ -2819,7 +2866,7 @@ public class ImageEditor extends javax.swing.JFrame {
             }
 
             if ((int)spinDegrees.getValue() != 0 || (int)spinDegrees.getValue() != 360){
-                FreeRotationController((int)spinDegrees.getValue(), cropCB.isSelected());
+                FreeRotationController((int)spinDegrees.getValue(), cropCB.isSelected(), scalingTypeList.getSelectedIndex());
                 refreshImageDisplayed(true, true);
             }else{
                 refreshImageDisplayed(false, true);
