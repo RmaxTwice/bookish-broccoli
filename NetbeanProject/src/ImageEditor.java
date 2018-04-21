@@ -52,7 +52,8 @@ import MyUtils.*;
  * @author Rafael Vasquez
  */
 public class ImageEditor extends javax.swing.JFrame {
-    
+    // Creating filter controller class
+    private final FiltersController myFilters;
     // Creating a JLabel to display image.
     private final JLabel imglabel;
     // Creating more jLabels for histograms
@@ -89,6 +90,7 @@ public class ImageEditor extends javax.swing.JFrame {
     public ImageEditor() {
         initComponents();
         
+        myFilters = new FiltersController();
         imglabel = new JLabel();
 				//Labels for histograms;
         rLabel = new JLabel();
@@ -1517,153 +1519,6 @@ private void getBitsPerPixel(){
             b.get(i).remove(0);
         }
     }
-    
-    /**
-    * Modifies an image giving it a Gaussian Blur effect with the kernel size and orientation provided.
-    *
-    * @param n Size of the kernel.
-    * @param Vert Boolean, if true Vertical Gaussian Blur will be applied.
-    * @param Horiz Boolean, if true Horizontal Gaussian Blur will be applied.
-    */
-    private void GaussianBlurController( int n, boolean Vert, boolean Horiz ) throws RuntimeException{
-        BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-        int i;
-        int j;
-      
-        if (Horiz){
-            Kernel krnlHoriz = getGaussianKernel(n, false);
-            // These ArrayLists serve as sliding windows per color channel (Horizontal).
-            ArrayList<ArrayList<Integer>> red = new ArrayList();
-            ArrayList<ArrayList<Integer>> green = new ArrayList();
-            ArrayList<ArrayList<Integer>> blue = new ArrayList();
-
-            for(i = 0; i < height; i++){
-                initWindows(krnlHoriz, 0, i, red, green, blue);
-                for(j = 0; j < width; j++){
-                    int newPixelValue = 0;
-                    try{
-                        newPixelValue = convolveOnePixel(krnlHoriz, red, green, blue, true);
-                    }catch(RuntimeException re){
-                        throw new RuntimeException("No se pudo aplicar filtro gaussiano.",re);
-                    }
-                    imgTemp.setRGB(j, i, newPixelValue);
-
-                    slideRightWindowsOnePixel(krnlHoriz, j, i, red, green, blue);
-                }
-            }
-            img = imgTemp;
-        }
-
-        if(Vert){
-            Kernel krnlVert = getGaussianKernel(n, true);
-            // These ArrayLists serve as sliding windows per color channel (Horizontal).
-            ArrayList<ArrayList<Integer>> red = new ArrayList();
-            ArrayList<ArrayList<Integer>> green = new ArrayList();
-            ArrayList<ArrayList<Integer>> blue = new ArrayList();
-
-            for(i = 0; i < height; i++){
-                initWindows(krnlVert, 0, i, red, green, blue);
-                for(j = 0; j < width; j++){
-                    int newPixelValue = 0;
-                    try{
-                        newPixelValue = convolveOnePixel(krnlVert, red, green, blue, true);
-                    }catch(RuntimeException re){
-                        throw new RuntimeException("No se pudo aplicar filtro gaussiano.",re);
-                    }
-                    imgTemp.setRGB(j, i, newPixelValue);
-
-                    slideRightWindowsOnePixel(krnlVert, j, i, red, green, blue);
-                }
-            }
-            img = imgTemp;
-        }
-    }
-    
-    /**
-    * Returns the correct Gaussian blur kernel according to the size and orientation given.  
-    *
-    * If a size bigger than 7 or smaller than 2 is given this function returns a null pointer.
-    * Also this function returns only row or column shaped kernels.
-    * @param n Size of the kernel.
-    * @param vert Boolean, true returns Vertical kernel, else returns horizontal.
-    */
-    private Kernel getGaussianKernel(int n, boolean vert){
-        Kernel k;
-        int[] values;
-        int ppx;
-        int ppy;
-        int w;
-        int h;
-
-        if(vert){
-            w = 1;
-            h = n;
-        }else{
-            w = n;
-            h = 1;
-        }
-
-        switch(n){
-            case 2:
-                ppx = ppy = 0;
-                values = new int[]{1, 1};
-                break;
-            case 3:
-                if(vert){       // Is it vertical?
-                    ppx = 0;
-                    ppy = 1;
-                }else{          // It is horizontal.
-                    ppx = 1;
-                    ppy = 0;
-                }
-                values = new int[]{1, 2, 1};
-                break;
-            case 4:
-                if(vert){       // Is it vertical?
-                    ppx = 0;
-                    ppy = 1;
-                }else{          // It is horizontal.
-                    ppx = 1;
-                    ppy = 0;
-                }
-                values = new int[]{1, 3, 3, 1};
-                break;
-            case 5:
-                if(vert){       // Is it vertical?
-                    ppx = 0;
-                    ppy = 2;
-                }else{          // It is horizontal.
-                    ppx = 2;
-                    ppy = 0;
-                }
-                values = new int[]{1, 4, 6, 4, 1};
-                break;
-            case 6:
-                if(vert){       // Is it vertical?
-                    ppx = 0;
-                    ppy = 2;
-                }else{          // It is horizontal.
-                    ppx = 2;
-                    ppy = 0;
-                }
-                values = new int[]{1, 5, 10, 10, 5, 1};
-                break;
-            case 7:
-                if(vert){       // Is it vertical?
-                    ppx = 0;
-                    ppy = 3;
-                }else{          // It is horizontal.
-                    ppx = 3;
-                    ppy = 0;
-                }
-                values = new int[]{1, 6, 15, 20, 15, 6, 1};
-                break;
-            default:
-                return null;
-        }
-        k = new Kernel(values, w, h, ppx, ppy);
-        return k;
-    }
 
     private Kernel getAverageKernel(int w, int h){
         Kernel k;
@@ -2656,8 +2511,8 @@ private void getBitsPerPixel(){
             }
 
             try{
-                // Passing orientation and size to the controller function. 
-                GaussianBlurController(kernelSizeSlider.getValue(), Vert, Horiz);
+                // Passing orientation and size to the controller function.
+                img = myFilters.GaussianBlur(img, kernelSizeSlider.getValue(), Vert, Horiz);
             }catch(RuntimeException re){
                 JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
                 return;
@@ -2948,7 +2803,7 @@ private void getBitsPerPixel(){
         if (img != null){
             try{
                 // Passing dimensions to the controller function.
-                GaussianBlurController(3, true, true);
+                img = myFilters.GaussianBlur(img, 3, true, true);
                 LaplacianoController();
             }catch(RuntimeException re){
                 JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
