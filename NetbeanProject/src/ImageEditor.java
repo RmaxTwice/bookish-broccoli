@@ -1519,68 +1519,8 @@ private void getBitsPerPixel(){
             b.get(i).remove(0);
         }
     }
-
-    private Kernel getAverageKernel(int w, int h){
-        Kernel k;
-        int[] values = new int[w*h];
-        int ppx = (w % 2 == 0) ? w / 2 - 1 : w / 2;
-        int ppy = (h % 2 == 0) ? h / 2 - 1 : h / 2;
-
-        Arrays.fill(values, 1);
-        k = new Kernel(values, w, h, ppx, ppy);
-
-        return k;
-    }
-
-    private void AverageBlurController(int w, int h) throws RuntimeException {
-        BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-        int i;
-        int j;
-
-        Kernel krnl = getAverageKernel(w, h);
-        // These ArrayLists serve as sliding windows per color channel (Horizontal).
-        ArrayList<ArrayList<Integer>> red = new ArrayList();
-        ArrayList<ArrayList<Integer>> green = new ArrayList();
-        ArrayList<ArrayList<Integer>> blue = new ArrayList();
-
-        for(i = 0; i < height; i++){
-            initWindows(krnl, 0, i, red, green, blue);
-            for(j = 0; j < width; j++){
-                int newPixelValue = 0;
-                try{
-                    newPixelValue = convolveOnePixel(krnl, red, green, blue, true);
-                }catch(RuntimeException re){
-                    throw new RuntimeException("No se pudo aplicar filtro promedio.",re);
-                }
-                imgTemp.setRGB(j, i, newPixelValue);
-
-                slideRightWindowsOnePixel(krnl, j, i, red, green, blue);
-            }
-        }
-        img = imgTemp;
-    }
+ 
     
-    private void medianFilterController(int w, int h){
-        BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-        int i;
-        int j;
-
-        Kernel krnl = getAverageKernel(w, h);
-        // These ArrayLists serve as sliding windows per color channel (Horizontal).
-        ArrayList<ArrayList<Integer>> red = new ArrayList();
-        ArrayList<ArrayList<Integer>> green = new ArrayList();
-        ArrayList<ArrayList<Integer>> blue = new ArrayList();
-
-        for(i = 0; i < height; i++){
-            initWindows(krnl, 0, i, red, green, blue);
-            for(j = 0; j < width; j++){
-                int newPixelValue = medianOperationOnePixel(red, green, blue);
-                imgTemp.setRGB(j, i, newPixelValue);
-                slideRightWindowsOnePixel(krnl, j, i, red, green, blue);
-            }
-        }
-        img = imgTemp;
-    }
 
     private void PrewittController(int orientation){
         BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
@@ -1966,43 +1906,6 @@ private void getBitsPerPixel(){
         if(!crop){
             updateDimensions();
         }
-    }
-
-    private int medianOperationOnePixel(ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
-        ArrayList<Integer> tmpR = new ArrayList();
-        ArrayList<Integer> tmpG = new ArrayList();
-        ArrayList<Integer> tmpB = new ArrayList();
-        boolean odd = true;
-        int rTotal;
-        int gTotal;
-        int bTotal;
-
-        if(r.size()*r.get(0).size() % 2 == 0){ // If h * w of the windows is an even number...
-            odd = false;
-        }
-        for(int i = 0; i < r.size(); i++){
-            tmpR.addAll(r.get(i));
-            tmpG.addAll(g.get(i));
-            tmpB.addAll(b.get(i));
-        }
-        Collections.sort(tmpR);
-        Collections.sort(tmpG);
-        Collections.sort(tmpB);
-        int indx = tmpR.size() / 2;
-        if(odd){
-              rTotal = tmpR.get(indx);
-              gTotal = tmpG.get(indx);
-              bTotal = tmpB.get(indx);
-        }else{
-              rTotal = (tmpR.get(indx) + tmpR.get(indx-1)) / 2;
-              gTotal = (tmpG.get(indx) + tmpG.get(indx-1)) / 2;
-              bTotal = (tmpB.get(indx) + tmpB.get(indx-1)) / 2;
-        }
-        rTotal = clampColorValue(rTotal);
-        gTotal = clampColorValue(gTotal);
-        bTotal = clampColorValue(bTotal);
-
-        return (255<<24) | (rTotal<<16) | (gTotal<<8) | bTotal;
     }
 
     //Function to set parameters of B&W slider
@@ -2511,7 +2414,7 @@ private void getBitsPerPixel(){
             }
 
             try{
-                // Passing orientation and size to the controller function.
+                // Passing orientation and size to the filter function.
                 img = myFilters.GaussianBlur(img, kernelSizeSlider.getValue(), Vert, Horiz);
             }catch(RuntimeException re){
                 JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
@@ -2566,8 +2469,9 @@ private void getBitsPerPixel(){
                 return;
             }
             try{
-                // Passing dimensions to the controller function.
-                AverageBlurController(w, h);
+                // Passing dimensions to the filter function.
+                img = myFilters.MeanBlur(img, w, h);
+                //AverageBlurController(w, h);
             }catch(RuntimeException re){
                 JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
                 return;
@@ -2620,8 +2524,9 @@ private void getBitsPerPixel(){
                 // return at once.
                 return;
             }
-            // Passing dimensions to the controller function.
-            medianFilterController(w, h);
+            // Passing dimensions to the filter function.
+            img = myFilters.MedianFilter(img, w, h);//   medianFilterController(w, h);
+            
             // Changing the image format since binary becomes grayscale after a blur operation.
             if(format == 1){
                 format = 2; // grayscale
