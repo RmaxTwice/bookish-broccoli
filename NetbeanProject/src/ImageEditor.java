@@ -30,6 +30,7 @@ import javax.swing.JRadioButton;
 import MyUtils.*;
 import java.util.Arrays;
 import java.util.Collections;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
@@ -131,6 +132,7 @@ public class ImageEditor extends javax.swing.JFrame {
         Rotacion = new javax.swing.JMenu();
         Rotar90CW = new javax.swing.JMenuItem();
         Rotar90CCW = new javax.swing.JMenuItem();
+        RotacionLibre = new javax.swing.JMenuItem();
         Escalamiento = new javax.swing.JMenuItem();
         MenuVer = new javax.swing.JMenu();
         Zoom = new javax.swing.JMenuItem();
@@ -299,6 +301,14 @@ public class ImageEditor extends javax.swing.JFrame {
             }
         });
         Rotacion.add(Rotar90CCW);
+
+        RotacionLibre.setText("Libre");
+        RotacionLibre.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RotacionLibreActionPerformed(evt);
+            }
+        });
+        Rotacion.add(RotacionLibre);
 
         MenuEditar.add(Rotacion);
 
@@ -599,6 +609,64 @@ public class ImageEditor extends javax.swing.JFrame {
         }
         k = new Kernel(vals, w, h, (int)pivotX.getValue(), (int)pivotY.getValue());
         return k;
+    }
+
+    private int[] getRotatedImageDimensions(int[] BBcoords){
+        //BBcoords: 0 = minX, 1 = maxX, 2 = minY, 3 = maxY;
+        // 0 = width, 1 = height.
+        if(BBcoords.length == 4){
+            int[] whArray = new int[2];
+            whArray[0] = BBcoords[1] - BBcoords[0];
+            whArray[1] = BBcoords[3] - BBcoords[2];
+            return whArray;
+        }
+        return null;
+    }
+
+    private int[] getRotatedImageBoundingBox(double cosDegrees, double sinDegrees, double cx, double cy){
+            int maxX = -9999999;
+            int minX = 9999999;
+            int maxY = -9999999;
+            int minY = 9999999;
+            int buffer = 2;
+            //0 = minX, 1 = maxX, 2 = minY, 3 = maxY;
+            int[] res = new int[4];
+            // Pairs of coordinates(x,y) of NW, NE, SW and SE corners of the image.
+            int[] cornerCoords = new int[8];
+
+            // Forward Mapping
+            cornerCoords[0] = (int)(cosDegrees * (0 - cx) - sinDegrees * (0 - cy) + cx );
+            cornerCoords[1] = (int)(sinDegrees * (0 - cx) + cosDegrees * (0 - cy )+ cy );
+
+            cornerCoords[2] = (int)(cosDegrees * (width - 1 - cx) - sinDegrees * (0 - cy) + cx );
+            cornerCoords[3] = (int)(sinDegrees * (width - 1 - cx) + cosDegrees * (0 - cy )+ cy );
+
+            cornerCoords[4] = (int)(cosDegrees * (0 - cx) - sinDegrees * (height - 1 - cy) + cx );
+            cornerCoords[5] = (int)(sinDegrees * (0 - cx) + cosDegrees * (height - 1 - cy )+ cy );
+
+            cornerCoords[6] = (int)(cosDegrees * (width - 1 - cx) - sinDegrees * (height - 1 - cy) + cx );
+            cornerCoords[7] = (int)(sinDegrees * (width - 1 - cx) + cosDegrees * (height - 1 - cy )+ cy );
+
+            for(int i = 0; i < 4; i++){
+                if (cornerCoords[i*2] < minX){
+                    minX  = cornerCoords[i*2];
+                }
+                if (cornerCoords[i*2] > maxX){
+                    maxX  = cornerCoords[i*2];
+                }
+                if (cornerCoords[i*2 + 1] < minY){
+                    minY  = cornerCoords[i*2  + 1];
+                }
+                if (cornerCoords[i*2 + 1] > maxY){
+                    maxY  = cornerCoords[i*2  + 1];
+                }
+            }
+            res[0] = minX - buffer;
+            res[1] = maxX + buffer;
+            res[2] = minY - buffer;
+            res[3] = maxY + buffer;
+
+            return res;
     }
 
     private void writeRLEFile(String filename){
@@ -1692,6 +1760,52 @@ public class ImageEditor extends javax.swing.JFrame {
         height = img.getHeight();
     }
 
+    private void FreeRotationController(int degrees, boolean crop){
+        double cosDegrees = Math.cos(Math.toRadians(degrees));
+        double sinDegrees = Math.sin(Math.toRadians(degrees));
+        int newWidth;
+        int newHeight;
+        int pvalue;
+        double cx = width / 2 + 0.5;
+        double cy = height / 2  + 0.5;
+        int newX;
+        int newY;
+        int[] coordsBB = new int[]{0,0,0,0,0,0,0,0};
+        BufferedImage imgTemp;
+
+        if(crop){
+            newWidth = width;
+            newHeight = height;
+        }else{
+            //coordsBB: 0 = minX, 1 = maxX, 2 = minY, 3 = maxY;
+            coordsBB = getRotatedImageBoundingBox(cosDegrees, sinDegrees, cx, cy);
+            int[] dims = getRotatedImageDimensions(coordsBB);
+            newWidth = dims[0];
+            newHeight = dims[1];
+            //cx += coordsBB[0];
+            //cy += coordsBB[2];
+        }
+
+        imgTemp = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_3BYTE_BGR);
+        for(int y = 0 + coordsBB[2]; y < newHeight + coordsBB[2]; y++){
+            for(int x = 0 + coordsBB[0]; x < newWidth + coordsBB[0]; x++){
+                // Backwards Mapping
+                newX = (int)(cosDegrees * (x - cx) + sinDegrees * (y - cy) + cx );
+                newY = (int)(-sinDegrees * (x - cx) + cosDegrees * (y - cy )+ cy );
+                if(newX >= 0 && newX < width && newY >= 0 && newY < height){
+                    pvalue = img.getRGB(newX, newY);
+                    imgTemp.setRGB(x - coordsBB[0] , y - coordsBB[2], pvalue);
+                }
+            }
+        }
+
+        img  = imgTemp;
+        if(!crop){
+            width = img.getWidth();
+            height = img.getHeight();
+        }
+    }
+
     private int medianOperationOnePixel(ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
         ArrayList<Integer> tmpR = new ArrayList();
         ArrayList<Integer> tmpG = new ArrayList();
@@ -2676,6 +2790,46 @@ public class ImageEditor extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_EscalamientoActionPerformed
 
+    private void RotacionLibreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RotacionLibreActionPerformed
+        if (img != null){
+            JCheckBox cropCB = new JCheckBox("Recortar imagen");
+            SpinnerNumberModel model1 = new SpinnerNumberModel(90, 0, 360, 1);  // Initial value, min, max, step
+            JSpinner spinDegrees = new JSpinner(model1);
+            JLabel labelDegrees = new JLabel("Grados :");
+            JLabel labelRotationDirection = new JLabel("Giro en sentido CW");
+            JPanel panel1 = new JPanel();
+
+            labelRotationDirection.setHorizontalAlignment(JLabel.CENTER);
+            panel1.add(labelDegrees);
+            panel1.add(spinDegrees);
+            panel1.add(cropCB);
+            cropCB.setSelected(false);
+            Object[] params = {labelRotationDirection, panel1, };
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                                                        params,
+                                                        "Opciones de Rotación Libre",
+                                                        JOptionPane.YES_NO_OPTION,
+                                                        JOptionPane.QUESTION_MESSAGE,
+                                                        null,           // Don't use a custom Icon
+                                                        options,        // The strings of buttons
+                                                        options[0]);    // Default button title
+            if (result == JOptionPane.NO_OPTION){
+                return;
+            }
+
+            if ((int)spinDegrees.getValue() != 0 || (int)spinDegrees.getValue() != 360){
+                FreeRotationController((int)spinDegrees.getValue(), cropCB.isSelected());
+                refreshImageDisplayed(true, true);
+            }else{
+                refreshImageDisplayed(false, true);
+            }
+            Estado.setText("Aplicando Rotación CW de " + (int)spinDegrees.getValue() +"º | Colores Únicos en imagen: " + colorsCounter);
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_RotacionLibreActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -2732,6 +2886,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JMenuItem Readme;
     private javax.swing.JMenuItem Roberts;
     private javax.swing.JMenu Rotacion;
+    private javax.swing.JMenuItem RotacionLibre;
     private javax.swing.JMenuItem Rotar90CCW;
     private javax.swing.JMenuItem Rotar90CW;
     private javax.swing.JPanel ScrollPanePanel;
