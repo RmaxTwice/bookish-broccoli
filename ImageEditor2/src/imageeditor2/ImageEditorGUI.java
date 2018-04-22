@@ -1,3 +1,9 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package imageeditor2;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.awt.BasicStroke;
@@ -33,20 +39,12 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import MyUtils.*;
-
-
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
  *
- * @author Raquel Escalante
  * @author Rafael Vasquez
+ * @author Raquel Escalante
  */
-public class ImageEditor extends javax.swing.JFrame {
+public class ImageEditorGUI extends javax.swing.JFrame {
     // Creating filter controller class
     private final FiltersController myFilters;
     // Creating a JLabel to display image.
@@ -79,12 +77,12 @@ public class ImageEditor extends javax.swing.JFrame {
     private int [] GreenBins;
     private int [] BlueBins;
     
+    
     /**
-     * Creates new form ImageEditor
+     * Creates new form ImageEditorGUI
      */
-    public ImageEditor() {
+    public ImageEditorGUI() {
         initComponents();
-        
         myFilters = new FiltersController();
         imglabel = new JLabel();
 				//Labels for histograms;
@@ -129,10 +127,6 @@ public class ImageEditor extends javax.swing.JFrame {
     private void initComponents() {
 
         jMenu1 = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
-        jMenuItem2 = new javax.swing.JMenuItem();
-        jMenuItem3 = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
         ScrollPanePanel = new javax.swing.JPanel();
         jScrollPane = new javax.swing.JScrollPane();
         ImageInfoPanel = new javax.swing.JPanel();
@@ -151,7 +145,6 @@ public class ImageEditor extends javax.swing.JFrame {
         VerdeLabel = new javax.swing.JLabel();
         AzulLabel = new javax.swing.JLabel();
         BarraEstadoPanel = new javax.swing.JPanel();
-        BarraEstado = new javax.swing.JPanel();
         Estado = new javax.swing.JLabel();
         MenuBar = new javax.swing.JMenuBar();
         MenuArchivo = new javax.swing.JMenu();
@@ -185,31 +178,16 @@ public class ImageEditor extends javax.swing.JFrame {
         Laplaciano = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
         Personalizado = new javax.swing.JMenuItem();
-        Ayuda = new javax.swing.JMenu();
+        MenuAyuda = new javax.swing.JMenu();
         Readme = new javax.swing.JMenuItem();
         About = new javax.swing.JMenuItem();
 
         jMenu1.setText("jMenu1");
 
-        jMenuItem1.setText("jMenuItem1");
-
-        jMenuItem2.setText("jMenuItem2");
-
-        jMenuItem3.setText("jMenuItem3");
-
-        jMenu2.setText("jMenu2");
-
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Editor de Imagenes | by Raquel Escalante & Rafael Vasquez");
-        setBounds(new java.awt.Rectangle(0, 0, 800, 600));
-        setMaximumSize(getMaximumSize());
 
-        jScrollPane.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        jScrollPane.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        jScrollPane.setDoubleBuffered(true);
-        jScrollPane.setPreferredSize(new java.awt.Dimension(1011, 1));
-
-				InfoPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
+        InfoPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         InfoLabel.setText("Información de la imagen");
 
@@ -232,15 +210,15 @@ public class ImageEditor extends javax.swing.JFrame {
             .addGroup(InfoPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(InfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(InfoLabel)
                     .addGroup(InfoPanelLayout.createSequentialGroup()
-                        .addGap(12, 12, 12)
+                        .addGap(10, 10, 10)
                         .addGroup(InfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(BPP)
                             .addComponent(Dimensiones)
                             .addComponent(Colores)
-                            .addComponent(DPI))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(DPI)))
+                    .addComponent(InfoLabel))
+                .addContainerGap(158, Short.MAX_VALUE))
         );
         InfoPanelLayout.setVerticalGroup(
             InfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -255,10 +233,10 @@ public class ImageEditor extends javax.swing.JFrame {
                 .addComponent(Colores)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(DPI)
-                .addContainerGap(20, Short.MAX_VALUE))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
 
-        HistoPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
+        HistoPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         HistoLabel.setText("Histogramas");
 
@@ -288,17 +266,14 @@ public class ImageEditor extends javax.swing.JFrame {
             .addGroup(HistoPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(HistoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(BlueHistogram, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(GreenHistogram, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(HistoPanelLayout.createSequentialGroup()
-                        .addGroup(HistoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(HistoLabel)
-                            .addComponent(RojoLabel)
-                            .addComponent(AzulLabel)
-                            .addComponent(RedHistogram, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(VerdeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                    .addComponent(HistoLabel)
+                    .addComponent(RojoLabel)
+                    .addComponent(AzulLabel)
+                    .addComponent(RedHistogram, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(VerdeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(GreenHistogram, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(BlueHistogram, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         HistoPanelLayout.setVerticalGroup(
             HistoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -325,7 +300,8 @@ public class ImageEditor extends javax.swing.JFrame {
         ImageInfoPanelLayout.setHorizontalGroup(
             ImageInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, ImageInfoPanelLayout.createSequentialGroup()
-                .addGroup(ImageInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addContainerGap()
+                .addGroup(ImageInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(HistoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(InfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -335,9 +311,8 @@ public class ImageEditor extends javax.swing.JFrame {
             .addGroup(ImageInfoPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(InfoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(HistoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(HistoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout ScrollPanePanelLayout = new javax.swing.GroupLayout(ScrollPanePanel);
@@ -345,83 +320,75 @@ public class ImageEditor extends javax.swing.JFrame {
         ScrollPanePanelLayout.setHorizontalGroup(
             ScrollPanePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(ScrollPanePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(ImageInfoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addComponent(jScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 800, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(ImageInfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         ScrollPanePanelLayout.setVerticalGroup(
             ScrollPanePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(ScrollPanePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(ImageInfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(jScrollPane)
+            .addComponent(ImageInfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        BarraEstado.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        BarraEstadoPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         Estado.setText("Bienvenido");
-
-        javax.swing.GroupLayout BarraEstadoLayout = new javax.swing.GroupLayout(BarraEstado);
-        BarraEstado.setLayout(BarraEstadoLayout);
-        BarraEstadoLayout.setHorizontalGroup(
-            BarraEstadoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(BarraEstadoLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(Estado)
-                .addContainerGap(928, Short.MAX_VALUE))
-        );
-        BarraEstadoLayout.setVerticalGroup(
-            BarraEstadoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(BarraEstadoLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(Estado)
-                .addContainerGap())
-        );
 
         javax.swing.GroupLayout BarraEstadoPanelLayout = new javax.swing.GroupLayout(BarraEstadoPanel);
         BarraEstadoPanel.setLayout(BarraEstadoPanelLayout);
         BarraEstadoPanelLayout.setHorizontalGroup(
             BarraEstadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(BarraEstadoPanelLayout.createSequentialGroup()
-                .addComponent(BarraEstado, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addContainerGap()
+                .addComponent(Estado)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         BarraEstadoPanelLayout.setVerticalGroup(
             BarraEstadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(BarraEstadoPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(BarraEstado, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, BarraEstadoPanelLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(Estado)
                 .addContainerGap())
         );
 
         MenuArchivo.setText("Archivo");
 
         AbrirArchivo.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
-        AbrirArchivo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Open16.gif"))); // NOI18N
         AbrirArchivo.setText("Abrir Imagen...");
-        AbrirArchivo.addActionListener(this::AbrirArchivoActionPerformed);
+        AbrirArchivo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                AbrirArchivoActionPerformed(evt);
+            }
+        });
         MenuArchivo.add(AbrirArchivo);
 
         GuardarBMP.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
-        GuardarBMP.setIcon(new javax.swing.ImageIcon(getClass().getResource("/SaveBMP.gif"))); // NOI18N
         GuardarBMP.setText("Guardar BMP");
-        GuardarBMP.addActionListener(this::GuardarBMPActionPerformed);
+        GuardarBMP.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                GuardarBMPActionPerformed(evt);
+            }
+        });
         MenuArchivo.add(GuardarBMP);
 
         GuardarNetpbm.setText("Guardar Netpbm");
 
         SinCompresion.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_MASK));
-        SinCompresion.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Save16.gif"))); // NOI18N
         SinCompresion.setText("Sin Compresión");
-        SinCompresion.addActionListener(this::SinCompresionActionPerformed);
+        SinCompresion.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                SinCompresionActionPerformed(evt);
+            }
+        });
         GuardarNetpbm.add(SinCompresion);
 
         CompresionRLE.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-        CompresionRLE.setIcon(new javax.swing.ImageIcon(getClass().getResource("/SaveRLE.gif"))); // NOI18N
         CompresionRLE.setText("Con compresión RLE");
-        CompresionRLE.addActionListener(this::CompresionRLEActionPerformed);
+        CompresionRLE.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CompresionRLEActionPerformed(evt);
+            }
+        });
         GuardarNetpbm.add(CompresionRLE);
 
         MenuArchivo.add(GuardarNetpbm);
@@ -434,22 +401,38 @@ public class ImageEditor extends javax.swing.JFrame {
 
         Rotar90CW.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_RIGHT, java.awt.event.InputEvent.CTRL_MASK));
         Rotar90CW.setText("90° CW");
-        Rotar90CW.addActionListener(this::Rotar90CWActionPerformed);
+        Rotar90CW.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Rotar90CWActionPerformed(evt);
+            }
+        });
         Rotacion.add(Rotar90CW);
 
         Rotar90CCW.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_LEFT, java.awt.event.InputEvent.CTRL_MASK));
         Rotar90CCW.setText("90° CCW");
-        Rotar90CCW.addActionListener(this::Rotar90CCWActionPerformed);
+        Rotar90CCW.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Rotar90CCWActionPerformed(evt);
+            }
+        });
         Rotacion.add(Rotar90CCW);
 
         RotacionLibre.setText("Libre");
-        RotacionLibre.addActionListener(this::RotacionLibreActionPerformed);
+        RotacionLibre.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RotacionLibreActionPerformed(evt);
+            }
+        });
         Rotacion.add(RotacionLibre);
 
         MenuEditar.add(Rotacion);
 
         Escalamiento.setText("Escalamiento");
-        Escalamiento.addActionListener(this::EscalamientoActionPerformed);
+        Escalamiento.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                EscalamientoActionPerformed(evt);
+            }
+        });
         MenuEditar.add(Escalamiento);
 
         MenuBar.add(MenuEditar);
@@ -458,7 +441,11 @@ public class ImageEditor extends javax.swing.JFrame {
 
         Zoom.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.ALT_MASK));
         Zoom.setText("Aplicar Zoom");
-        Zoom.addActionListener(this::ZoomActionPerformed);
+        Zoom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ZoomActionPerformed(evt);
+            }
+        });
         MenuVer.add(Zoom);
 
         MenuBar.add(MenuVer);
@@ -469,17 +456,29 @@ public class ImageEditor extends javax.swing.JFrame {
 
         Negativo.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
         Negativo.setText("Negativo");
-        Negativo.addActionListener(this::NegativoActionPerformed);
+        Negativo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                NegativoActionPerformed(evt);
+            }
+        });
         ColorMenu.add(Negativo);
 
         EscalaDeGrises.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.CTRL_MASK));
         EscalaDeGrises.setText("Escala de Grises");
-        EscalaDeGrises.addActionListener(this::EscalaDeGrisesActionPerformed);
+        EscalaDeGrises.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                EscalaDeGrisesActionPerformed(evt);
+            }
+        });
         ColorMenu.add(EscalaDeGrises);
 
         BlancoNegro.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_MASK));
         BlancoNegro.setText("Blanco y Negro");
-        BlancoNegro.addActionListener(this::BlancoNegroActionPerformed);
+        BlancoNegro.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BlancoNegroActionPerformed(evt);
+            }
+        });
         ColorMenu.add(BlancoNegro);
 
         MenuFiltros.add(ColorMenu);
@@ -487,15 +486,27 @@ public class ImageEditor extends javax.swing.JFrame {
         SuavizadoMenu.setText("Suavizado");
 
         SuavizadoGaussiano.setText("Suavizado Gaussiano");
-        SuavizadoGaussiano.addActionListener(this::SuavizadoGaussianoActionPerformed);
+        SuavizadoGaussiano.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                SuavizadoGaussianoActionPerformed(evt);
+            }
+        });
         SuavizadoMenu.add(SuavizadoGaussiano);
 
         SuavizadoPromedio.setText("Suavizado Promedio");
-        SuavizadoPromedio.addActionListener(this::SuavizadoPromedioActionPerformed);
+        SuavizadoPromedio.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                SuavizadoPromedioActionPerformed(evt);
+            }
+        });
         SuavizadoMenu.add(SuavizadoPromedio);
 
         Mediana.setText("Mediana");
-        Mediana.addActionListener(this::MedianaActionPerformed);
+        Mediana.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MedianaActionPerformed(evt);
+            }
+        });
         SuavizadoMenu.add(Mediana);
 
         MenuFiltros.add(SuavizadoMenu);
@@ -504,41 +515,69 @@ public class ImageEditor extends javax.swing.JFrame {
         DetectarBordesMenu.setText("Deteccion de Bordes");
 
         Roberts.setText("Roberts");
-        Roberts.addActionListener(this::RobertsActionPerformed);
+        Roberts.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RobertsActionPerformed(evt);
+            }
+        });
         DetectarBordesMenu.add(Roberts);
 
         Sobel.setText("Sobel");
-        Sobel.addActionListener(this::SobelActionPerformed);
+        Sobel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                SobelActionPerformed(evt);
+            }
+        });
         DetectarBordesMenu.add(Sobel);
 
         Prewitt.setText("Prewitt");
-        Prewitt.addActionListener(this::PrewittActionPerformed);
+        Prewitt.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                PrewittActionPerformed(evt);
+            }
+        });
         DetectarBordesMenu.add(Prewitt);
 
         Laplaciano.setText("Laplaciano del Gaussiano");
-        Laplaciano.addActionListener(this::LaplacianoActionPerformed);
+        Laplaciano.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                LaplacianoActionPerformed(evt);
+            }
+        });
         DetectarBordesMenu.add(Laplaciano);
 
         MenuFiltros.add(DetectarBordesMenu);
         MenuFiltros.add(jSeparator2);
 
         Personalizado.setText("Personalizado");
-        Personalizado.addActionListener(this::PersonalizadoActionPerformed);
+        Personalizado.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                PersonalizadoActionPerformed(evt);
+            }
+        });
         MenuFiltros.add(Personalizado);
 
         MenuBar.add(MenuFiltros);
 
-        Ayuda.setText("Ayuda");
+        MenuAyuda.setText("Ayuda");
 
         Readme.setText("Léeme");
-        Readme.addActionListener(this::ReadmeActionPerformed);
-        Ayuda.add(Readme);
+        Readme.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ReadmeActionPerformed(evt);
+            }
+        });
+        MenuAyuda.add(Readme);
 
         About.setText("Acerca De...");
-        About.addActionListener(this::AboutActionPerformed);
-        Ayuda.add(About);
+        About.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                AboutActionPerformed(evt);
+            }
+        });
+        MenuAyuda.add(About);
 
-        MenuBar.add(Ayuda);
+        MenuBar.add(MenuAyuda);
 
         setJMenuBar(MenuBar);
 
@@ -550,27 +589,22 @@ public class ImageEditor extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(ScrollPanePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(BarraEstadoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(BarraEstadoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(ScrollPanePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(ScrollPanePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(BarraEstadoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(5, 5, 5))
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-    
-    
-    /**
-     * 
-     * @param evt 
-     */
-    
+
     private static BufferedImage duplicate3BYTEBGR(BufferedImage image) {
         if (image == null){
             throw new NullPointerException();
@@ -754,7 +788,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 fw.close();
                 Estado.setText("Imagen guardada en: " + filename + ".rle");
             }catch (IOException ex) {
-                    Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -823,7 +857,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 fw.close();
                 Estado.setText("Imagen guardada en: " + filename + ext);
             }catch (IOException ex) {
-                    Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -1047,7 +1081,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 parser.nextToken();
                 freq = (int)parser.nval;
             } catch (IOException ex) {
-                Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
             if (parser.ttype == StreamTokenizer.TT_EOF){
                 //System.out.println( " End of file "  );
@@ -1058,7 +1092,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 parser.nextToken();
                 value = (int)parser.nval;
             } catch (IOException ex) {
-                Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
             if (value == 1){
                 value = 0;
@@ -1096,7 +1130,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 parser.nextToken();
                 freq = (int)parser.nval;
             } catch (IOException ex) {
-                Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
             if (parser.ttype == StreamTokenizer.TT_EOF){
                 //System.out.println( " End of file "  );
@@ -1107,7 +1141,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 parser.nextToken();
                 value = (int)parser.nval;
             } catch (IOException ex) {
-                Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
             
             
@@ -1146,7 +1180,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 parser.nextToken();
                 freq = (int)parser.nval;
             } catch (IOException ex) {
-                Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
             if (parser.ttype == StreamTokenizer.TT_EOF){
                 //System.out.println( " End of file "  );
@@ -1157,7 +1191,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 parser.nextToken();
                 value = (int)parser.nval;
             } catch (IOException ex) {
-                Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
             
             int r = (value >> 16) & 0xff;
@@ -1191,7 +1225,7 @@ public class ImageEditor extends javax.swing.JFrame {
                        // Reading next token:
                        parser.nextToken();
                     } catch (IOException ex) {
-                        Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
                     }
                     // If the current token is eof before reading all the width and height of bytes then exit.
                     if (parser.ttype == StreamTokenizer.TT_EOF){
@@ -1222,7 +1256,7 @@ public class ImageEditor extends javax.swing.JFrame {
                        // Reading next token:
                        parser.nextToken();
                     } catch (IOException ex) {
-                        Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
                     }
                     // If the current token is eof before reading all the width and height of bytes then exit.
                     if (parser.ttype == StreamTokenizer.TT_EOF){
@@ -1256,7 +1290,7 @@ public class ImageEditor extends javax.swing.JFrame {
                        // Reading next token:
                        parser.nextToken();
                     } catch (IOException ex) {
-                        Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
                     }
                     // If the current token is eof before reading all the width and height of bytes then exit.
                     if (parser.ttype == StreamTokenizer.TT_EOF){
@@ -1314,26 +1348,7 @@ public class ImageEditor extends javax.swing.JFrame {
 //        };
 //        return changeListener;
 //    }
-
-    private void GuardarBMPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GuardarBMPActionPerformed
-        int returnVal;
-        if ( img != null ){
-            returnVal = fcSave.showSaveDialog(this); 
-        }else{
-            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
-            return;
-        }
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            try {
-                //RenderedImage rendImage = bi;
-                ImageIO.write(img, "bmp", new File(fcSave.getSelectedFile().getAbsolutePath()+".bmp"));
-                Estado.setText("Imagen guardada en: " + fcSave.getSelectedFile().getAbsolutePath()+".bmp");
-            } catch ( IOException e) {
-                JOptionPane.showMessageDialog(this, "¡ERROR: Ocurrio un error al guardar el archivo!");
-            }
-        }
-    }//GEN-LAST:event_GuardarBMPActionPerformed
-
+    
     private void AbrirArchivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AbrirArchivoActionPerformed
         FileInputStream in = null;
         StreamTokenizer parser;
@@ -1351,158 +1366,157 @@ public class ImageEditor extends javax.swing.JFrame {
             // Getting the image extension.
             String path = file.getAbsolutePath();
             String extension = path.substring(path.length() - 3);
-            
+
             if(null != extension){
                 // Are we opening a bmp image?
                 switch (extension) {
                     case "bmp":
-                        try {
-                            // Filling BufferedImage with file information
-                            img = ImageIO.read(file);
-                            // Making note of image properties
-                            format = 3;
-                            updateDimensions();
-                            maxColor = 255;
-                            //JOptionPane.showMessageDialog(this, "Imagen tipo: " + types);
-                        } catch (IOException e) {
-                            // Report exceptions
-                            JOptionPane.showMessageDialog(this, "Error al Abrir Imagen!");
-                        }
-                        break;
-                        //log.append("Opening: " + file.getName() + "." + newline);
+                    try {
+                        // Filling BufferedImage with file information
+                        img = ImageIO.read(file);
+                        // Making note of image properties
+                        format = 3;
+                        updateDimensions();
+                        maxColor = 255;
+                        //JOptionPane.showMessageDialog(this, "Imagen tipo: " + types);
+                    } catch (IOException e) {
+                        // Report exceptions
+                        JOptionPane.showMessageDialog(this, "Error al Abrir Imagen!");
+                    }
+                    break;
+                    //log.append("Opening: " + file.getName() + "." + newline);
                     // Are we opening a Netpbm image?
                     case "ppm":
                     case "pgm":
                     case "pbm":
-                        // Creating a FileInputStream to be used by the BufferedReader
-                        
-                        try {
-                            in = new FileInputStream( path );
-                        } catch (FileNotFoundException ex) {
-                            Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                    // Creating a FileInputStream to be used by the BufferedReader
 
-                        
-                        reader = new BufferedReader(new InputStreamReader(in));
-                        parser = new StreamTokenizer(reader);
-                        // Filtering out comments from the data
-                        parser.commentChar('#');
+                    try {
+                        in = new FileInputStream( path );
+                    } catch (FileNotFoundException ex) {
+                        Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
 
-                        try {
-                            // Reading Header(Magic Number):
-                           parser.nextToken();
-                        } catch (IOException ex) {
-                            Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                    reader = new BufferedReader(new InputStreamReader(in));
+                    parser = new StreamTokenizer(reader);
+                    // Filtering out comments from the data
+                    parser.commentChar('#');
 
-                        // Processing the magic number. (Pending verify this is actually a String)
-                        switch(parser.sval){
-                            // PBM format
-                            case "P1":
-                                format = 1;
-                                maxColor = 1;
-                                break;
-                            case "P2":
-                                format = 2;
-                                break;
-                            case "P3":
-                                format = 3;
-                                break;
-                        }
+                    try {
+                        // Reading Header(Magic Number):
+                        parser.nextToken();
+                    } catch (IOException ex) {
+                        Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
 
-                        //JOptionPane.showMessageDialog(this, format );
-
-                        // Reading image properties from header: Width, Height, max color(optional)
-                        try {
-                            // Reading Header:
-                           parser.nextToken();
-                           width = (int)parser.nval;
-                           parser.nextToken();
-                           height = (int)parser.nval;
-
-                           if (format != 1){
-                               parser.nextToken();
-                               maxColor = (int)parser.nval;
-                           }
-                        } catch (IOException ex) {
-                            Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                        //JOptionPane.showMessageDialog(this, "W:" + width + " H:" + height + " MaxC:" + maxColor);
-
-                        // Proceeding to read the image data 
-                        switch(format){
-                            case 1:
-                                img = readPBM(width, height, parser);
-                                break;
-                            case 2:
-                                img = readPGM(width, height, maxColor, parser);
-                                break;
-                            case 3:
-                                img = readPPM(width, height, maxColor, parser);
-                                break;
-                        }
-                        maxColor = 255;
+                    // Processing the magic number. (Pending verify this is actually a String)
+                    switch(parser.sval){
+                        // PBM format
+                        case "P1":
+                        format = 1;
+                        maxColor = 1;
                         break;
+                        case "P2":
+                        format = 2;
+                        break;
+                        case "P3":
+                        format = 3;
+                        break;
+                    }
+
+                    //JOptionPane.showMessageDialog(this, format );
+
+                    // Reading image properties from header: Width, Height, max color(optional)
+                    try {
+                        // Reading Header:
+                        parser.nextToken();
+                        width = (int)parser.nval;
+                        parser.nextToken();
+                        height = (int)parser.nval;
+
+                        if (format != 1){
+                            parser.nextToken();
+                            maxColor = (int)parser.nval;
+                        }
+                    } catch (IOException ex) {
+                        Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    //JOptionPane.showMessageDialog(this, "W:" + width + " H:" + height + " MaxC:" + maxColor);
+
+                    // Proceeding to read the image data
+                    switch(format){
+                        case 1:
+                        img = readPBM(width, height, parser);
+                        break;
+                        case 2:
+                        img = readPGM(width, height, maxColor, parser);
+                        break;
+                        case 3:
+                        img = readPPM(width, height, maxColor, parser);
+                        break;
+                    }
+                    maxColor = 255;
+                    break;
                     case "rle":
-                        try {
-                            in = new FileInputStream( path );
-                        } catch (FileNotFoundException ex) {
-                            Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                    try {
+                        in = new FileInputStream( path );
+                    } catch (FileNotFoundException ex) {
+                        Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
 
-                        reader = new BufferedReader(new InputStreamReader(in));
-                        parser = new StreamTokenizer(reader);
+                    reader = new BufferedReader(new InputStreamReader(in));
+                    parser = new StreamTokenizer(reader);
 
-                        try {
-                            // Reading Header(Magic Number):
-                           parser.nextToken();
-                        } catch (IOException ex) {
-                            Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                    try {
+                        // Reading Header(Magic Number):
+                        parser.nextToken();
+                    } catch (IOException ex) {
+                        Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
 
-                        // Processing the magic number. (Pending verify this is actually a String)
-                        switch(parser.sval){
-                            // PBM format
-                            case "P1":
-                                format = 1;
-                                maxColor = 1;
-                                break;
-                            case "P2":
-                                format = 2;
-                                break;
-                            case "P3":
-                                format = 3;
-                                break;
-                        }
-
-                        //JOptionPane.showMessageDialog(this, format );
-
-                        // Reading image properties from header: Width, Height, max color(optional)
-                        try {
-                            // Reading Header:
-                           parser.nextToken();
-                           width = (int)parser.nval;
-                           parser.nextToken();
-                           height = (int)parser.nval;
-                        } catch (IOException ex) {
-                            Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                        //JOptionPane.showMessageDialog(this, "W:" + width + " H:" + height + " MaxC:" + maxColor);
-
-                        // Proceeding to read the image data 
-                        switch(format){
-                            case 1:
-                                img = readPBMfromRLE(width, height, parser);
-                                break;
-                            case 2:
-                                img = readPGMfromRLE(width, height, parser);
-                                break;
-                            case 3:
-                                img = readPPMfromRLE(width, height, parser);
-                                break;
-                        }
-                        maxColor = 255;
+                    // Processing the magic number. (Pending verify this is actually a String)
+                    switch(parser.sval){
+                        // PBM format
+                        case "P1":
+                        format = 1;
+                        maxColor = 1;
                         break;
+                        case "P2":
+                        format = 2;
+                        break;
+                        case "P3":
+                        format = 3;
+                        break;
+                    }
+
+                    //JOptionPane.showMessageDialog(this, format );
+
+                    // Reading image properties from header: Width, Height, max color(optional)
+                    try {
+                        // Reading Header:
+                        parser.nextToken();
+                        width = (int)parser.nval;
+                        parser.nextToken();
+                        height = (int)parser.nval;
+                    } catch (IOException ex) {
+                        Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    //JOptionPane.showMessageDialog(this, "W:" + width + " H:" + height + " MaxC:" + maxColor);
+
+                    // Proceeding to read the image data
+                    switch(format){
+                        case 1:
+                        img = readPBMfromRLE(width, height, parser);
+                        break;
+                        case 2:
+                        img = readPGMfromRLE(width, height, parser);
+                        break;
+                        case 3:
+                        img = readPPMfromRLE(width, height, parser);
+                        break;
+                    }
+                    maxColor = 255;
+                    break;
                 }
                 refreshImageDisplayed(true, true);
 
@@ -1516,7 +1530,7 @@ public class ImageEditor extends javax.swing.JFrame {
                 Colores.setText("Colores únicos: "+colorsCounter);
                 Dimensiones.setText("Dimensiones: " + width + "x" + height);
                 BPP.setText("Bits por pixel: " + bitspp);
-                DPI.setText("Puntos por pulgada (dpi): -"); 
+                DPI.setText("Puntos por pulgada (dpi): -");
 
                 //Changing Estado Label
                 Estado.setText("Abriendo " + file.getAbsolutePath());
@@ -1528,44 +1542,24 @@ public class ImageEditor extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_AbrirArchivoActionPerformed
 
-    private void NegativoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NegativoActionPerformed
-        if (img != null){
-            img = myFilters.Negative(img);
-            refreshImageDisplayed(false, true);
-            refreshImageInformation("Aplicando Filtro Negativo.");
-            //Estado.setText("Aplicando Negativo | Colores Únicos en imagen: " + colorsCounter);
-        }else{
-            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
-        }
-    }//GEN-LAST:event_NegativoActionPerformed
-
-    private void CompresionRLEActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CompresionRLEActionPerformed
+    private void GuardarBMPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GuardarBMPActionPerformed
         int returnVal;
-
         if ( img != null ){
             returnVal = fcSave.showSaveDialog(this);
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                if (format >= 1 && format <= 3)
-                    writeRLEFile(fcSave.getSelectedFile().getAbsolutePath());
-                else
-                   JOptionPane.showMessageDialog(this, "¡ERROR: Error de Formato!");
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+            return;
+        }
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            try {
+                //RenderedImage rendImage = bi;
+                ImageIO.write(img, "bmp", new File(fcSave.getSelectedFile().getAbsolutePath()+".bmp"));
+                Estado.setText("Imagen guardada en: " + fcSave.getSelectedFile().getAbsolutePath()+".bmp");
+            } catch ( IOException e) {
+                JOptionPane.showMessageDialog(this, "¡ERROR: Ocurrio un error al guardar el archivo!");
             }
-        }else{
-            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
-    }//GEN-LAST:event_CompresionRLEActionPerformed
-
-    private void EscalaDeGrisesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EscalaDeGrisesActionPerformed
-        if (img != null){
-            img  = myFilters.GrayScale(img);
-            refreshImageDisplayed(true, true);
-            format = 2;
-            refreshImageInformation("Aplicando Escala de Grises.");
-            //Estado.setText("Aplicando Escala de Grises | Colores Únicos en imagen: " + colorsCounter);
-        }else{
-            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
-        }
-    }//GEN-LAST:event_EscalaDeGrisesActionPerformed
+    }//GEN-LAST:event_GuardarBMPActionPerformed
 
     private void SinCompresionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SinCompresionActionPerformed
         int returnVal;
@@ -1574,50 +1568,30 @@ public class ImageEditor extends javax.swing.JFrame {
             returnVal = fcSave.showSaveDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 if (format >= 1 && format <= 3)
-                    writeNetPBMFile(fcSave.getSelectedFile().getAbsolutePath());
+                writeNetPBMFile(fcSave.getSelectedFile().getAbsolutePath());
                 else
-                   JOptionPane.showMessageDialog(this, "¡ERROR: Error de Formato!"); 
+                JOptionPane.showMessageDialog(this, "¡ERROR: Error de Formato!");
             }
-        }else{
-            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
-        } 
-    }//GEN-LAST:event_SinCompresionActionPerformed
-
-    private void BlancoNegroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BlancoNegroActionPerformed
-        if (img != null){
-            /** JOptionPane SliderPane = new JOptionPane();
-            //Creating a ChangeListener so the changes in the JOptionPane get reflected to the slider.
-            thresholdSlider.addChangeListener(createChangeListener( SliderPane ));
-            SliderPane.setMessage(new Object[] { "Valor del umbral: ", thresholdSlider });
-            SliderPane.setMessageType(JOptionPane.QUESTION_MESSAGE);
-            SliderPane.setOptionType(JOptionPane.OK_CANCEL_OPTION);
-            JDialog dialog;
-            dialog = SliderPane.createDialog(jScrollPane, "Umbral");
-            dialog.setVisible(true); */
-
-            Object[] params = {"Valor del umbral: ", thresholdSlider};
-            Object[] options = {"Aceptar", "Cancelar"};
-            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
-                                                        params,
-                                                        "Opciones de Umbralización",
-                                                        JOptionPane.YES_NO_OPTION,
-                                                        JOptionPane.QUESTION_MESSAGE,
-                                                        null,           // Don't use a custom Icon
-                                                        options,        // The strings of buttons
-                                                        options[0]);    // Default button title
-            //If the operation was canceled do nothing.
-            if (result == JOptionPane.NO_OPTION){
-                return;
-            }
-            img = myFilters.ThresholdBlackAndWhite(img, thresholdSlider.getValue());
-            refreshImageDisplayed(true, true);
-            format = 1;
-            refreshImageInformation("Aplicando Umbralización a Blanco y Negro.");
-            //Estado.setText("Aplicando Blanco y Negro | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
-    }//GEN-LAST:event_BlancoNegroActionPerformed
+    }//GEN-LAST:event_SinCompresionActionPerformed
+
+    private void CompresionRLEActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CompresionRLEActionPerformed
+        int returnVal;
+
+        if ( img != null ){
+            returnVal = fcSave.showSaveDialog(this);
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                if (format >= 1 && format <= 3)
+                writeRLEFile(fcSave.getSelectedFile().getAbsolutePath());
+                else
+                JOptionPane.showMessageDialog(this, "¡ERROR: Error de Formato!");
+            }
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_CompresionRLEActionPerformed
 
     private void Rotar90CWActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Rotar90CWActionPerformed
         if (img != null){
@@ -1643,20 +1617,201 @@ public class ImageEditor extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_Rotar90CCWActionPerformed
 
-    private void ReadmeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ReadmeActionPerformed
-        Runtime rt = Runtime.getRuntime();
-        String readme = ("README.txt");
-        try {
-            Process p = rt.exec("notepad "+readme);
-        } catch (IOException ex) {
-            Logger.getLogger(ImageEditor.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }//GEN-LAST:event_ReadmeActionPerformed
+    private void RotacionLibreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RotacionLibreActionPerformed
+        if (img != null){
+            JCheckBox cropCB = new JCheckBox("Recortar imagen");
+            SpinnerNumberModel model1 = new SpinnerNumberModel(35, 0, 360, 1);  // Initial value, min, max, step
+            JSpinner spinDegrees = new JSpinner(model1);
+            JLabel labelDegrees = new JLabel("Grados :");
+            JLabel labelRotationDirection = new JLabel("Giro en sentido CW");
+            JPanel panel1 = new JPanel();
+            JLabel labelComboBox = new JLabel("Interpolación: ");
+            String[] scalingTypes = { "Vecino más cercano", "Bilineal" };
+            JComboBox scalingTypeList = new JComboBox(scalingTypes);
 
-    private void AboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AboutActionPerformed
-        JOptionPane.showMessageDialog(this, "Editor de Imágenes\nRaquel Escalante y Rafael Vasquez\nSemestre 2-2017\nProcesamiento Digital De Imágenes", "Acerca de", JOptionPane.INFORMATION_MESSAGE);
-        
-    }//GEN-LAST:event_AboutActionPerformed
+            labelRotationDirection.setHorizontalAlignment(JLabel.CENTER);
+            panel1.add(labelDegrees);
+            panel1.add(spinDegrees);
+            panel1.add(cropCB);
+            cropCB.setSelected(true);
+            Object[] params = {labelRotationDirection, panel1, labelComboBox, scalingTypeList};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                params,
+                "Opciones de Rotación Libre",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,           // Don't use a custom Icon
+                options,        // The strings of buttons
+                options[0]);    // Default button title
+            if (result == JOptionPane.NO_OPTION){
+                return;
+            }
+
+            if ((int)spinDegrees.getValue() != 0 || (int)spinDegrees.getValue() != 360){
+                img = myFilters.FreeRotation(img, (int)spinDegrees.getValue(), cropCB.isSelected(), scalingTypeList.getSelectedIndex());
+                //FreeRotationController((int)spinDegrees.getValue(), cropCB.isSelected(), scalingTypeList.getSelectedIndex());
+                if(!cropCB.isSelected()){
+                    updateDimensions();
+                }
+                refreshImageDisplayed(true, true);
+            }else{
+                refreshImageDisplayed(false, true);
+            }
+            refreshImageInformation("Aplicando Rotación CW de " + (int)spinDegrees.getValue() +"º");
+            //Estado.setText("Aplicando Rotación CW de " + (int)spinDegrees.getValue() +"º | Colores Únicos en imagen: " + colorsCounter);
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_RotacionLibreActionPerformed
+
+    private void EscalamientoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EscalamientoActionPerformed
+        if (img != null){
+            SpinnerNumberModel model1 = new SpinnerNumberModel(100, 1, 1000, 1);  // Initial value, min, max, step
+            SpinnerNumberModel model2 = new SpinnerNumberModel(100, 1, 1000, 1);  // Initial value, min, max, step
+            JSpinner spinZoomFactorX = new JSpinner(model1);
+            JSpinner spinZoomFactorY = new JSpinner(model2);
+            JLabel labelZoomFactorX = new JLabel("Ancho:");
+            JLabel labelZoomFactorY = new JLabel("  Alto:");
+            JLabel labelpctg1 = new JLabel(" %");
+            JLabel labelpctg2 = new JLabel(" %");
+            JLabel labelComboBox = new JLabel("Interpolación: ");
+            JLabel labelValidValues = new JLabel("Valores válidos entre 1 y 1000");
+            JPanel spinPanel1 = new JPanel();
+            JPanel spinPanel2 = new JPanel();
+            String[] scalingTypes = { "Vecino más cercano", "Bilineal" };
+            JComboBox scalingTypeList = new JComboBox(scalingTypes);
+
+            labelValidValues.setHorizontalAlignment(JLabel.CENTER);
+            spinPanel1.add(labelZoomFactorX);
+            spinPanel1.add(spinZoomFactorX);
+            spinPanel1.add(labelpctg1);
+            spinPanel2.add(labelZoomFactorY);
+            spinPanel2.add(spinZoomFactorY);
+            spinPanel2.add(labelpctg2);
+            scalingTypeList.setSelectedIndex(1);
+            Object[] params = {labelValidValues, spinPanel1, spinPanel2,  labelComboBox, scalingTypeList};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                params,
+                "Opciones de Escalamiento",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,           // Don't use a custom Icon
+                options,        // The strings of buttons
+                options[0]);    // Default button title
+            if (result == JOptionPane.NO_OPTION){
+                return;
+            }
+            if ((int)spinZoomFactorX.getValue() != 100 || (int)spinZoomFactorY.getValue() != 100){
+                img = myFilters.Scale(img, (int)spinZoomFactorX.getValue(), (int)spinZoomFactorY.getValue(), scalingTypeList.getSelectedIndex());
+                updateDimensions();
+                refreshImageDisplayed(true, true);
+            }else{
+                refreshImageDisplayed(false, true);
+            }
+            refreshImageInformation("Aplicando Escalamiento de " + (int)spinZoomFactorX.getValue() +"% x " + (int)spinZoomFactorY.getValue() + "%");
+            //Estado.setText("Aplicando Escalamiento de " + (int)spinZoomFactorX.getValue() +"% x " + (int)spinZoomFactorY.getValue() + "% | Colores Únicos en imagen: " + colorsCounter);
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_EscalamientoActionPerformed
+
+    private void ZoomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ZoomActionPerformed
+        if (img != null){
+            SpinnerNumberModel model1 = new SpinnerNumberModel(100, 1, 1000, 1);  // Initial value, min, max, step
+            JSpinner spinZoomFactor = new JSpinner(model1);
+            JLabel labelZoomFactor = new JLabel("Zoom de Imagen original:");
+            JLabel labelPercentange = new JLabel(" % (1-1000)");
+            JPanel spinPanel = new JPanel();
+
+            spinPanel.add(labelZoomFactor);
+            spinPanel.add(spinZoomFactor);
+            spinPanel.add(labelPercentange);
+
+            Object[] params = {spinPanel};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                params,
+                "Opción de Zoom",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,           // Don't use a custom Icon
+                options,        // The strings of buttons
+                options[0]);    // Default button title
+            if (result == JOptionPane.NO_OPTION){
+                return;
+            }
+            if ((int)spinZoomFactor.getValue() != 100){
+                //ZoomController((int)spinZoomFactor.getValue());
+                imgZoom = myFilters.Zoom(img, (int)spinZoomFactor.getValue());
+                refreshImageDisplayed(false, false);
+            }else{
+                refreshImageDisplayed(false, true);
+            }
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_ZoomActionPerformed
+
+    private void NegativoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NegativoActionPerformed
+        if (img != null){
+            img = myFilters.Negative(img);
+            refreshImageDisplayed(false, true);
+            refreshImageInformation("Aplicando Filtro Negativo.");
+            //Estado.setText("Aplicando Negativo | Colores Únicos en imagen: " + colorsCounter);
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_NegativoActionPerformed
+
+    private void EscalaDeGrisesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EscalaDeGrisesActionPerformed
+        if (img != null){
+            img  = myFilters.GrayScale(img);
+            refreshImageDisplayed(true, true);
+            format = 2;
+            refreshImageInformation("Aplicando Escala de Grises.");
+            //Estado.setText("Aplicando Escala de Grises | Colores Únicos en imagen: " + colorsCounter);
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_EscalaDeGrisesActionPerformed
+
+    private void BlancoNegroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BlancoNegroActionPerformed
+        if (img != null){
+            /** JOptionPane SliderPane = new JOptionPane();
+            //Creating a ChangeListener so the changes in the JOptionPane get reflected to the slider.
+            thresholdSlider.addChangeListener(createChangeListener( SliderPane ));
+            SliderPane.setMessage(new Object[] { "Valor del umbral: ", thresholdSlider });
+            SliderPane.setMessageType(JOptionPane.QUESTION_MESSAGE);
+            SliderPane.setOptionType(JOptionPane.OK_CANCEL_OPTION);
+            JDialog dialog;
+            dialog = SliderPane.createDialog(jScrollPane, "Umbral");
+            dialog.setVisible(true); */
+
+            Object[] params = {"Valor del umbral: ", thresholdSlider};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                params,
+                "Opciones de Umbralización",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,           // Don't use a custom Icon
+                options,        // The strings of buttons
+                options[0]);    // Default button title
+            //If the operation was canceled do nothing.
+            if (result == JOptionPane.NO_OPTION){
+                return;
+            }
+            img = myFilters.ThresholdBlackAndWhite(img, thresholdSlider.getValue());
+            refreshImageDisplayed(true, true);
+            format = 1;
+            refreshImageInformation("Aplicando Umbralización a Blanco y Negro.");
+            //Estado.setText("Aplicando Blanco y Negro | Colores Únicos en imagen: " + colorsCounter);
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_BlancoNegroActionPerformed
 
     private void SuavizadoGaussianoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SuavizadoGaussianoActionPerformed
         if (img != null){
@@ -1680,13 +1835,13 @@ public class ImageEditor extends javax.swing.JFrame {
             Object[] params = {"Tamaño del kernel: ", kernelSizeSlider, "Orientación:", panel};
             Object[] options = {"Aceptar", "Cancelar"};
             int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
-                                                        params,
-                                                        "Opciones de Suavizado Gaussiano",
-                                                        JOptionPane.YES_NO_OPTION,
-                                                        JOptionPane.QUESTION_MESSAGE,
-                                                        null,           // Don't use a custom Icon
-                                                        options,        // The strings of buttons
-                                                        options[0]);    // Default button title
+                params,
+                "Opciones de Suavizado Gaussiano",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,           // Don't use a custom Icon
+                options,        // The strings of buttons
+                options[0]);    // Default button title
 
             // Getting the orientation string from the radiobutton group.
             String orientation = getSelectedButtonText(orientationBGroup);
@@ -1701,14 +1856,14 @@ public class ImageEditor extends javax.swing.JFrame {
             boolean Horiz = false;
             switch(orientation){
                 case "Horizontal":
-                    Horiz = true;
-                    break;
+                Horiz = true;
+                break;
                 case "Vertical":
-                    Vert = true;
-                    break;
+                Vert = true;
+                break;
                 default:
-                    Vert = true;
-                    Horiz = true;
+                Vert = true;
+                Horiz = true;
             }
 
             try{
@@ -1753,13 +1908,13 @@ public class ImageEditor extends javax.swing.JFrame {
             Object[] params = {spinPanel};
             Object[] options = {"Aceptar", "Cancelar"};
             int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
-                                                        params,
-                                                        "Opciones de Suavizado Promedio",
-                                                        JOptionPane.YES_NO_OPTION,
-                                                        JOptionPane.QUESTION_MESSAGE,
-                                                        null,           // Don't use a custom Icon
-                                                        options,        // The strings of buttons
-                                                        options[0]);    // Default button title
+                params,
+                "Opciones de Suavizado Promedio",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,           // Don't use a custom Icon
+                options,        // The strings of buttons
+                options[0]);    // Default button title
             w = (int)spinWidth.getValue();
             h = (int)spinHeight.getValue();
             if ((w == 1 && h == 1) || result == JOptionPane.NO_OPTION){
@@ -1809,13 +1964,13 @@ public class ImageEditor extends javax.swing.JFrame {
             Object[] params = {spinPanel};
             Object[] options = {"Aceptar", "Cancelar"};
             int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
-                                                        params,
-                                                        "Opciones del Filtro de la Mediana",
-                                                        JOptionPane.YES_NO_OPTION,
-                                                        JOptionPane.QUESTION_MESSAGE,
-                                                        null,           // Don't use a custom Icon
-                                                        options,        // The strings of buttons
-                                                        options[0]);    // Default button title
+                params,
+                "Opciones del Filtro de la Mediana",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,           // Don't use a custom Icon
+                options,        // The strings of buttons
+                options[0]);    // Default button title
             w = (int)spinWidth.getValue();
             h = (int)spinHeight.getValue();
             if ((w == 1 && h == 1) || result == JOptionPane.NO_OPTION){
@@ -1825,7 +1980,7 @@ public class ImageEditor extends javax.swing.JFrame {
             }
             // Passing dimensions to the filter function.
             img = myFilters.MedianFilter(img, w, h);//   medianFilterController(w, h);
-            
+
             // Changing the image format since binary becomes grayscale after a blur operation.
             if(format == 1){
                 format = 2; // grayscale
@@ -1838,85 +1993,6 @@ public class ImageEditor extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
     }//GEN-LAST:event_MedianaActionPerformed
-
-    private void PrewittActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_PrewittActionPerformed
-        if (img != null){
-            // Preparing and displaying components of the Filter's Options GUI
-            JRadioButton VButton = new JRadioButton("Vertical |");
-            JRadioButton HButton = new JRadioButton("Horizontal -");
-            JRadioButton DiagRightButton = new JRadioButton("Diagonal /"); // DiagRight because the upper part is the right one
-            JRadioButton DiagLeftButton = new JRadioButton("Diagonal \\");
-            JRadioButton AllButton = new JRadioButton("Todas");
-            ButtonGroup orientationBGroup = new ButtonGroup();
-            JPanel panel1 = new JPanel();
-            JPanel panel2 = new JPanel();
-            JPanel panel3 = new JPanel();
-
-            orientationBGroup.add(VButton);
-            orientationBGroup.add(HButton);
-            orientationBGroup.add(DiagRightButton);
-            orientationBGroup.add(DiagLeftButton);
-            orientationBGroup.add(AllButton);
-            AllButton.setSelected(true);         // "Todas" is the default button.
-            panel1.add(VButton);
-            panel1.add(HButton);
-            panel2.add(DiagRightButton);
-            panel2.add(DiagLeftButton);
-            panel3.add(AllButton);
-
-            Object[] params = {"Orientación:", panel1, panel2, panel3};
-            Object[] options = {"Aceptar", "Cancelar"};
-            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
-                                                        params,
-                                                        "Opciones de Filtro Prewitt",
-                                                        JOptionPane.YES_NO_OPTION,
-                                                        JOptionPane.QUESTION_MESSAGE,
-                                                        null,           // Don't use a custom Icon
-                                                        options,        // The strings of buttons
-                                                        options[0]);    // Default button title
-            // Getting the orientation from the radiobutton group.
-            int orientation;
-            switch(getSelectedButtonText(orientationBGroup)){
-                case "Vertical |":
-                    orientation = 1;
-                    break;
-                case "Horizontal -":
-                    orientation = 2;
-                    break;
-                case "Diagonal /":
-                    orientation = 3;
-                    break;
-                case "Diagonal \\":
-                    orientation = 4;
-                    break;
-                default:
-                    orientation = 5;
-            }
-
-            //If the operation was canceled do nothing.
-            if (result == JOptionPane.NO_OPTION){
-                return;
-            }
-            try{
-                // Passing dimensions to the filter function.
-                //PrewittController( orientation );
-                img = myFilters.Prewitt(img, orientation);
-            }catch(RuntimeException re){
-                JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
-                return;
-            }
-            // Changing the image format since binary becomes grayscale after a blur operation.
-            if(format == 1){
-                format = 2; // grayscale
-                maxColor = 255;
-            }
-            refreshImageDisplayed(true, true);
-            refreshImageInformation("Aplicando filtro de Prewitt");
-            //Estado.setText("Aplicando filtro de Prewitt | Colores Únicos en imagen: " + colorsCounter);
-        }else{
-            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
-        }
-    }//GEN-LAST:event_PrewittActionPerformed
 
     private void RobertsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RobertsActionPerformed
         if (img != null){
@@ -1960,24 +2036,24 @@ public class ImageEditor extends javax.swing.JFrame {
             Object[] params = {"Orientación:", panel1};
             Object[] options = {"Aceptar", "Cancelar"};
             int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
-                                                        params,
-                                                        "Opciones de Filtro Sobel",
-                                                        JOptionPane.YES_NO_OPTION,
-                                                        JOptionPane.QUESTION_MESSAGE,
-                                                        null,           // Don't use a custom Icon
-                                                        options,        // The strings of buttons
-                                                        options[0]);    // Default button title
+                params,
+                "Opciones de Filtro Sobel",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,           // Don't use a custom Icon
+                options,        // The strings of buttons
+                options[0]);    // Default button title
             // Getting the orientation from the radiobutton group.
             int orientation;
             switch(getSelectedButtonText(orientationBGroup)){
                 case "Vertical":
-                    orientation = 1;
-                    break;
+                orientation = 1;
+                break;
                 case "Horizontal":
-                    orientation = 2;
-                    break;
+                orientation = 2;
+                break;
                 default:
-                    orientation = 5;
+                orientation = 5;
             }
 
             //If the operation was canceled do nothing.
@@ -2004,6 +2080,85 @@ public class ImageEditor extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
     }//GEN-LAST:event_SobelActionPerformed
+
+    private void PrewittActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_PrewittActionPerformed
+        if (img != null){
+            // Preparing and displaying components of the Filter's Options GUI
+            JRadioButton VButton = new JRadioButton("Vertical |");
+            JRadioButton HButton = new JRadioButton("Horizontal -");
+            JRadioButton DiagRightButton = new JRadioButton("Diagonal /"); // DiagRight because the upper part is the right one
+            JRadioButton DiagLeftButton = new JRadioButton("Diagonal \\");
+                JRadioButton AllButton = new JRadioButton("Todas");
+                ButtonGroup orientationBGroup = new ButtonGroup();
+                JPanel panel1 = new JPanel();
+                JPanel panel2 = new JPanel();
+                JPanel panel3 = new JPanel();
+
+                orientationBGroup.add(VButton);
+                orientationBGroup.add(HButton);
+                orientationBGroup.add(DiagRightButton);
+                orientationBGroup.add(DiagLeftButton);
+                orientationBGroup.add(AllButton);
+                AllButton.setSelected(true);         // "Todas" is the default button.
+                panel1.add(VButton);
+                panel1.add(HButton);
+                panel2.add(DiagRightButton);
+                panel2.add(DiagLeftButton);
+                panel3.add(AllButton);
+
+                Object[] params = {"Orientación:", panel1, panel2, panel3};
+                Object[] options = {"Aceptar", "Cancelar"};
+                int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                    params,
+                    "Opciones de Filtro Prewitt",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,           // Don't use a custom Icon
+                    options,        // The strings of buttons
+                    options[0]);    // Default button title
+                // Getting the orientation from the radiobutton group.
+                int orientation;
+                switch(getSelectedButtonText(orientationBGroup)){
+                    case "Vertical |":
+                    orientation = 1;
+                    break;
+                    case "Horizontal -":
+                    orientation = 2;
+                    break;
+                    case "Diagonal /":
+                    orientation = 3;
+                    break;
+                    case "Diagonal \\":
+                    orientation = 4;
+                    break;
+                    default:
+                    orientation = 5;
+                }
+
+                //If the operation was canceled do nothing.
+                if (result == JOptionPane.NO_OPTION){
+                    return;
+                }
+                try{
+                    // Passing dimensions to the filter function.
+                    //PrewittController( orientation );
+                    img = myFilters.Prewitt(img, orientation);
+                }catch(RuntimeException re){
+                    JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
+                    return;
+                }
+                // Changing the image format since binary becomes grayscale after a blur operation.
+                if(format == 1){
+                    format = 2; // grayscale
+                    maxColor = 255;
+                }
+                refreshImageDisplayed(true, true);
+                refreshImageInformation("Aplicando filtro de Prewitt");
+                //Estado.setText("Aplicando filtro de Prewitt | Colores Únicos en imagen: " + colorsCounter);
+            }else{
+                JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+            }
+    }//GEN-LAST:event_PrewittActionPerformed
 
     private void LaplacianoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LaplacianoActionPerformed
         if (img != null){
@@ -2050,13 +2205,13 @@ public class ImageEditor extends javax.swing.JFrame {
             Object[] params = {spinPanel};
             Object[] options = {"Aceptar", "Cancelar"};
             int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
-                                                        params,
-                                                        "Opciones del Kernel Personalizado",
-                                                        JOptionPane.YES_NO_OPTION,
-                                                        JOptionPane.QUESTION_MESSAGE,
-                                                        null,           // Don't use a custom Icon
-                                                        options,        // The strings of buttons
-                                                        options[0]);    // Default button title
+                params,
+                "Opciones del Kernel Personalizado",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,           // Don't use a custom Icon
+                options,        // The strings of buttons
+                options[0]);    // Default button title
             w = (int)spinWidth.getValue();
             h = (int)spinHeight.getValue();
             if ((w == 1 && h == 1) || result == JOptionPane.NO_OPTION){
@@ -2088,142 +2243,20 @@ public class ImageEditor extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_PersonalizadoActionPerformed
 
-    private void ZoomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ZoomActionPerformed
-        if (img != null){
-            SpinnerNumberModel model1 = new SpinnerNumberModel(100, 1, 1000, 1);  // Initial value, min, max, step
-            JSpinner spinZoomFactor = new JSpinner(model1);
-            JLabel labelZoomFactor = new JLabel("Zoom de Imagen original:");
-            JLabel labelPercentange = new JLabel(" % (1-1000)");
-            JPanel spinPanel = new JPanel();
-
-            spinPanel.add(labelZoomFactor);
-            spinPanel.add(spinZoomFactor);
-            spinPanel.add(labelPercentange);
-
-            Object[] params = {spinPanel};
-            Object[] options = {"Aceptar", "Cancelar"};
-            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
-                                                        params,
-                                                        "Opción de Zoom",
-                                                        JOptionPane.YES_NO_OPTION,
-                                                        JOptionPane.QUESTION_MESSAGE,
-                                                        null,           // Don't use a custom Icon
-                                                        options,        // The strings of buttons
-                                                        options[0]);    // Default button title
-            if (result == JOptionPane.NO_OPTION){
-                return;
-            }
-            if ((int)spinZoomFactor.getValue() != 100){
-                //ZoomController((int)spinZoomFactor.getValue());
-                imgZoom = myFilters.Zoom(img, (int)spinZoomFactor.getValue());
-                refreshImageDisplayed(false, false);
-            }else{
-                refreshImageDisplayed(false, true);
-            }
-        }else{
-            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+    private void ReadmeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ReadmeActionPerformed
+        Runtime rt = Runtime.getRuntime();
+        String readme = ("README.txt");
+        try {
+            Process p = rt.exec("notepad "+readme);
+        } catch (IOException ex) {
+            Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }//GEN-LAST:event_ZoomActionPerformed
+    }//GEN-LAST:event_ReadmeActionPerformed
 
-    private void EscalamientoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EscalamientoActionPerformed
-        if (img != null){
-            SpinnerNumberModel model1 = new SpinnerNumberModel(100, 1, 1000, 1);  // Initial value, min, max, step
-            SpinnerNumberModel model2 = new SpinnerNumberModel(100, 1, 1000, 1);  // Initial value, min, max, step
-            JSpinner spinZoomFactorX = new JSpinner(model1);
-            JSpinner spinZoomFactorY = new JSpinner(model2);
-            JLabel labelZoomFactorX = new JLabel("Ancho:");
-            JLabel labelZoomFactorY = new JLabel("  Alto:");
-            JLabel labelpctg1 = new JLabel(" %");
-            JLabel labelpctg2 = new JLabel(" %");
-            JLabel labelComboBox = new JLabel("Interpolación: ");
-            JLabel labelValidValues = new JLabel("Valores válidos entre 1 y 1000");
-            JPanel spinPanel1 = new JPanel();
-            JPanel spinPanel2 = new JPanel();
-            String[] scalingTypes = { "Vecino más cercano", "Bilineal" };
-            JComboBox scalingTypeList = new JComboBox(scalingTypes);
+    private void AboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AboutActionPerformed
+        JOptionPane.showMessageDialog(this, "Editor de Imágenes\nRaquel Escalante y Rafael Vasquez\nSemestre 2-2017\nProcesamiento Digital De Imágenes", "Acerca de", JOptionPane.INFORMATION_MESSAGE);
 
-            labelValidValues.setHorizontalAlignment(JLabel.CENTER);
-            spinPanel1.add(labelZoomFactorX);
-            spinPanel1.add(spinZoomFactorX);
-            spinPanel1.add(labelpctg1);
-            spinPanel2.add(labelZoomFactorY);
-            spinPanel2.add(spinZoomFactorY);
-            spinPanel2.add(labelpctg2);
-            scalingTypeList.setSelectedIndex(1);
-            Object[] params = {labelValidValues, spinPanel1, spinPanel2,  labelComboBox, scalingTypeList};
-            Object[] options = {"Aceptar", "Cancelar"};
-            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
-                                                        params,
-                                                        "Opciones de Escalamiento",
-                                                        JOptionPane.YES_NO_OPTION,
-                                                        JOptionPane.QUESTION_MESSAGE,
-                                                        null,           // Don't use a custom Icon
-                                                        options,        // The strings of buttons
-                                                        options[0]);    // Default button title
-            if (result == JOptionPane.NO_OPTION){
-                return;
-            }
-            if ((int)spinZoomFactorX.getValue() != 100 || (int)spinZoomFactorY.getValue() != 100){
-                img = myFilters.Scale(img, (int)spinZoomFactorX.getValue(), (int)spinZoomFactorY.getValue(), scalingTypeList.getSelectedIndex());
-                updateDimensions();
-                refreshImageDisplayed(true, true);
-            }else{
-                refreshImageDisplayed(false, true);
-            }
-            refreshImageInformation("Aplicando Escalamiento de " + (int)spinZoomFactorX.getValue() +"% x " + (int)spinZoomFactorY.getValue() + "%");
-            //Estado.setText("Aplicando Escalamiento de " + (int)spinZoomFactorX.getValue() +"% x " + (int)spinZoomFactorY.getValue() + "% | Colores Únicos en imagen: " + colorsCounter);
-        }else{
-            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
-        }
-    }//GEN-LAST:event_EscalamientoActionPerformed
-
-    private void RotacionLibreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RotacionLibreActionPerformed
-        if (img != null){
-            JCheckBox cropCB = new JCheckBox("Recortar imagen");
-            SpinnerNumberModel model1 = new SpinnerNumberModel(35, 0, 360, 1);  // Initial value, min, max, step
-            JSpinner spinDegrees = new JSpinner(model1);
-            JLabel labelDegrees = new JLabel("Grados :");
-            JLabel labelRotationDirection = new JLabel("Giro en sentido CW");
-            JPanel panel1 = new JPanel();
-            JLabel labelComboBox = new JLabel("Interpolación: ");
-            String[] scalingTypes = { "Vecino más cercano", "Bilineal" };
-            JComboBox scalingTypeList = new JComboBox(scalingTypes);
-
-            labelRotationDirection.setHorizontalAlignment(JLabel.CENTER);
-            panel1.add(labelDegrees);
-            panel1.add(spinDegrees);
-            panel1.add(cropCB);
-            cropCB.setSelected(true);
-            Object[] params = {labelRotationDirection, panel1, labelComboBox, scalingTypeList};
-            Object[] options = {"Aceptar", "Cancelar"};
-            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
-                                                        params,
-                                                        "Opciones de Rotación Libre",
-                                                        JOptionPane.YES_NO_OPTION,
-                                                        JOptionPane.QUESTION_MESSAGE,
-                                                        null,           // Don't use a custom Icon
-                                                        options,        // The strings of buttons
-                                                        options[0]);    // Default button title
-            if (result == JOptionPane.NO_OPTION){
-                return;
-            }
-
-            if ((int)spinDegrees.getValue() != 0 || (int)spinDegrees.getValue() != 360){
-                img = myFilters.FreeRotation(img, (int)spinDegrees.getValue(), cropCB.isSelected(), scalingTypeList.getSelectedIndex());
-                //FreeRotationController((int)spinDegrees.getValue(), cropCB.isSelected(), scalingTypeList.getSelectedIndex());
-                if(!cropCB.isSelected()){
-                    updateDimensions();
-                }
-                refreshImageDisplayed(true, true);
-            }else{
-                refreshImageDisplayed(false, true);
-            }
-            refreshImageInformation("Aplicando Rotación CW de " + (int)spinDegrees.getValue() +"º");
-            //Estado.setText("Aplicando Rotación CW de " + (int)spinDegrees.getValue() +"º | Colores Únicos en imagen: " + colorsCounter);
-        }else{
-            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
-        }
-    }//GEN-LAST:event_RotacionLibreActionPerformed
+    }//GEN-LAST:event_AboutActionPerformed
 
     /**
      * @param args the command line arguments
@@ -2242,34 +2275,32 @@ public class ImageEditor extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ImageEditor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ImageEditorGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-				//</editor-fold>
-				
+        //</editor-fold>
+        
+        //</editor-fold>
+
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
-            new ImageEditor().setVisible(true);
+            new ImageEditorGUI().setVisible(true);
         });
-        
-        
     }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables                  
+    // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem About;
     private javax.swing.JMenuItem AbrirArchivo;
-    private javax.swing.JMenu Ayuda;
     private javax.swing.JLabel AzulLabel;
     private javax.swing.JLabel BPP;
-    private javax.swing.JPanel BarraEstado;
     private javax.swing.JPanel BarraEstadoPanel;
     private javax.swing.JMenuItem BlancoNegro;
     private javax.swing.JPanel BlueHistogram;
-    private javax.swing.JLabel Colores;
     private javax.swing.JMenu ColorMenu;
+    private javax.swing.JLabel Colores;
     private javax.swing.JMenuItem CompresionRLE;
+    private javax.swing.JLabel DPI;
     private javax.swing.JMenu DetectarBordesMenu;
     private javax.swing.JLabel Dimensiones;
-    private javax.swing.JLabel DPI;
     private javax.swing.JMenuItem EscalaDeGrises;
     private javax.swing.JMenuItem Escalamiento;
     private javax.swing.JLabel Estado;
@@ -2284,6 +2315,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JMenuItem Laplaciano;
     private javax.swing.JMenuItem Mediana;
     private javax.swing.JMenu MenuArchivo;
+    private javax.swing.JMenu MenuAyuda;
     private javax.swing.JMenuBar MenuBar;
     private javax.swing.JMenu MenuEditar;
     private javax.swing.JMenu MenuFiltros;
@@ -2293,8 +2325,8 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JMenuItem Prewitt;
     private javax.swing.JMenuItem Readme;
     private javax.swing.JPanel RedHistogram;
-    private javax.swing.JLabel RojoLabel;
     private javax.swing.JMenuItem Roberts;
+    private javax.swing.JLabel RojoLabel;
     private javax.swing.JMenu Rotacion;
     private javax.swing.JMenuItem RotacionLibre;
     private javax.swing.JMenuItem Rotar90CCW;
@@ -2308,12 +2340,8 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JLabel VerdeLabel;
     private javax.swing.JMenuItem Zoom;
     private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem2;
-    private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JScrollPane jScrollPane;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
-    // End of variables declaration//GEN-END:variables                
-  }
+    // End of variables declaration//GEN-END:variables
+}
