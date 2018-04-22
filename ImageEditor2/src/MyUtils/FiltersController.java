@@ -1111,4 +1111,45 @@ public class FiltersController {
         }
         return destImage;
    }
+    
+    public BufferedImage AdjustContrast(BufferedImage srcImage, int bpp){
+        BufferedImage destImage = new BufferedImage(srcImage.getWidth(), srcImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+        //Lookup table
+        int[][] histLUT;
+        //Creating the histogram
+        if (bpp < 24){
+            Histogram srcHist = new Histogram ();
+            srcHist.setBins(srcImage, "GRAY");
+            histLUT = srcHist.histLUTEqualization(srcImage, "GRAY");
+        }else{
+            Histogram srcHist = new Histogram ();
+            srcHist.setBins(srcImage, "COLOR");
+            histLUT = srcHist.histLUTEqualization(srcImage, "COLOR");
+        }    
+        
+        
+        for(int y = 0; y < srcImage.getHeight(); y++){
+            for(int x = 0; x < srcImage.getWidth(); x++){
+                // Unpacking the data of each pixel with masks.
+                int p = srcImage.getRGB(x,y);
+                int a = (p>>24)&0xff;
+                int r = (p>>16)&0xff;
+                int g = (p>>8)&0xff;
+                int b = p&0xff;
+                
+                if (bpp < 24){
+                    r = g = b = histLUT[0][r];
+                }else{
+                    r = histLUT[0][r];
+                    g = histLUT[1][g];
+                    b = histLUT[2][b];
+                }
+                
+                //Packing back the pixel data
+                p = (a<<24) | (r<<16) | (g<<8) | b;
+                destImage.setRGB(x, y, p);             
+            }
+        }       
+        return destImage;
+    }
 }

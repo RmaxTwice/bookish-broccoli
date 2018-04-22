@@ -104,4 +104,72 @@ public class Histogram {
         return this.bins[2];
     }
     
+    public int[][] histLUTEqualization(BufferedImage srcImage, String col){
+        //Makes a lookup table to get the proper pixel values
+       
+        //Declaring histogram lookup table for equalization and accumulators
+        int[][] histLUT = new int [3][256];
+        long sumR = 0;
+        long sumG = 0;
+        long sumB = 0;
+        
+        //Declaring scale factor for equalization on the whole range
+        float scaleF = (float) (255.0/(srcImage.getWidth()* srcImage.getHeight()));
+        
+        //initializing histLUT
+        for (int i = 0; i < 3; i++){
+            for (int j = 0; j < 256; j++){
+                histLUT[i][j] = 0;
+            }
+        }
+        
+        //Now fill the values of the lookup table     
+        if (col.equals("GRAY")){
+            int[] GrayHist = this.getGrayHistogram();
+            for (int i = 0; i < 256 ; i++){
+                sumR = GrayHist[i];
+                int valr = (int)(sumR * scaleF);
+                if (valr > 255){
+                    histLUT[0][i] = 255;
+                }else{
+                    histLUT[0][i] = valr;
+                }
+            }            
+        }else if (col.equals("COLOR")){
+            int[] RedHist = this.getRedHistogram();
+            int[] GreenHist = this.getGreenHistogram();
+            int[] BlueHist = this.getBlueHistogram();
+            for (int i = 0; i < 256 ; i++){
+                sumR += RedHist[i];
+                sumG += GreenHist[i];
+                sumB += BlueHist[i];                
+                
+                //Getting the intensity values from histograms, scaling them 
+                //and setting them into the table
+                int rVal = (int)(sumR * scaleF);
+                int gVal = (int)(sumG * scaleF);
+                int bVal = (int)(sumB * scaleF);
+                
+                if (rVal > 255){
+                    histLUT[0][i] = 255;
+                }else{
+                    histLUT[0][i] = rVal;
+                }               
+                
+                if (gVal > 255){
+                    histLUT[1][i] = 255;
+                }else{
+                    histLUT[1][i] = gVal;
+                }                
+                
+                if (bVal > 255){
+                    histLUT[2][i] = 255;
+                }else{
+                    histLUT[2][i] = bVal;
+                }                
+            }            
+        }       
+        return histLUT;
+    }
+    
 }

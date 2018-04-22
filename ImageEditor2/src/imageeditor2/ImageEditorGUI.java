@@ -506,6 +506,11 @@ public class ImageEditorGUI extends javax.swing.JFrame {
         ColorMenu.add(Brillo);
 
         Contraste.setText("Contraste");
+        Contraste.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ContrasteActionPerformed(evt);
+            }
+        });
         ColorMenu.add(Contraste);
 
         MenuFiltros.add(ColorMenu);
@@ -2309,6 +2314,16 @@ public class ImageEditorGUI extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
     }//GEN-LAST:event_BrilloActionPerformed
+
+    private void ContrasteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ContrasteActionPerformed
+        if (img != null){
+            img = myFilters.AdjustContrast(img, bitspp);
+            refreshImageDisplayed(true, true);
+            refreshImageInformation("Modificando Contraste.");
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_ContrasteActionPerformed
 
     /**
      * @param args the command line arguments
