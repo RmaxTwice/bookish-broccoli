@@ -1082,4 +1082,33 @@ public class FiltersController {
         }
         return destImage;
     }
+    
+    public BufferedImage AdjustBrightness(BufferedImage srcImage, int bright){
+       BufferedImage destImage = new BufferedImage(srcImage.getWidth(), srcImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+        for(int y = 0; y < srcImage.getHeight(); y++){
+            for(int x = 0; x < srcImage.getWidth(); x++){
+                // Unpacking the data of each pixel with masks.
+                int p = srcImage.getRGB(x,y);
+                int a = (p>>24)&0xff;
+                int r = (p>>16)&0xff;
+                int g = (p>>8)&0xff;
+                int b = p&0xff;
+
+                //Adding the brightness value to each pixel
+                r = r + bright;
+                g = g + bright;
+                b = b + bright;
+                
+                //Clamping in case of saturation
+                r = clampColorValue(r);
+                g = clampColorValue(g);
+                b = clampColorValue(b);
+                
+                //Packing back the pixel data
+                p = (a<<24) | (r<<16) | (g<<8) | b;
+                destImage.setRGB(x, y, p);
+            }
+        }
+        return destImage;
+   }
 }

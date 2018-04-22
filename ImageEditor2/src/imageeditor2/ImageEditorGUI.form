@@ -184,6 +184,19 @@
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="BlancoNegroActionPerformed"/>
                   </Events>
                 </MenuItem>
+                <MenuItem class="javax.swing.JMenuItem" name="Brillo">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Brillo"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="BrilloActionPerformed"/>
+                  </Events>
+                </MenuItem>
+                <MenuItem class="javax.swing.JMenuItem" name="Contraste">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Contraste"/>
+                  </Properties>
+                </MenuItem>
               </SubComponents>
             </Menu>
             <Menu class="javax.swing.JMenu" name="SuavizadoMenu">
@@ -349,9 +362,9 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <Component id="jScrollPane" min="-2" pref="800" max="-2" attributes="0"/>
+                  <Component id="jScrollPane" pref="800" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="ImageInfoPanel" max="32767" attributes="0"/>
+                  <Component id="ImageInfoPanel" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -420,7 +433,7 @@
                               </Group>
                               <Component id="InfoLabel" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="158" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>

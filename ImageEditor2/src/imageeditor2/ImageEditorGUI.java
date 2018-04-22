@@ -69,6 +69,8 @@ public class ImageEditorGUI extends javax.swing.JFrame {
     private int colorsCounter;
     private final JSlider thresholdSlider;
     private final JSlider kernelSizeSlider;
+    private final JSlider brightnessSlider;
+    private final JSlider contrastSlider;
     //Integer to show bits per pixel
     private int bitspp;
     //Histogram bins
@@ -115,6 +117,18 @@ public class ImageEditorGUI extends javax.swing.JFrame {
         kernelSizeSlider.setMajorTickSpacing(1);
         kernelSizeSlider.setPaintTicks(true);
         kernelSizeSlider.setPaintLabels(true);
+        
+        // Configuring some Slider's properties.
+        brightnessSlider = new JSlider(0, 255, 127); // min, max, init
+        brightnessSlider.setMajorTickSpacing(50);
+        brightnessSlider.setPaintTicks(true);
+        brightnessSlider.setPaintLabels(true);
+        
+        // Configuring some Slider's properties.
+        contrastSlider = new JSlider(0, 255, 127); // min, max, init
+        contrastSlider.setMajorTickSpacing(50);
+        contrastSlider.setPaintTicks(true);
+        contrastSlider.setPaintLabels(true);
     }
 
     /**
@@ -166,6 +180,8 @@ public class ImageEditorGUI extends javax.swing.JFrame {
         Negativo = new javax.swing.JMenuItem();
         EscalaDeGrises = new javax.swing.JMenuItem();
         BlancoNegro = new javax.swing.JMenuItem();
+        Brillo = new javax.swing.JMenuItem();
+        Contraste = new javax.swing.JMenuItem();
         SuavizadoMenu = new javax.swing.JMenu();
         SuavizadoGaussiano = new javax.swing.JMenuItem();
         SuavizadoPromedio = new javax.swing.JMenuItem();
@@ -218,7 +234,7 @@ public class ImageEditorGUI extends javax.swing.JFrame {
                             .addComponent(Colores)
                             .addComponent(DPI)))
                     .addComponent(InfoLabel))
-                .addContainerGap(158, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         InfoPanelLayout.setVerticalGroup(
             InfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -320,9 +336,9 @@ public class ImageEditorGUI extends javax.swing.JFrame {
         ScrollPanePanelLayout.setHorizontalGroup(
             ScrollPanePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(ScrollPanePanelLayout.createSequentialGroup()
-                .addComponent(jScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 800, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 800, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ImageInfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(ImageInfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         ScrollPanePanelLayout.setVerticalGroup(
             ScrollPanePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -480,6 +496,17 @@ public class ImageEditorGUI extends javax.swing.JFrame {
             }
         });
         ColorMenu.add(BlancoNegro);
+
+        Brillo.setText("Brillo");
+        Brillo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BrilloActionPerformed(evt);
+            }
+        });
+        ColorMenu.add(Brillo);
+
+        Contraste.setText("Contraste");
+        ColorMenu.add(Contraste);
 
         MenuFiltros.add(ColorMenu);
 
@@ -2258,6 +2285,31 @@ public class ImageEditorGUI extends javax.swing.JFrame {
 
     }//GEN-LAST:event_AboutActionPerformed
 
+    private void BrilloActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BrilloActionPerformed
+        if (img != null){
+            Object[] params = {"Valor del brillo: ", brightnessSlider};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                                                        params,
+                                                        "Opciones de brillo",
+                                                        JOptionPane.YES_NO_OPTION,
+                                                        JOptionPane.QUESTION_MESSAGE,
+                                                        null,           // Don't use a custom Icon
+                                                        options,        // The strings of buttons
+                                                        options[0]);    // Default button title
+            //If the operation was canceled do nothing.
+            if (result == JOptionPane.NO_OPTION){
+                return;
+            }
+            img = myFilters.AdjustBrightness(img, brightnessSlider.getValue());
+            refreshImageDisplayed(true, true);
+            refreshImageInformation("Modificando Brillo.");
+            //Estado.setText("Aplicando Blanco y Negro | Colores Únicos en imagen: " + colorsCounter);
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_BrilloActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -2295,9 +2347,11 @@ public class ImageEditorGUI extends javax.swing.JFrame {
     private javax.swing.JPanel BarraEstadoPanel;
     private javax.swing.JMenuItem BlancoNegro;
     private javax.swing.JPanel BlueHistogram;
+    private javax.swing.JMenuItem Brillo;
     private javax.swing.JMenu ColorMenu;
     private javax.swing.JLabel Colores;
     private javax.swing.JMenuItem CompresionRLE;
+    private javax.swing.JMenuItem Contraste;
     private javax.swing.JLabel DPI;
     private javax.swing.JMenu DetectarBordesMenu;
     private javax.swing.JLabel Dimensiones;
