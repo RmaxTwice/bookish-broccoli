@@ -163,7 +163,7 @@ public class ImageEditorGUI extends javax.swing.JFrame {
         MenuBar = new javax.swing.JMenuBar();
         MenuArchivo = new javax.swing.JMenu();
         AbrirArchivo = new javax.swing.JMenuItem();
-        GuardarBMP = new javax.swing.JMenuItem();
+        GuardarImagen = new javax.swing.JMenuItem();
         GuardarNetpbm = new javax.swing.JMenu();
         SinCompresion = new javax.swing.JMenuItem();
         CompresionRLE = new javax.swing.JMenuItem();
@@ -378,14 +378,14 @@ public class ImageEditorGUI extends javax.swing.JFrame {
         });
         MenuArchivo.add(AbrirArchivo);
 
-        GuardarBMP.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
-        GuardarBMP.setText("Guardar BMP");
-        GuardarBMP.addActionListener(new java.awt.event.ActionListener() {
+        GuardarImagen.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        GuardarImagen.setText("Guardar imagen...");
+        GuardarImagen.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                GuardarBMPActionPerformed(evt);
+                GuardarImagenActionPerformed(evt);
             }
         });
-        MenuArchivo.add(GuardarBMP);
+        MenuArchivo.add(GuardarImagen);
 
         GuardarNetpbm.setText("Guardar Netpbm");
 
@@ -1569,7 +1569,7 @@ public class ImageEditorGUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_AbrirArchivoActionPerformed
 
-    private void GuardarBMPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GuardarBMPActionPerformed
+    private void GuardarImagenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GuardarImagenActionPerformed
         int returnVal;
         if ( img != null ){
             returnVal = fcSave.showSaveDialog(this);
@@ -1579,14 +1579,19 @@ public class ImageEditorGUI extends javax.swing.JFrame {
         }
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             try {
-                //RenderedImage rendImage = bi;
-                ImageIO.write(img, "bmp", new File(fcSave.getSelectedFile().getAbsolutePath()+".bmp"));
-                Estado.setText("Imagen guardada en: " + fcSave.getSelectedFile().getAbsolutePath()+".bmp");
+                File file = fcSave.getSelectedFile();
+                // Getting the image extension.
+                String path = file.getAbsolutePath();
+                String extension = path.substring(path.length() - 3);
+                if ("bmp".equals(extension) || "png".equals(extension) || "jpg".equals(extension)){
+                    ImageIO.write(img, extension, new File(fcSave.getSelectedFile().getAbsolutePath()));
+                    Estado.setText("Imagen guardada en: " + fcSave.getSelectedFile().getAbsolutePath());
+                }
             } catch ( IOException e) {
                 JOptionPane.showMessageDialog(this, "¡ERROR: Ocurrio un error al guardar el archivo!");
             }
         }
-    }//GEN-LAST:event_GuardarBMPActionPerformed
+    }//GEN-LAST:event_GuardarImagenActionPerformed
 
     private void SinCompresionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SinCompresionActionPerformed
         int returnVal;
@@ -2359,7 +2364,7 @@ public class ImageEditorGUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem Escalamiento;
     private javax.swing.JLabel Estado;
     private javax.swing.JPanel GreenHistogram;
-    private javax.swing.JMenuItem GuardarBMP;
+    private javax.swing.JMenuItem GuardarImagen;
     private javax.swing.JMenu GuardarNetpbm;
     private javax.swing.JLabel HistoLabel;
     private javax.swing.JPanel HistoPanel;
