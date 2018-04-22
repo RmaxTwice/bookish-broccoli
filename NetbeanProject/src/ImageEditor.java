@@ -2255,7 +2255,7 @@ public class ImageEditor extends javax.swing.JFrame {
         
     }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables                     
+    // Variables declaration - do not modify//GEN-BEGIN:variables                  
     private javax.swing.JMenuItem About;
     private javax.swing.JMenuItem AbrirArchivo;
     private javax.swing.JMenu Ayuda;
@@ -2316,5 +2316,5 @@ public class ImageEditor extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
-    // End of variables declaration//GEN-END:variables                  
+    // End of variables declaration//GEN-END:variables                
   }
