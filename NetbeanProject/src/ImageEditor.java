@@ -30,7 +30,6 @@ import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -692,64 +691,6 @@ public class ImageEditor extends javax.swing.JFrame {
         return k;
     }
 
-    private int[] getRotatedImageDimensions(int[] BBcoords){
-        //BBcoords: 0 = minX, 1 = maxX, 2 = minY, 3 = maxY;
-        // 0 = width, 1 = height.
-        if(BBcoords.length == 4){
-            int[] whArray = new int[2];
-            whArray[0] = BBcoords[1] - BBcoords[0];
-            whArray[1] = BBcoords[3] - BBcoords[2];
-            return whArray;
-        }
-        return null;
-    }
-
-    private int[] getRotatedImageBoundingBox(double cosDegrees, double sinDegrees, double cx, double cy){
-            int maxX = -9999999;
-            int minX = 9999999;
-            int maxY = -9999999;
-            int minY = 9999999;
-            int buffer = 2;
-            //0 = minX, 1 = maxX, 2 = minY, 3 = maxY;
-            int[] res = new int[4];
-            // Pairs of coordinates(x,y) of NW, NE, SW and SE corners of the image.
-            int[] cornerCoords = new int[8];
-
-            // Forward Mapping
-            cornerCoords[0] = (int)(cosDegrees * (0 - cx) - sinDegrees * (0 - cy) + cx );
-            cornerCoords[1] = (int)(sinDegrees * (0 - cx) + cosDegrees * (0 - cy )+ cy );
-
-            cornerCoords[2] = (int)(cosDegrees * (width - 1 - cx) - sinDegrees * (0 - cy) + cx );
-            cornerCoords[3] = (int)(sinDegrees * (width - 1 - cx) + cosDegrees * (0 - cy )+ cy );
-
-            cornerCoords[4] = (int)(cosDegrees * (0 - cx) - sinDegrees * (height - 1 - cy) + cx );
-            cornerCoords[5] = (int)(sinDegrees * (0 - cx) + cosDegrees * (height - 1 - cy )+ cy );
-
-            cornerCoords[6] = (int)(cosDegrees * (width - 1 - cx) - sinDegrees * (height - 1 - cy) + cx );
-            cornerCoords[7] = (int)(sinDegrees * (width - 1 - cx) + cosDegrees * (height - 1 - cy )+ cy );
-
-            for(int i = 0; i < 4; i++){
-                if (cornerCoords[i*2] < minX){
-                    minX  = cornerCoords[i*2];
-                }
-                if (cornerCoords[i*2] > maxX){
-                    maxX  = cornerCoords[i*2];
-                }
-                if (cornerCoords[i*2 + 1] < minY){
-                    minY  = cornerCoords[i*2  + 1];
-                }
-                if (cornerCoords[i*2 + 1] > maxY){
-                    maxY  = cornerCoords[i*2  + 1];
-                }
-            }
-            res[0] = minX - buffer;
-            res[1] = maxX + buffer;
-            res[2] = minY - buffer;
-            res[3] = maxY + buffer;
-
-            return res;
-    }
-
     private void writeRLEFile(String filename){
         int currentColor;
         int inColor;
@@ -922,7 +863,7 @@ public class ImageEditor extends javax.swing.JFrame {
         } 
     }
 		
-private void getBitsPerPixel(){
+    private void getBitsPerPixel(){
         if (img != null){
             switch (format) {
                 case 3:
@@ -1349,369 +1290,6 @@ private void getBitsPerPixel(){
                     
                 }
         return imgTemp;
-    }
-
-    /**
-    * Convolute 3 matrices(r,g and b) with a filter kernel to obtain a final single pixel's RGB integer value.
-    *
-    * If the given matrices have different dimensions this function will throw a RuntimeException.
-    * @param k Reference to an instance of the Kernel class.
-    * @param r Reference of Red color's sliding window(matrix).
-    * @param g Reference of Green color's sliding window(matrix).
-    * @param b Reference of Blue color's sliding window(matrix).
-    * @param normal indicates if the result should be averaged/normalized.
-    */
-    private int convolveOnePixel(Kernel k, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b, boolean normal) throws RuntimeException{
-        int rTotal = 0;
-        int gTotal = 0;
-        int bTotal = 0;
-        // If all matrices and the kernel have the same dimensions then we can convolute.
-        if(k.getHeight() == r.size() && r.size() == g.size() && g.size() == b.size() && k.getWidth() == r.get(0).size() && r.get(0).size() == g.get(0).size() && g.get(0).size() == b.get(0).size()){
-            for(int i = 0 ; i < k.getHeight(); i++){
-                for(int j = 0 ; j < k.getWidth(); j++){
-                    rTotal += r.get(i).get(j) * k.getValue(j, i);
-                    gTotal += g.get(i).get(j) * k.getValue(j, i);
-                    bTotal += b.get(i).get(j) * k.getValue(j, i);
-                }
-            }
-
-            if(normal){
-                rTotal /= k.getSum();
-                gTotal /= k.getSum();
-                bTotal /= k.getSum();
-            }
-            rTotal = clampColorValue(rTotal);
-            gTotal = clampColorValue(gTotal);
-            bTotal = clampColorValue(bTotal);
-        }else{
-        // Error: Can't calculate convolution.
-          throw new RuntimeException("Error en las dimensiones de la convolución.");  //JOptionPane.showMessageDialog(this, "¡ERROR: Error en la convolusion!");
-        }
-        return (255<<24) | (rTotal<<16) | (gTotal<<8) | bTotal;
-    }
-
-    private int convolveAndCompareOnePixel(Kernel kx, Kernel ky, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b) throws RuntimeException{
-        int rx = 0;
-        int ry = 0;
-        int rTotal = 0;
-        int gx = 0;
-        int gy = 0;
-        int gTotal = 0;
-        int bx = 0;
-        int by = 0;
-        int bTotal = 0;
-        // If all matrices and the kernel have the same dimensions then we can convolute.
-        if(kx.getHeight() == ky.getHeight() && kx.getHeight() == r.size() && r.size() == g.size() && g.size() == b.size() && kx.getWidth() == ky.getWidth() && kx.getWidth() == r.get(0).size() && r.get(0).size() == g.get(0).size() && g.get(0).size() == b.get(0).size()){
-            for(int i = 0 ; i < kx.getHeight(); i++){
-                for(int j = 0 ; j < kx.getWidth(); j++){
-                    rx += r.get(i).get(j) * kx.getValue(j, i);
-                    gx += g.get(i).get(j) * kx.getValue(j, i);
-                    bx += b.get(i).get(j) * kx.getValue(j, i);
-                    ry += r.get(i).get(j) * ky.getValue(j, i);
-                    gy += g.get(i).get(j) * ky.getValue(j, i);
-                    by += b.get(i).get(j) * ky.getValue(j, i);
-                }
-            }
-            rTotal = Math.abs(rx)+  Math.abs(ry);
-            gTotal = Math.abs(gx)+  Math.abs(gy);
-            bTotal = Math.abs(bx)+  Math.abs(by);
-            rTotal = clampColorValue(rTotal);
-            gTotal = clampColorValue(gTotal);
-            bTotal = clampColorValue(bTotal);
-        }else{
-        // Error: Can't calculate convolution.
-          throw new RuntimeException("Error en las dimensiones de la convolución.");  //JOptionPane.showMessageDialog(this, "¡ERROR: Error en la convolusion!");
-        }
-        return (255<<24) | (rTotal<<16) | (gTotal<<8) | bTotal;
-    }
-
-    /**
-    * Initialize the 3 color channels sliding windows(matrices) according to a given position (x,y) of an image.
-    *
-    * If any portion of the sliding windows is outside of the image boundaries, it will be filled with fillerValue.
-    * @param k Reference to an instance of the Kernel class.
-    * @param x Horizontal coordinate of the pivot pixel in the image.
-    * @param y Vertical coordinate of the pivot pixel in the image.
-    * @param r Reference of Red color's sliding window (serves as output).
-    * @param g Reference of Green color's sliding window (serves as output).
-    * @param b Reference of Blue color's sliding window (serves as output).
-    */
-    private void initWindows(Kernel k, int x, int y, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
-        int fillerValue = 0;
-        // Calculating the "image" coordinates of each (0,0) windows pixels.
-        int xg = x - k.getPivotX();
-        int yg = y - k.getPivotY();
-        int pvalue;
-
-        r.clear();
-        g.clear();
-        b.clear();
-        for (int i = yg; i < k.getHeight() + yg; i++){
-            ArrayList redRow = new ArrayList();
-            ArrayList greenRow = new ArrayList();
-            ArrayList blueRow = new ArrayList();
-            for(int j = xg; j < k.getWidth() + xg; j++){
-                // Calculating the "image" coordinates of each windows pixels
-                //xg = x - ppixelX + j;
-                //yg = y - ppixelY + i;
-
-                // If any coordinate is negative or bigger than the image dimensions use the fillerValue
-                // else use the image pixels color values.
-                if ( j < 0 || j >= width || i < 0 || i >= height ){
-                    redRow.add(fillerValue);
-                    greenRow.add(fillerValue);
-                    blueRow.add(fillerValue);
-                }else{
-                    pvalue = img.getRGB(j, i);
-                    redRow.add((pvalue >> 16) & 0xff);
-                    greenRow.add((pvalue >> 8) & 0xff);
-                    blueRow.add(pvalue & 0xff);
-                }
-            }
-            // Adding a complete row to the matrix.
-            r.add(redRow);
-            g.add(greenRow);
-            b.add(blueRow);
-        }
-    }
-    
-    /**
-    * Slides the 3 color channels sliding windows(matrices) one pixel to the right according to a given position (x,y) of an image.
-    *
-    * If any portion of the sliding windows is outside of the image boundaries, it will be filled with fillerValue.
-    * This method also assumes that all windows given have the same dimensions.(r, g and b)
-    * @param k Reference to an instance of the Kernel class
-    * @param x Horizontal coordinate of the pivot pixel in the image.
-    * @param y Vertical coordinate of the pivot pixel in the image.
-    * @param r Reference of Red color's sliding window (serves as output).
-    * @param g Reference of Green color's sliding window (serves as output).
-    * @param b Reference of Blue color's sliding window (serves as output).
-    */
-    private void slideRightWindowsOnePixel(Kernel k, int x, int y, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
-        int fillerValue = 0;
-        // Calculating the "image" coordinates of each next-to-the-right windows pixels.
-        int xg = k.getWidth() - k.getPivotX() + x;
-        int yg;
-        int pvalue;
-
-        for (int i = 0; i < r.size(); i++) {
-            // Calculating the "image" coordinates of each next-to-the-right windows pixels.
-            yg = y - k.getPivotY() + i;
-
-            // If any coordinate is negative or bigger than the image dimensions use the fillerValue
-            // else use the image pixels color values.
-            if ( xg < 0 || xg >= width || yg < 0 || yg >= height ){
-                r.get(i).add(fillerValue);
-                g.get(i).add(fillerValue);
-                b.get(i).add(fillerValue);
-            }else{
-                pvalue = img.getRGB(xg, yg);
-                r.get(i).add((pvalue >> 16) & 0xff);
-                g.get(i).add((pvalue >> 8) & 0xff);
-                b.get(i).add(pvalue & 0xff);
-            }
-
-            // Removing the first value of each row.
-            r.get(i).remove(0);
-            g.get(i).remove(0);
-            b.get(i).remove(0);
-        }
-    }
-
-    private void CustomController(Kernel k){
-        BufferedImage imgTemp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-        int i;
-        int j;
-        // These ArrayLists serve as sliding windows per color channel (Horizontal).
-        ArrayList<ArrayList<Integer>> red = new ArrayList();
-        ArrayList<ArrayList<Integer>> green = new ArrayList();
-        ArrayList<ArrayList<Integer>> blue = new ArrayList();
-
-        for(i = 0; i < height; i++){
-            initWindows(k, 0, i, red, green, blue);
-            for(j = 0; j < width; j++){
-                int newPixelValue = 0;
-
-                try{
-                    newPixelValue = convolveOnePixel(k, red, green, blue, false);
-                }catch(RuntimeException re){
-                    throw new RuntimeException("No se pudo aplicar filtro Prewitt.",re);
-                }
-                imgTemp.setRGB(j, i, newPixelValue);
-
-                slideRightWindowsOnePixel(k, j, i, red, green, blue);
-            }
-        }
-        img = imgTemp;
-    }
-
-    private void ZoomController(int percentage){
-        float zoomFactor = (float)percentage / 100;
-        int newWidth = Math.round(width * zoomFactor);
-        int newHeight = Math.round(height * zoomFactor);
-        BufferedImage imgTemp = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_3BYTE_BGR);
-        int  pvalue;
-        float ycoord,xcoord;
-
-        // USING NEAREST NEIGHBOR OR PIXEL REPLICATION
-        for(int i = 0; i < newHeight; i++){
-            for(int j = 0; j < newWidth; j++){
-                ycoord = i / zoomFactor;
-                xcoord = j / zoomFactor;
-                pvalue = img.getRGB((int)xcoord, (int)ycoord);
-                imgTemp.setRGB(j, i, pvalue);
-            }
-        }
-        imgZoom = imgTemp;
-    }
-
-    private void ScalingController(int wPctg, int hPctg, int TYPE){
-        // TYPE: 0 = pixel replication, 1 = bilineal interpolation
-        float scalingFactorX = (float)wPctg / 100;
-        float scalingFactorY = (float)hPctg / 100;
-        int newWidth = Math.round(width * scalingFactorX);
-        int newHeight = Math.round(height * scalingFactorY);
-        BufferedImage imgTemp = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_3BYTE_BGR);
-        int  pvalue = 0;
-        float ycoord,xcoord;
-        int nwX, nwY, neX, neY, swX, swY, seX, seY;
-        float a, b;
-        int colorNW, colorNE, colorSW, colorSE;
-
-        for(int i = 0; i < newHeight; i++){
-            for(int j = 0; j < newWidth; j++){
-                switch(TYPE){
-                    case 0:
-                        //USING NEAREST NEIGHBOR OR PIXEL REPLICATION
-                        ycoord = i / scalingFactorY;
-                        xcoord = j / scalingFactorX;
-                        pvalue = img.getRGB((int)xcoord, (int)ycoord);
-                        break;
-                    case 1:
-                        // USING BILINEAR INTERPOLATION
-                        nwX = (int)(j / scalingFactorX);
-                        nwY = (int)(i / scalingFactorY);
-                        colorNW = img.getRGB(nwX, nwY);
-                        if(nwX + 1 < width){
-                            neX = nwX + 1;
-                            a = (neX - nwX) * scalingFactorX;
-                            a = (j % a)/ a;
-                        }else{
-                            neX =nwX;
-                            a = 1;
-                        }
-                        neY = nwY;
-                        colorNE = img.getRGB(neX, neY);
-                        swX = nwX;
-                        if(nwY + 1 < height){
-                            swY = nwY + 1;
-                            b = (swY - nwY) * scalingFactorY;
-                            b = (i % b) / b;
-                        }else{
-                            swY = nwY;
-                            b = 1;
-                        }
-                        colorSW = img.getRGB(swX, swY);
-                        seX = neX;
-                        seY = swY;
-                        colorSE = img.getRGB(seX, seY);
-
-                        pvalue = bilinealInterpolation(colorNW, colorNE, colorSW, colorSE, a, b);
-                }
-                imgTemp.setRGB(j, i, pvalue);
-            }
-        }
-        img = imgTemp;
-        updateDimensions();
-    }
-
-    private void FreeRotationController(int degrees, boolean crop, int TYPE){
-        // TYPE: 0 = pixel replication, 1 = bilineal interpolation
-        double cosDegrees = Math.cos(Math.toRadians(degrees));
-        double sinDegrees = Math.sin(Math.toRadians(degrees));
-        int newWidth;
-        int newHeight;
-        int pvalue;
-        double cx = width / 2 + 0.5;
-        double cy = height / 2  + 0.5;
-        int newX;
-        int newY;
-        double trueX;
-        double trueY;
-        int nwX, nwY, neX, neY, swX, swY, seX, seY;
-        double a, b;
-        int colorNW , colorNE, colorSW, colorSE;
-        int[] coordsBB = new int[]{0,0,0,0,0,0,0,0};
-        BufferedImage imgTemp;
-
-        //colorNW = colorNE = colorSW = colorSE = -16777216;
-        if(crop){
-            newWidth = width;
-            newHeight = height;
-        }else{
-            //coordsBB: 0 = minX, 1 = maxX, 2 = minY, 3 = maxY;
-            coordsBB = getRotatedImageBoundingBox(cosDegrees, sinDegrees, cx, cy);
-            int[] dims = getRotatedImageDimensions(coordsBB);
-            newWidth = dims[0];
-            newHeight = dims[1];
-        }
-        imgTemp = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_3BYTE_BGR);
-
-        switch(TYPE){
-            case 0: //USING NEAREST NEIGHBOR OR PIXEL REPLICATION
-                for(int y = 0 + coordsBB[2]; y < newHeight + coordsBB[2]; y++){
-                    for(int x = 0 + coordsBB[0]; x < newWidth + coordsBB[0]; x++){
-                        // Backwards Mapping
-                        newX = (int)(cosDegrees * (x - cx) + sinDegrees * (y - cy) + cx );
-                        newY = (int)(-sinDegrees * (x - cx) + cosDegrees * (y - cy )+ cy );
-                        if(newX >= 0 && newX < width && newY >= 0 && newY < height){
-                            pvalue = img.getRGB(newX, newY);
-                            imgTemp.setRGB(x - coordsBB[0] , y - coordsBB[2], pvalue);
-                        }
-                    }
-                }
-                break;
-            case 1: //USING Bilineal Interpolation
-                for(int y = 0 + coordsBB[2]; y < newHeight + coordsBB[2]; y++){
-                    for(int x = 0 + coordsBB[0]; x < newWidth + coordsBB[0]; x++){
-                        trueX = cosDegrees * (x - cx) + sinDegrees * (y - cy) + cx;
-                        trueY = -sinDegrees * (x - cx) + cosDegrees * (y - cy )+ cy;
-                        nwX = (int)Math.floor(trueX);
-                        nwY = (int)Math.floor(trueY);
-                        if(nwX < 0 || nwX >= width || nwY < 0 || nwY >= height){
-                            continue;
-                        }
-                        colorNW = img.getRGB(nwX, nwY);
-                        if(nwX + 1 < width){
-                            neX = nwX + 1;
-                            a = trueX - (double)nwX;
-                        }else{
-                            neX =nwX;
-                            a = 1;
-                        }
-                        neY = nwY;
-                        colorNE = img.getRGB(neX, neY);
-                        swX = nwX;
-                        if(nwY + 1 < height){
-                            swY = nwY + 1;
-                            b = trueY - (double)nwY;
-                        }else{
-                            swY = nwY;
-                            b = 1;
-                        }
-                        colorSW = img.getRGB(swX, swY);
-                        seX = neX;
-                        seY = swY;
-                        colorSE = img.getRGB(seX, seY);
-                        pvalue = bilinealInterpolation(colorNW, colorNE, colorSW, colorSE, a, b);
-                        imgTemp.setRGB(x - coordsBB[0] , y - coordsBB[2], pvalue);
-                    }
-                }
-        }
-        img  = imgTemp;
-        if(!crop){
-            updateDimensions();
-        }
     }
 
     //Function to set parameters of B&W slider
@@ -2575,8 +2153,9 @@ private void getBitsPerPixel(){
             Kernel k = generateCustomKernel(w, h);
 
             try{
-                // Passing dimensions to the controller function.
-                CustomController(k);
+                // Passing dimensions to the filter function.
+                //CustomController(k);
+                img = myFilters.CustomFilter(img, k);
             }catch(RuntimeException re){
                 JOptionPane.showMessageDialog(this, "¡ERROR: Ha ocurrido una excepción:\n" + re.getMessage() );
                 return;
@@ -2620,7 +2199,8 @@ private void getBitsPerPixel(){
                 return;
             }
             if ((int)spinZoomFactor.getValue() != 100){
-                ZoomController((int)spinZoomFactor.getValue());
+                //ZoomController((int)spinZoomFactor.getValue());
+                imgZoom = myFilters.Zoom(img, (int)spinZoomFactor.getValue());
                 refreshImageDisplayed(false, false);
             }else{
                 refreshImageDisplayed(false, true);
@@ -2669,7 +2249,8 @@ private void getBitsPerPixel(){
                 return;
             }
             if ((int)spinZoomFactorX.getValue() != 100 || (int)spinZoomFactorY.getValue() != 100){
-                ScalingController((int)spinZoomFactorX.getValue(), (int)spinZoomFactorY.getValue(), scalingTypeList.getSelectedIndex());
+                img = myFilters.Scale(img, (int)spinZoomFactorX.getValue(), (int)spinZoomFactorY.getValue(), scalingTypeList.getSelectedIndex());
+                updateDimensions();
                 refreshImageDisplayed(true, true);
             }else{
                 refreshImageDisplayed(false, true);
@@ -2712,7 +2293,11 @@ private void getBitsPerPixel(){
             }
 
             if ((int)spinDegrees.getValue() != 0 || (int)spinDegrees.getValue() != 360){
-                FreeRotationController((int)spinDegrees.getValue(), cropCB.isSelected(), scalingTypeList.getSelectedIndex());
+                img = myFilters.FreeRotation(img, (int)spinDegrees.getValue(), cropCB.isSelected(), scalingTypeList.getSelectedIndex());
+                //FreeRotationController((int)spinDegrees.getValue(), cropCB.isSelected(), scalingTypeList.getSelectedIndex());
+                if(!cropCB.isSelected()){
+                    updateDimensions();
+                }
                 refreshImageDisplayed(true, true);
             }else{
                 refreshImageDisplayed(false, true);

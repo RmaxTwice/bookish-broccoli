@@ -12,11 +12,28 @@ import java.util.Collections;
 
 /**
  *
- * @author Rafael
+ * @author Rafael Vasquez
+ * @author Raquel Escalante
  */
 public class FiltersController {
 
     public FiltersController() {}
+
+    private int bilinealInterpolation(int colorNW, int colorNE, int colorSW, int colorSE, double a, double b){
+        int NWNEr = (int)((1 - a) * ((colorNW >> 16) & 0xff) + a * ((colorNE >> 16) & 0xff));
+        int NWNEg = (int)((1 - a) * ((colorNW >> 8) & 0xff) + a * ((colorNE >> 8) & 0xff));
+        int NWNEb = (int)((1 - a) * (colorNW & 0xff) + a * (colorNE & 0xff));
+
+        int SWSEr = (int)((1 - a) * ((colorSW >> 16) & 0xff) + a * ((colorSE >> 16) & 0xff));
+        int SWSEg = (int)((1 - a) * ((colorSW >> 8) & 0xff) + a * ((colorSE >> 8) & 0xff));
+        int SWSEb = (int)((1 - a) * (colorSW & 0xff) + a * (colorSE & 0xff));
+
+        int rTotal = clampColorValue((int)((1 - b) * NWNEr  + b * SWSEr));
+        int gTotal = clampColorValue((int)((1 - b) * NWNEg  + b * SWSEg));
+        int bTotal = clampColorValue((int)((1 - b) * NWNEb  + b * SWSEb));
+
+        return (255<<24) | (rTotal<<16) | (gTotal<<8) | bTotal;
+    }
 
     private int clampColorValue(int val){
         if(val > 255){
@@ -219,6 +236,64 @@ public class FiltersController {
         return k;
     }
 
+    private int[] getRotatedImageDimensions(int[] BBcoords){
+        //BBcoords: 0 = minX, 1 = maxX, 2 = minY, 3 = maxY;
+        // 0 = width, 1 = height.
+        if(BBcoords.length == 4){
+            int[] whArray = new int[2];
+            whArray[0] = BBcoords[1] - BBcoords[0];
+            whArray[1] = BBcoords[3] - BBcoords[2];
+            return whArray;
+        }
+        return null;
+    }
+
+    private int[] getRotatedImageBoundingBox(int srcWidth, int srcHeight, double cosDegrees, double sinDegrees, double cx, double cy){
+            int maxX = -9999999;
+            int minX = 9999999;
+            int maxY = -9999999;
+            int minY = 9999999;
+            int buffer = 2;
+            //0 = minX, 1 = maxX, 2 = minY, 3 = maxY;
+            int[] res = new int[4];
+            // Pairs of coordinates(x,y) of NW, NE, SW and SE corners of the image.
+            int[] cornerCoords = new int[8];
+
+            // Forward Mapping
+            cornerCoords[0] = (int)(cosDegrees * (0 - cx) - sinDegrees * (0 - cy) + cx );
+            cornerCoords[1] = (int)(sinDegrees * (0 - cx) + cosDegrees * (0 - cy )+ cy );
+
+            cornerCoords[2] = (int)(cosDegrees * (srcWidth - 1 - cx) - sinDegrees * (0 - cy) + cx );
+            cornerCoords[3] = (int)(sinDegrees * (srcWidth - 1 - cx) + cosDegrees * (0 - cy )+ cy );
+
+            cornerCoords[4] = (int)(cosDegrees * (0 - cx) - sinDegrees * (srcHeight - 1 - cy) + cx );
+            cornerCoords[5] = (int)(sinDegrees * (0 - cx) + cosDegrees * (srcHeight - 1 - cy )+ cy );
+
+            cornerCoords[6] = (int)(cosDegrees * (srcWidth - 1 - cx) - sinDegrees * (srcHeight - 1 - cy) + cx );
+            cornerCoords[7] = (int)(sinDegrees * (srcWidth - 1 - cx) + cosDegrees * (srcHeight - 1 - cy )+ cy );
+
+            for(int i = 0; i < 4; i++){
+                if (cornerCoords[i*2] < minX){
+                    minX  = cornerCoords[i*2];
+                }
+                if (cornerCoords[i*2] > maxX){
+                    maxX  = cornerCoords[i*2];
+                }
+                if (cornerCoords[i*2 + 1] < minY){
+                    minY  = cornerCoords[i*2  + 1];
+                }
+                if (cornerCoords[i*2 + 1] > maxY){
+                    maxY  = cornerCoords[i*2  + 1];
+                }
+            }
+            res[0] = minX - buffer;
+            res[1] = maxX + buffer;
+            res[2] = minY - buffer;
+            res[3] = maxY + buffer;
+
+            return res;
+    }
+    
     private void initWindows(Kernel k, int x, int y, BufferedImage img, ArrayList<ArrayList<Integer>> r, ArrayList<ArrayList<Integer>> g, ArrayList<ArrayList<Integer>> b){
         int fillerValue = 0;
         // Calculating the "image" coordinates of each (0,0) windows pixels.
@@ -646,6 +721,238 @@ public class FiltersController {
 
                 slideRightWindowsOnePixel(krnl, j, i, srcImage, red, green, blue);
             }
+        }
+        return destImage;
+    }
+
+    /**
+    * Convolves an image using the custom kernel supplied.
+    *
+    * @param srcImage BufferedImage reference to the source image to be affected by the filter.
+    * @param k reference of a custom kernel to convolve the image with.
+    * @return A BufferedImage reference resulting from a custom convolution.
+    */
+    public BufferedImage CustomFilter(BufferedImage srcImage, Kernel k){
+        BufferedImage destImage = new BufferedImage(srcImage.getWidth(), srcImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+        int i;
+        int j;
+        // These ArrayLists serve as sliding windows per color channel (Horizontal).
+        ArrayList<ArrayList<Integer>> red = new ArrayList();
+        ArrayList<ArrayList<Integer>> green = new ArrayList();
+        ArrayList<ArrayList<Integer>> blue = new ArrayList();
+
+        for(i = 0; i < srcImage.getHeight(); i++){
+            initWindows(k, 0, i, srcImage, red, green, blue);
+            for(j = 0; j < srcImage.getWidth(); j++){
+                int newPixelValue = 0;
+
+                try{
+                    newPixelValue = convolveOnePixel(k, red, green, blue, false);
+                }catch(RuntimeException re){
+                    throw new RuntimeException("No se pudo aplicar filtro Prewitt.",re);
+                }
+                destImage.setRGB(j, i, newPixelValue);
+
+                slideRightWindowsOnePixel(k, j, i, srcImage, red, green, blue);
+            }
+        }
+        return destImage;
+    }
+
+    /**
+    * Produces an image with a zoom (in or out) effect from the original image.
+    *
+    * This zoom only uses pixel replication as it's interpolation method.
+    * If percentage less or equal to zero a null image will be returned.
+    * @param srcImage BufferedImage reference to the source image to be affected by the filter.
+    * @param percentage The amount to zoom in (percentage > 100) or zoom out (percentage < 100).
+    * @return A BufferedImage reference resulting from a zoom in or out operation on the original image.
+    */
+    public BufferedImage Zoom(BufferedImage srcImage, int percentage){
+        if(percentage <= 0)
+            return null;
+        
+        float zoomFactor = (float)percentage / 100;
+        int newWidth = Math.round(srcImage.getWidth() * zoomFactor);
+        int newHeight = Math.round(srcImage.getHeight() * zoomFactor);
+        BufferedImage destImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_3BYTE_BGR);
+        int  pvalue;
+        float ycoord,xcoord;
+
+        // USING NEAREST NEIGHBOR OR PIXEL REPLICATION
+        for(int i = 0; i < newHeight; i++){
+            for(int j = 0; j < newWidth; j++){
+                ycoord = i / zoomFactor;
+                xcoord = j / zoomFactor;
+                pvalue = srcImage.getRGB((int)xcoord, (int)ycoord);
+                destImage.setRGB(j, i, pvalue);
+            }
+        }
+        return destImage;
+    }
+    
+    /**
+    * Produces an scaled version of the source image according to the provided scaling factors and interpolation type.
+    *
+    * The only valid values for TYPE are: 0 = Pixel replication; 1 = Bilinear
+    * If any ratio is less or equal to zero a null image will be returned.
+    * @param srcImage BufferedImage reference to the source image to be affected by the filter.
+     * @param wPctg The amount to scale up (wPctg > 100) or down (wPctg < 100) in the horizontal axis.
+     * @param hPctg The amount to scale up (hPctg > 100) or down (hPctg < 100) in the vertical axis.
+     * @param TYPE  Type of interpolation to use when computing the resulting images colors.
+    * @return A BufferedImage reference to an scaled version of the original image.
+    */
+    public BufferedImage Scale(BufferedImage srcImage, int wPctg, int hPctg, int TYPE){
+        // TYPE: 0 = pixel replication, 1 = bilineal interpolation
+        float scalingFactorX = (float)wPctg / 100;
+        float scalingFactorY = (float)hPctg / 100;
+        int newWidth = Math.round(srcImage.getWidth() * scalingFactorX);
+        int newHeight = Math.round(srcImage.getHeight() * scalingFactorY);
+        BufferedImage imgTemp = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_3BYTE_BGR);
+        int  pvalue = 0;
+        float ycoord,xcoord;
+        int nwX, nwY, neX, neY, swX, swY, seX, seY;
+        float a, b;
+        int colorNW, colorNE, colorSW, colorSE;
+
+        for(int i = 0; i < newHeight; i++){
+            for(int j = 0; j < newWidth; j++){
+                switch(TYPE){
+                    case 0:
+                        //USING NEAREST NEIGHBOR OR PIXEL REPLICATION
+                        ycoord = i / scalingFactorY;
+                        xcoord = j / scalingFactorX;
+                        pvalue = srcImage.getRGB((int)xcoord, (int)ycoord);
+                        break;
+                    case 1:
+                        // USING BILINEAR INTERPOLATION
+                        nwX = (int)(j / scalingFactorX);
+                        nwY = (int)(i / scalingFactorY);
+                        colorNW = srcImage.getRGB(nwX, nwY);
+                        if(nwX + 1 < srcImage.getWidth()){
+                            neX = nwX + 1;
+                            a = (neX - nwX) * scalingFactorX;
+                            a = (j % a)/ a;
+                        }else{
+                            neX =nwX;
+                            a = 1;
+                        }
+                        neY = nwY;
+                        colorNE = srcImage.getRGB(neX, neY);
+                        swX = nwX;
+                        if(nwY + 1 < srcImage.getHeight()){
+                            swY = nwY + 1;
+                            b = (swY - nwY) * scalingFactorY;
+                            b = (i % b) / b;
+                        }else{
+                            swY = nwY;
+                            b = 1;
+                        }
+                        colorSW = srcImage.getRGB(swX, swY);
+                        seX = neX;
+                        seY = swY;
+                        colorSE = srcImage.getRGB(seX, seY);
+                        pvalue = bilinealInterpolation(colorNW, colorNE, colorSW, colorSE, a, b);
+                }
+                imgTemp.setRGB(j, i, pvalue);
+            }
+        }
+        return imgTemp;
+    }
+
+    /**
+    * Produces a rotated clock-wise version of the source image according to the angle and interpolation type provided.
+    *
+    * The only valid values for TYPE are: 0 = Pixel replication; 1 = Bilinear
+    * If degrees is less to zero  or larger than 360 a null image will be returned.
+    * @param srcImage BufferedImage reference to the source image to be affected by the filter.
+     * @param degrees clockwise rotation degrees.
+     * @param clip  indicates whether the resulting image will be clipped or enlarged to accomodate the rotated image.
+     * @param TYPE  Type of interpolation to use when computing the resulting images colors.
+    * @return A BufferedImage reference to a rotated version of the original image.
+    */
+    public BufferedImage FreeRotation(BufferedImage srcImage, int degrees, boolean clip, int TYPE){
+        // TYPE: 0 = pixel replication, 1 = bilineal interpolation
+        double cosDegrees = Math.cos(Math.toRadians(degrees));
+        double sinDegrees = Math.sin(Math.toRadians(degrees));
+        int newWidth;
+        int newHeight;
+        int pvalue;
+        double cx = srcImage.getWidth() / 2 + 0.5;
+        double cy = srcImage.getHeight() / 2  + 0.5;
+        int newX;
+        int newY;
+        double trueX;
+        double trueY;
+        int nwX, nwY, neX, neY, swX, swY, seX, seY;
+        double a, b;
+        int colorNW , colorNE, colorSW, colorSE;
+        int[] coordsBB = new int[]{0,0,0,0,0,0,0,0};
+        BufferedImage destImage;
+
+        //colorNW = colorNE = colorSW = colorSE = -16777216;
+        if(clip){
+            newWidth = srcImage.getWidth();
+            newHeight = srcImage.getHeight();
+        }else{
+            //coordsBB: 0 = minX, 1 = maxX, 2 = minY, 3 = maxY;
+            coordsBB = getRotatedImageBoundingBox(srcImage.getWidth(), srcImage.getHeight(), cosDegrees, sinDegrees, cx, cy);
+            int[] dims = getRotatedImageDimensions(coordsBB);
+            newWidth = dims[0];
+            newHeight = dims[1];
+        }
+        destImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_3BYTE_BGR);
+
+        switch(TYPE){
+            case 0: //USING NEAREST NEIGHBOR OR PIXEL REPLICATION
+                for(int y = 0 + coordsBB[2]; y < newHeight + coordsBB[2]; y++){
+                    for(int x = 0 + coordsBB[0]; x < newWidth + coordsBB[0]; x++){
+                        // Backwards Mapping
+                        newX = (int)(cosDegrees * (x - cx) + sinDegrees * (y - cy) + cx );
+                        newY = (int)(-sinDegrees * (x - cx) + cosDegrees * (y - cy )+ cy );
+                        if(newX >= 0 && newX < srcImage.getWidth() && newY >= 0 && newY < srcImage.getHeight()){
+                            pvalue = srcImage.getRGB(newX, newY);
+                            destImage.setRGB(x - coordsBB[0] , y - coordsBB[2], pvalue);
+                        }
+                    }
+                }
+                break;
+            case 1: //USING Bilineal Interpolation
+                for(int y = 0 + coordsBB[2]; y < newHeight + coordsBB[2]; y++){
+                    for(int x = 0 + coordsBB[0]; x < newWidth + coordsBB[0]; x++){
+                        trueX = cosDegrees * (x - cx) + sinDegrees * (y - cy) + cx;
+                        trueY = -sinDegrees * (x - cx) + cosDegrees * (y - cy )+ cy;
+                        nwX = (int)Math.floor(trueX);
+                        nwY = (int)Math.floor(trueY);
+                        if(nwX < 0 || nwX >= srcImage.getWidth() || nwY < 0 || nwY >= srcImage.getHeight()){
+                            continue;
+                        }
+                        colorNW = srcImage.getRGB(nwX, nwY);
+                        if(nwX + 1 < srcImage.getWidth()){
+                            neX = nwX + 1;
+                            a = trueX - (double)nwX;
+                        }else{
+                            neX =nwX;
+                            a = 1;
+                        }
+                        neY = nwY;
+                        colorNE = srcImage.getRGB(neX, neY);
+                        swX = nwX;
+                        if(nwY + 1 < srcImage.getHeight()){
+                            swY = nwY + 1;
+                            b = trueY - (double)nwY;
+                        }else{
+                            swY = nwY;
+                            b = 1;
+                        }
+                        colorSW = srcImage.getRGB(swX, swY);
+                        seX = neX;
+                        seY = swY;
+                        colorSE = srcImage.getRGB(seX, seY);
+                        pvalue = bilinealInterpolation(colorNW, colorNE, colorSW, colorSE, a, b);
+                        destImage.setRGB(x - coordsBB[0] , y - coordsBB[2], pvalue);
+                    }
+                }
         }
         return destImage;
     }
