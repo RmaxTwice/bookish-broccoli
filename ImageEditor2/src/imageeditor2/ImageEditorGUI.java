@@ -95,7 +95,7 @@ public class ImageEditorGUI extends javax.swing.JFrame {
         fcOpen = new JFileChooser();
         fcSave = new JFileChooser();
         // Creating file filters for the file choosers
-        FileNameExtensionFilter imagesFilter = new FileNameExtensionFilter("Imágenes: *.bmp, *.pbm, *.pgm, *.ppm", "bmp", "pbm", "pgm", "ppm");
+        FileNameExtensionFilter imagesFilter = new FileNameExtensionFilter("Imágenes: *.bmp, *.jpg, *.png, *.pbm, *.pgm, *.ppm", "bmp", "jpg", "png", "pbm", "pgm", "ppm");
         FileNameExtensionFilter savingFilter = new FileNameExtensionFilter("Imágenes RLE: *.rle", "rle");
         fcOpen.addChoosableFileFilter(imagesFilter);
         fcOpen.addChoosableFileFilter(savingFilter);
@@ -163,7 +163,7 @@ public class ImageEditorGUI extends javax.swing.JFrame {
         MenuBar = new javax.swing.JMenuBar();
         MenuArchivo = new javax.swing.JMenu();
         AbrirArchivo = new javax.swing.JMenuItem();
-        GuardarBMP = new javax.swing.JMenuItem();
+        GuardarImagen = new javax.swing.JMenuItem();
         GuardarNetpbm = new javax.swing.JMenu();
         SinCompresion = new javax.swing.JMenuItem();
         CompresionRLE = new javax.swing.JMenuItem();
@@ -378,14 +378,14 @@ public class ImageEditorGUI extends javax.swing.JFrame {
         });
         MenuArchivo.add(AbrirArchivo);
 
-        GuardarBMP.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
-        GuardarBMP.setText("Guardar BMP");
-        GuardarBMP.addActionListener(new java.awt.event.ActionListener() {
+        GuardarImagen.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        GuardarImagen.setText("Guardar imagen...");
+        GuardarImagen.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                GuardarBMPActionPerformed(evt);
+                GuardarImagenActionPerformed(evt);
             }
         });
-        MenuArchivo.add(GuardarBMP);
+        MenuArchivo.add(GuardarImagen);
 
         GuardarNetpbm.setText("Guardar Netpbm");
 
@@ -1403,152 +1403,152 @@ public class ImageEditorGUI extends javax.swing.JFrame {
                 // Are we opening a bmp image?
                 switch (extension) {
                     case "bmp":
-                    try {
-                        // Filling BufferedImage with file information
-                        img = ImageIO.read(file);
-                        // Making note of image properties
-                        format = 3;
-                        updateDimensions();
-                        maxColor = 255;
-                        //JOptionPane.showMessageDialog(this, "Imagen tipo: " + types);
-                    } catch (IOException e) {
-                        // Report exceptions
-                        JOptionPane.showMessageDialog(this, "Error al Abrir Imagen!");
-                    }
-                    break;
-                    //log.append("Opening: " + file.getName() + "." + newline);
+                    case "jpg":
+                    case "png":
+                        try {
+                            // Filling BufferedImage with file information
+                            img = ImageIO.read(file);
+                            // Making note of image properties
+                            format = 3;
+                            updateDimensions();
+                            maxColor = 255;
+                            //JOptionPane.showMessageDialog(this, "Imagen tipo: " + types);
+                        } catch (IOException e) {
+                            // Report exceptions
+                            JOptionPane.showMessageDialog(this, "Error al Abrir Imagen!");
+                        }
+                        break;
                     // Are we opening a Netpbm image?
                     case "ppm":
                     case "pgm":
                     case "pbm":
-                    // Creating a FileInputStream to be used by the BufferedReader
-
-                    try {
-                        in = new FileInputStream( path );
-                    } catch (FileNotFoundException ex) {
-                        Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-
-                    reader = new BufferedReader(new InputStreamReader(in));
-                    parser = new StreamTokenizer(reader);
-                    // Filtering out comments from the data
-                    parser.commentChar('#');
-
-                    try {
-                        // Reading Header(Magic Number):
-                        parser.nextToken();
-                    } catch (IOException ex) {
-                        Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-
-                    // Processing the magic number. (Pending verify this is actually a String)
-                    switch(parser.sval){
-                        // PBM format
-                        case "P1":
-                        format = 1;
-                        maxColor = 1;
-                        break;
-                        case "P2":
-                        format = 2;
-                        break;
-                        case "P3":
-                        format = 3;
-                        break;
-                    }
-
-                    //JOptionPane.showMessageDialog(this, format );
-
-                    // Reading image properties from header: Width, Height, max color(optional)
-                    try {
-                        // Reading Header:
-                        parser.nextToken();
-                        width = (int)parser.nval;
-                        parser.nextToken();
-                        height = (int)parser.nval;
-
-                        if (format != 1){
-                            parser.nextToken();
-                            maxColor = (int)parser.nval;
+                        // Creating a FileInputStream to be used by the BufferedReader
+                        try {
+                            in = new FileInputStream( path );
+                        } catch (FileNotFoundException ex) {
+                            Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                    } catch (IOException ex) {
-                        Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    //JOptionPane.showMessageDialog(this, "W:" + width + " H:" + height + " MaxC:" + maxColor);
 
-                    // Proceeding to read the image data
-                    switch(format){
-                        case 1:
-                        img = readPBM(width, height, parser);
+                        reader = new BufferedReader(new InputStreamReader(in));
+                        parser = new StreamTokenizer(reader);
+                        // Filtering out comments from the data
+                        parser.commentChar('#');
+
+                        try {
+                            // Reading Header(Magic Number):
+                            parser.nextToken();
+                        } catch (IOException ex) {
+                            Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+
+                        // Processing the magic number. (Pending verify this is actually a String)
+                        switch(parser.sval){
+                            // PBM format
+                            case "P1":
+                            format = 1;
+                            maxColor = 1;
+                            break;
+                            case "P2":
+                            format = 2;
+                            break;
+                            case "P3":
+                            format = 3;
+                            break;
+                        }
+
+                        //JOptionPane.showMessageDialog(this, format );
+
+                        // Reading image properties from header: Width, Height, max color(optional)
+                        try {
+                            // Reading Header:
+                            parser.nextToken();
+                            width = (int)parser.nval;
+                            parser.nextToken();
+                            height = (int)parser.nval;
+
+                            if (format != 1){
+                                parser.nextToken();
+                                maxColor = (int)parser.nval;
+                            }
+                        } catch (IOException ex) {
+                            Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        //JOptionPane.showMessageDialog(this, "W:" + width + " H:" + height + " MaxC:" + maxColor);
+
+                        // Proceeding to read the image data
+                        switch(format){
+                            case 1:
+                            img = readPBM(width, height, parser);
+                            break;
+                            case 2:
+                            img = readPGM(width, height, maxColor, parser);
+                            break;
+                            case 3:
+                            img = readPPM(width, height, maxColor, parser);
+                            break;
+                        }
+                        maxColor = 255;
                         break;
-                        case 2:
-                        img = readPGM(width, height, maxColor, parser);
-                        break;
-                        case 3:
-                        img = readPPM(width, height, maxColor, parser);
-                        break;
-                    }
-                    maxColor = 255;
-                    break;
                     case "rle":
-                    try {
-                        in = new FileInputStream( path );
-                    } catch (FileNotFoundException ex) {
-                        Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                        try {
+                            in = new FileInputStream( path );
+                        } catch (FileNotFoundException ex) {
+                            Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
+                        }
 
-                    reader = new BufferedReader(new InputStreamReader(in));
-                    parser = new StreamTokenizer(reader);
+                        reader = new BufferedReader(new InputStreamReader(in));
+                        parser = new StreamTokenizer(reader);
 
-                    try {
-                        // Reading Header(Magic Number):
-                        parser.nextToken();
-                    } catch (IOException ex) {
-                        Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                        try {
+                            // Reading Header(Magic Number):
+                            parser.nextToken();
+                        } catch (IOException ex) {
+                            Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
+                        }
 
-                    // Processing the magic number. (Pending verify this is actually a String)
-                    switch(parser.sval){
-                        // PBM format
-                        case "P1":
-                        format = 1;
-                        maxColor = 1;
-                        break;
-                        case "P2":
-                        format = 2;
-                        break;
-                        case "P3":
-                        format = 3;
-                        break;
-                    }
+                        // Processing the magic number. (Pending verify this is actually a String)
+                        switch(parser.sval){
+                            // PBM format
+                            case "P1":
+                            format = 1;
+                            maxColor = 1;
+                            break;
+                            case "P2":
+                            format = 2;
+                            break;
+                            case "P3":
+                            format = 3;
+                            break;
+                        }
 
-                    //JOptionPane.showMessageDialog(this, format );
+                        //JOptionPane.showMessageDialog(this, format );
 
-                    // Reading image properties from header: Width, Height, max color(optional)
-                    try {
-                        // Reading Header:
-                        parser.nextToken();
-                        width = (int)parser.nval;
-                        parser.nextToken();
-                        height = (int)parser.nval;
-                    } catch (IOException ex) {
-                        Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    //JOptionPane.showMessageDialog(this, "W:" + width + " H:" + height + " MaxC:" + maxColor);
+                        // Reading image properties from header: Width, Height, max color(optional)
+                        try {
+                            // Reading Header:
+                            parser.nextToken();
+                            width = (int)parser.nval;
+                            parser.nextToken();
+                            height = (int)parser.nval;
+                        } catch (IOException ex) {
+                            Logger.getLogger(ImageEditorGUI.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        //JOptionPane.showMessageDialog(this, "W:" + width + " H:" + height + " MaxC:" + maxColor);
 
-                    // Proceeding to read the image data
-                    switch(format){
-                        case 1:
-                        img = readPBMfromRLE(width, height, parser);
+                        // Proceeding to read the image data
+                        switch(format){
+                            case 1:
+                            img = readPBMfromRLE(width, height, parser);
+                            break;
+                            case 2:
+                            img = readPGMfromRLE(width, height, parser);
+                            break;
+                            case 3:
+                            img = readPPMfromRLE(width, height, parser);
+                            break;
+                        }
+                        maxColor = 255;
                         break;
-                        case 2:
-                        img = readPGMfromRLE(width, height, parser);
-                        break;
-                        case 3:
-                        img = readPPMfromRLE(width, height, parser);
-                        break;
-                    }
-                    maxColor = 255;
-                    break;
                 }
                 refreshImageDisplayed(true, true);
 
@@ -1574,7 +1574,7 @@ public class ImageEditorGUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_AbrirArchivoActionPerformed
 
-    private void GuardarBMPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GuardarBMPActionPerformed
+    private void GuardarImagenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GuardarImagenActionPerformed
         int returnVal;
         if ( img != null ){
             returnVal = fcSave.showSaveDialog(this);
@@ -1584,14 +1584,19 @@ public class ImageEditorGUI extends javax.swing.JFrame {
         }
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             try {
-                //RenderedImage rendImage = bi;
-                ImageIO.write(img, "bmp", new File(fcSave.getSelectedFile().getAbsolutePath()+".bmp"));
-                Estado.setText("Imagen guardada en: " + fcSave.getSelectedFile().getAbsolutePath()+".bmp");
+                File file = fcSave.getSelectedFile();
+                // Getting the image extension.
+                String path = file.getAbsolutePath();
+                String extension = path.substring(path.length() - 3);
+                if ("bmp".equals(extension) || "png".equals(extension) || "jpg".equals(extension)){
+                    ImageIO.write(img, extension, new File(fcSave.getSelectedFile().getAbsolutePath()));
+                    Estado.setText("Imagen guardada en: " + fcSave.getSelectedFile().getAbsolutePath());
+                }
             } catch ( IOException e) {
                 JOptionPane.showMessageDialog(this, "¡ERROR: Ocurrio un error al guardar el archivo!");
             }
         }
-    }//GEN-LAST:event_GuardarBMPActionPerformed
+    }//GEN-LAST:event_GuardarImagenActionPerformed
 
     private void SinCompresionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SinCompresionActionPerformed
         int returnVal;
@@ -2374,7 +2379,7 @@ public class ImageEditorGUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem Escalamiento;
     private javax.swing.JLabel Estado;
     private javax.swing.JPanel GreenHistogram;
-    private javax.swing.JMenuItem GuardarBMP;
+    private javax.swing.JMenuItem GuardarImagen;
     private javax.swing.JMenu GuardarNetpbm;
     private javax.swing.JLabel HistoLabel;
     private javax.swing.JPanel HistoPanel;
