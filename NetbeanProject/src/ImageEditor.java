@@ -19,8 +19,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -622,22 +620,6 @@ public class ImageEditor extends javax.swing.JFrame {
             // Recounting colors
             countUniqueColors();
         }
-    }
-
-    private int bilinealInterpolation(int colorNW, int colorNE, int colorSW, int colorSE, double a, double b){
-        int NWNEr = (int)((1 - a) * ((colorNW >> 16) & 0xff) + a * ((colorNE >> 16) & 0xff));
-        int NWNEg = (int)((1 - a) * ((colorNW >> 8) & 0xff) + a * ((colorNE >> 8) & 0xff));
-        int NWNEb = (int)((1 - a) * (colorNW & 0xff) + a * (colorNE & 0xff));
-
-        int SWSEr = (int)((1 - a) * ((colorSW >> 16) & 0xff) + a * ((colorSE >> 16) & 0xff));
-        int SWSEg = (int)((1 - a) * ((colorSW >> 8) & 0xff) + a * ((colorSE >> 8) & 0xff));
-        int SWSEb = (int)((1 - a) * (colorSW & 0xff) + a * (colorSE & 0xff));
-
-        int rTotal = clampColorValue((int)((1 - b) * NWNEr  + b * SWSEr));
-        int gTotal = clampColorValue((int)((1 - b) * NWNEg  + b * SWSEg));
-        int bTotal = clampColorValue((int)((1 - b) * NWNEb  + b * SWSEb));
-
-        return (255<<24) | (rTotal<<16) | (gTotal<<8) | bTotal;
     }
 
     private Kernel generateCustomKernel(int w, int h){
@@ -1313,15 +1295,15 @@ public class ImageEditor extends javax.swing.JFrame {
 
     // This function provides a ChangeListener based on a JOptionPane that will
     // listen anychanges made in a JOptionsPane
-    private ChangeListener createChangeListener(JOptionPane Pane) {
-        ChangeListener changeListener = (ChangeEvent changeEvent) -> {
-            JSlider theSlider = (JSlider) changeEvent.getSource();
-            if (!theSlider.getValueIsAdjusting()) {
-                Pane.setInputValue(theSlider.getValue());
-            }
-        };
-        return changeListener;
-    }
+//    private ChangeListener createChangeListener(JOptionPane Pane) {
+//        ChangeListener changeListener = (ChangeEvent changeEvent) -> {
+//            JSlider theSlider = (JSlider) changeEvent.getSource();
+//            if (!theSlider.getValueIsAdjusting()) {
+//                Pane.setInputValue(theSlider.getValue());
+//            }
+//        };
+//        return changeListener;
+//    }
 
     private void GuardarBMPActionPerformed(java.awt.event.ActionEvent evt) {                                           
         int returnVal;
@@ -1537,25 +1519,8 @@ public class ImageEditor extends javax.swing.JFrame {
     }                                            
 
     private void NegativoActionPerformed(java.awt.event.ActionEvent evt) {                                         
-        // TODO add your handling code here:
         if (img != null){
-            for(int y = 0; y < height; y++){
-                for(int x = 0; x < width; x++){
-                    // Unpacking the data of each pixel with masks.
-                    int p = img.getRGB(x, y);
-                    int a = (p >> 24) & 0xff;
-                    int r = (p >> 16) & 0xff;
-                    int g = (p >> 8) & 0xff;
-                    int b = p & 0xff;
-                    // Inverting the colors of the pixel per sample.
-                    r = 255 - r;
-                    g = 255 - g;
-                    b = 255 - b;
-                    // Packing back the pixel data
-                    p = (a<<24) | (r<<16) | (g<<8) | b;
-                    img.setRGB(x, y, p);
-                }
-            }
+            img = myFilters.Negative(img);
             refreshImageDisplayed(false, true);
             // Updating status bar.
             Estado.setText("Aplicando Negativo | Colores Únicos en imagen: " + colorsCounter);
@@ -1583,22 +1548,7 @@ public class ImageEditor extends javax.swing.JFrame {
     private void EscalaDeGrisesActionPerformed(java.awt.event.ActionEvent evt) {                                               
         // TODO add your handling code here:
         if (img != null){
-            for(int y = 0; y < height; y++){
-                for(int x = 0; x < width; x++){
-                    int avg;
-                    // Unpacking the data of each pixel with masks.
-                    int p = img.getRGB(x,y);
-                    int a = (p>>24)&0xff;
-                    int r = (p>>16)&0xff;
-                    int g = (p>>8)&0xff;
-                    int b = p&0xff;
-                    //Calculating average per pixel
-                    avg = (r+g+b)/3;
-                    // Packing back the pixel data
-                    p = (a<<24) | (avg<<16) | (avg<<8) | avg;
-                    img.setRGB(x, y, p);
-                }
-            }
+            img  = myFilters.GrayScale(img);
             refreshImageDisplayed(true, true);
             format = 2;
             Estado.setText("Aplicando Escala de Grises | Colores Únicos en imagen: " + colorsCounter);
@@ -1645,35 +1595,11 @@ public class ImageEditor extends javax.swing.JFrame {
                                                         null,           // Don't use a custom Icon
                                                         options,        // The strings of buttons
                                                         options[0]);    // Default button title
-            // Getting threshold value from the slider
-            int thr = thresholdSlider.getValue();
             //If the operation was canceled do nothing.
             if (result == JOptionPane.NO_OPTION){
                 return;
             }
-
-            for(int y = 0; y < height; y++){
-                for(int x = 0; x < width; x++){
-                    int avg;
-                    // Unpacking the data of each pixel with masks.
-                    int p = img.getRGB(x,y);
-                    int a = (p>>24)&0xff;
-                    int r = (p>>16)&0xff;
-                    int g = (p>>8)&0xff;
-                    int b = p&0xff;
-                    //Calculating average per pixel
-                    avg = (r+g+b)/3;
-                    //Sorting average into range according to threshold
-                    if (avg < thr){
-                        avg = 0;
-                    }else{
-                        avg = 255;
-                    }
-                    //Packing back the pixel data
-                    p = (a<<24) | (avg<<16) | (avg<<8) | avg;
-                    img.setRGB(x, y, p);
-                }
-            }
+            img = myFilters.ThresholdBlackAndWhite(img, thresholdSlider.getValue());
             refreshImageDisplayed(true, true);
             format = 1;
             Estado.setText("Aplicando Blanco y Negro | Colores Únicos en imagen: " + colorsCounter);
@@ -1683,18 +1609,8 @@ public class ImageEditor extends javax.swing.JFrame {
     }                                           
 
     private void Rotar90CWActionPerformed(java.awt.event.ActionEvent evt) {                                          
-        //Declaring an auxiliary image for operations with Width and Height inverted
         if (img != null){
-            int imgW = img.getWidth();
-            int imgH = img.getHeight();
-            //Declaring an auxiliary image for operations with Width and Height inverted
-            BufferedImage imgAux = new BufferedImage(imgH, imgW, BufferedImage.TYPE_3BYTE_BGR);
-            for (int i = 0; i < imgW; i++){
-                for(int j = 0; j < imgH; j++){
-                    imgAux.setRGB(imgH - j - 1, i, img.getRGB(i, j));
-                }
-            }
-            img = imgAux;
+            img = myFilters.CWRotate90Degrees(img);
             updateDimensions();
             refreshImageDisplayed(false, true);
             Estado.setText("Aplicando Rotación 90°CW | Colores Únicos en imagen: " + colorsCounter);
@@ -1704,27 +1620,14 @@ public class ImageEditor extends javax.swing.JFrame {
     }                                         
 
     private void Rotar90CCWActionPerformed(java.awt.event.ActionEvent evt) {                                           
-        // TODO add your handling code here:
-        //Declaring an auxiliary image for operations with Width and Height inverted
-        BufferedImage imgAux;
         if (img != null){
-            int imgW = img.getWidth();
-            int imgH = img.getHeight();
-            //assigning imgAux
-            imgAux = new BufferedImage(imgH, imgW, img.getType());
-            for (int i = 0; i < imgW; i++){
-                for(int j = 0; j < imgH; j++){
-                    imgAux.setRGB(j, imgW - 1 - i, img.getRGB(i, j));
-                }
-            }
-            img = imgAux;
+            img = myFilters.CCWRotate90Degrees(img);
             updateDimensions();
             refreshImageDisplayed(false, true);
             Estado.setText("Aplicando Rotación 90°CCW | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
-        
     }                                          
 
     private void ReadmeActionPerformed(java.awt.event.ActionEvent evt) {                                       

@@ -790,7 +790,7 @@ public class FiltersController {
         }
         return destImage;
     }
-    
+
     /**
     * Produces an scaled version of the source image according to the provided scaling factors and interpolation type.
     *
@@ -957,4 +957,129 @@ public class FiltersController {
         return destImage;
     }
 
+    /**
+    * Produces an inverse image color-wise from the original one.
+    *
+    * This function assumes the BufferedImage is not null
+    * @param srcImage BufferedImage reference to the source image to be affected by the filter.
+    * @return A BufferedImage reference to an image with inverse colors.
+    */
+    public BufferedImage Negative(BufferedImage srcImage){
+        BufferedImage destImage = new BufferedImage(srcImage.getWidth(), srcImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+        for(int y = 0; y < srcImage.getHeight(); y++){
+            for(int x = 0; x < srcImage.getWidth(); x++){
+                // Unpacking the data of each pixel with masks.
+                int p = srcImage.getRGB(x, y);
+                int a = (p >> 24) & 0xff;
+                int r = (p >> 16) & 0xff;
+                int g = (p >> 8) & 0xff;
+                int b = p & 0xff;
+                // Inverting the colors of the pixel per sample.
+                r = 255 - r;
+                g = 255 - g;
+                b = 255 - b;
+                // Packing back the pixel data
+                p = (a<<24) | (r<<16) | (g<<8) | b;
+                destImage.setRGB(x, y, p);
+            }
+        }
+        return destImage;
+    }
+
+    /**
+    * Produces an gray scaled image from the original one.
+    *
+    * This function assumes the BufferedImage is not null
+    * @param srcImage BufferedImage reference to the source image to be affected by the filter.
+    * @return A BufferedImage reference to a gray scale image.
+    */
+    public BufferedImage GrayScale(BufferedImage srcImage){
+        BufferedImage destImage = new BufferedImage(srcImage.getWidth(), srcImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+        for(int y = 0; y < srcImage.getHeight(); y++){
+            for(int x = 0; x < srcImage.getWidth(); x++){
+                int avg;
+                // Unpacking the data of each pixel with masks.
+                int p = srcImage.getRGB(x,y);
+                int a = (p>>24)&0xff;
+                int r = (p>>16)&0xff;
+                int g = (p>>8)&0xff;
+                int b = p&0xff;
+                // Calculating average per pixel
+                avg = (r+g+b)/3;
+                // Packing back the pixel data
+                p = (a<<24) | (avg<<16) | (avg<<8) | avg;
+                destImage.setRGB(x, y, p);
+            }
+        }
+        return destImage;
+    }
+
+    /**
+    * Produces an black and white image from the original one, thresholded according to the given value.
+    *
+    * This function assumes the BufferedImage is not null
+    * @param srcImage BufferedImage reference to the source image to be affected by the filter.
+    * @param threshold the threshold value to compare color levels to.
+    * @return A BufferedImage reference to a black and white image.
+    */
+    public BufferedImage ThresholdBlackAndWhite(BufferedImage srcImage, int threshold){
+        BufferedImage destImage = new BufferedImage(srcImage.getWidth(), srcImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+        for(int y = 0; y < srcImage.getHeight(); y++){
+            for(int x = 0; x < srcImage.getWidth(); x++){
+                int avg;
+                // Unpacking the data of each pixel with masks.
+                int p = srcImage.getRGB(x,y);
+                int a = (p>>24)&0xff;
+                int r = (p>>16)&0xff;
+                int g = (p>>8)&0xff;
+                int b = p&0xff;
+                //Calculating average per pixel
+                avg = (r+g+b)/3;
+                //Sorting average into range according to threshold
+                if (avg < threshold){
+                    avg = 0;
+                }else{
+                    avg = 255;
+                }
+                //Packing back the pixel data
+                p = (a<<24) | (avg<<16) | (avg<<8) | avg;
+                destImage.setRGB(x, y, p);
+            }
+        }
+        return destImage;
+    }
+
+    /**
+    * Produces an 90 degrees clockwise rotated image from the original one.
+    *
+    * This function assumes the BufferedImage is not null
+    * @param srcImage BufferedImage reference to the source image to be affected by the filter.
+    * @return A BufferedImage reference to a rotated image.
+    */
+    public BufferedImage CWRotate90Degrees(BufferedImage srcImage){
+        BufferedImage destImage = new BufferedImage(srcImage.getHeight(), srcImage.getWidth(), BufferedImage.TYPE_3BYTE_BGR);
+        for (int i = 0; i < srcImage.getWidth(); i++){
+            for(int j = 0; j < srcImage.getHeight(); j++){
+                destImage.setRGB(srcImage.getHeight() - j - 1, i, srcImage.getRGB(i, j));
+            }
+        }
+        return destImage;
+    }
+
+    /**
+    * Produces an 90 degrees counter clockwise rotated image from the original one.
+    *
+    * This function assumes the BufferedImage is not null
+    * @param srcImage BufferedImage reference to the source image to be affected by the filter.
+    * @return A BufferedImage reference to a rotated image.
+    */
+    public BufferedImage CCWRotate90Degrees(BufferedImage srcImage){
+        BufferedImage destImage = new BufferedImage(srcImage.getHeight(), srcImage.getWidth(), BufferedImage.TYPE_3BYTE_BGR);
+        for (int i = 0; i < srcImage.getWidth(); i++){
+            for(int j = 0; j < srcImage.getHeight(); j++){
+                destImage.setRGB(j, srcImage.getWidth() - 1 - i, srcImage.getRGB(i, j));
+            }
+        }
+        return destImage;
+    }
 }
