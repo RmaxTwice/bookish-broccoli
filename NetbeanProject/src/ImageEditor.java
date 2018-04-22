@@ -580,6 +580,16 @@ public class ImageEditor extends javax.swing.JFrame {
         return copyImage;
     }
 
+    private void refreshImageInformation(String msg){
+        getBitsPerPixel();
+        drawHistograms(); 
+        Estado.setText( msg );
+        Colores.setText("Colores únicos: "+colorsCounter);
+        Dimensiones.setText("Dimensiones: " + width + "x" + height);
+        BPP.setText("Bits por pixel: " + bitspp);
+        DPI.setText("Puntos por pulgada (dpi): -"); 
+    }
+    
     private String getSelectedButtonText(ButtonGroup buttonGroup) {
         for (Enumeration<AbstractButton> buttons = buttonGroup.getElements(); buttons.hasMoreElements();) {
             AbstractButton button = buttons.nextElement();
@@ -1522,8 +1532,8 @@ public class ImageEditor extends javax.swing.JFrame {
         if (img != null){
             img = myFilters.Negative(img);
             refreshImageDisplayed(false, true);
-            // Updating status bar.
-            Estado.setText("Aplicando Negativo | Colores Únicos en imagen: " + colorsCounter);
+            refreshImageInformation("Aplicando Filtro Negativo.");
+            //Estado.setText("Aplicando Negativo | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1551,7 +1561,8 @@ public class ImageEditor extends javax.swing.JFrame {
             img  = myFilters.GrayScale(img);
             refreshImageDisplayed(true, true);
             format = 2;
-            Estado.setText("Aplicando Escala de Grises | Colores Únicos en imagen: " + colorsCounter);
+            refreshImageInformation("Aplicando Escala de Grises.");
+            //Estado.setText("Aplicando Escala de Grises | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1602,7 +1613,8 @@ public class ImageEditor extends javax.swing.JFrame {
             img = myFilters.ThresholdBlackAndWhite(img, thresholdSlider.getValue());
             refreshImageDisplayed(true, true);
             format = 1;
-            Estado.setText("Aplicando Blanco y Negro | Colores Únicos en imagen: " + colorsCounter);
+            refreshImageInformation("Aplicando Umbralización a Blanco y Negro.");
+            //Estado.setText("Aplicando Blanco y Negro | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1613,7 +1625,8 @@ public class ImageEditor extends javax.swing.JFrame {
             img = myFilters.CWRotate90Degrees(img);
             updateDimensions();
             refreshImageDisplayed(false, true);
-            Estado.setText("Aplicando Rotación 90°CW | Colores Únicos en imagen: " + colorsCounter);
+            refreshImageInformation("Aplicando Rotación 90°CW");
+            //Estado.setText("Aplicando Rotación 90°CW | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1624,7 +1637,8 @@ public class ImageEditor extends javax.swing.JFrame {
             img = myFilters.CCWRotate90Degrees(img);
             updateDimensions();
             refreshImageDisplayed(false, true);
-            Estado.setText("Aplicando Rotación 90°CCW | Colores Únicos en imagen: " + colorsCounter);
+            refreshImageInformation("Aplicando Rotación 90°CCW");
+            //Estado.setText("Aplicando Rotación 90°CCW | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1714,7 +1728,8 @@ public class ImageEditor extends javax.swing.JFrame {
                 maxColor = 255;
             }
             refreshImageDisplayed(true, true);
-            Estado.setText("Aplicando Suavizado Gaussiano | Colores Únicos en imagen: " + colorsCounter);
+            refreshImageInformation("Aplicando Filtro de Suavizado Gaussiano");
+            //Estado.setText("Aplicando Suavizado Gaussiano | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1769,8 +1784,8 @@ public class ImageEditor extends javax.swing.JFrame {
                 maxColor = 255;
             }
             refreshImageDisplayed(true, true);
-            // Updating status bar.
-            Estado.setText("Aplicando Suavizado Promedio | Colores Únicos en imagen: " + colorsCounter);
+            refreshImageInformation("Aplicando Filtro de Suavizado Promedio");
+            //Estado.setText("Aplicando Suavizado Promedio | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1820,8 +1835,8 @@ public class ImageEditor extends javax.swing.JFrame {
                 maxColor = 255;
             }
             refreshImageDisplayed(true, true);
-            // Updating status bar.
-            Estado.setText("Aplicando filtro Mediana | Colores Únicos en imagen: " + colorsCounter);
+            refreshImageInformation("Aplicando Filtro de la Mediana");
+            //Estado.setText("Aplicando filtro Mediana | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1899,8 +1914,8 @@ public class ImageEditor extends javax.swing.JFrame {
                 maxColor = 255;
             }
             refreshImageDisplayed(true, true);
-            // Updating status bar.
-            Estado.setText("Aplicando filtro de Prewitt | Colores Únicos en imagen: " + colorsCounter);
+            refreshImageInformation("Aplicando filtro de Prewitt");
+            //Estado.setText("Aplicando filtro de Prewitt | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1921,8 +1936,8 @@ public class ImageEditor extends javax.swing.JFrame {
                 maxColor = 255;
             }
             refreshImageDisplayed(true, true);
-            // Updating status bar.
-            Estado.setText("Aplicando filtro de Roberts | Colores Únicos en imagen: " + colorsCounter);
+            refreshImageInformation("Aplicando filtro de Roberts");
+            //Estado.setText("Aplicando filtro de Roberts | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1986,8 +2001,8 @@ public class ImageEditor extends javax.swing.JFrame {
                 maxColor = 255;
             }
             refreshImageDisplayed(true, true);
-            // Updating status bar.
-            Estado.setText("Aplicando filtro de Sobel | Colores Únicos en imagen: " + colorsCounter);
+            refreshImageInformation("Aplicando filtro de Sobel");
+            //Estado.setText("Aplicando filtro de Sobel | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -2010,8 +2025,8 @@ public class ImageEditor extends javax.swing.JFrame {
                 maxColor = 255;
             }
             refreshImageDisplayed(true, true);
-            // Updating status bar.
-            Estado.setText("Aplicando filtro Laplaciano del Gaussiano | Colores Únicos en imagen: " + colorsCounter);
+            refreshImageInformation("Aplicando filtro de Laplaciano del Gaussiano");
+            //Estado.setText("Aplicando filtro Laplaciano del Gaussiano | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -2069,8 +2084,8 @@ public class ImageEditor extends javax.swing.JFrame {
                 maxColor = 255;
             }
             refreshImageDisplayed(true, true);
-            // Updating status bar.
-            Estado.setText("Aplicando Filtro Personalizado | Colores Únicos en imagen: " + colorsCounter);
+            refreshImageInformation("Aplicando filtro Personalizado");
+            //Estado.setText("Aplicando Filtro Personalizado | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -2158,7 +2173,8 @@ public class ImageEditor extends javax.swing.JFrame {
             }else{
                 refreshImageDisplayed(false, true);
             }
-            Estado.setText("Aplicando Escalamiento de " + (int)spinZoomFactorX.getValue() +"% x " + (int)spinZoomFactorY.getValue() + "% | Colores Únicos en imagen: " + colorsCounter);
+            refreshImageInformation("Aplicando Escalamiento de " + (int)spinZoomFactorX.getValue() +"% x " + (int)spinZoomFactorY.getValue() + "%");
+            //Estado.setText("Aplicando Escalamiento de " + (int)spinZoomFactorX.getValue() +"% x " + (int)spinZoomFactorY.getValue() + "% | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -2205,7 +2221,8 @@ public class ImageEditor extends javax.swing.JFrame {
             }else{
                 refreshImageDisplayed(false, true);
             }
-            Estado.setText("Aplicando Rotación CW de " + (int)spinDegrees.getValue() +"º | Colores Únicos en imagen: " + colorsCounter);
+            refreshImageInformation("Aplicando Rotación CW de " + (int)spinDegrees.getValue() +"º");
+            //Estado.setText("Aplicando Rotación CW de " + (int)spinDegrees.getValue() +"º | Colores Únicos en imagen: " + colorsCounter);
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
