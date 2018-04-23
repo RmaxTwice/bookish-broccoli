@@ -70,7 +70,6 @@ public class ImageEditorGUI extends javax.swing.JFrame {
     private final JSlider thresholdSlider;
     private final JSlider kernelSizeSlider;
     private final JSlider brightnessSlider;
-    private final JSlider contrastSlider;
     //Integer to show bits per pixel
     private int bitspp;
     //Histogram bins
@@ -119,16 +118,10 @@ public class ImageEditorGUI extends javax.swing.JFrame {
         kernelSizeSlider.setPaintLabels(true);
         
         // Configuring some Slider's properties.
-        brightnessSlider = new JSlider(0, 255, 127); // min, max, init
+        brightnessSlider = new JSlider(-127, 127, 0); // min, max, init
         brightnessSlider.setMajorTickSpacing(50);
         brightnessSlider.setPaintTicks(true);
         brightnessSlider.setPaintLabels(true);
-        
-        // Configuring some Slider's properties.
-        contrastSlider = new JSlider(0, 255, 127); // min, max, init
-        contrastSlider.setMajorTickSpacing(50);
-        contrastSlider.setPaintTicks(true);
-        contrastSlider.setPaintLabels(true);
     }
 
     /**

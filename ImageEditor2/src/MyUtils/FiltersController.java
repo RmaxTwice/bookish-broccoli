@@ -49,7 +49,7 @@ public class FiltersController {
         int rTotal = 0;
         int gTotal = 0;
         int bTotal = 0;
-        // If all matrices and the kernel have the same dimensions then we can convolute.
+        // If all matrices and the kernel have the same dimensions then we can convolve.
         if(k.getHeight() == r.size() && r.size() == g.size() && g.size() == b.size() && k.getWidth() == r.get(0).size() && r.get(0).size() == g.get(0).size() && g.get(0).size() == b.get(0).size()){
             for(int i = 0 ; i < k.getHeight(); i++){
                 for(int j = 0 ; j < k.getWidth(); j++){

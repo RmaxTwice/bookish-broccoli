@@ -44,13 +44,13 @@ The application must have the following features implemented:
 ##### Second Stage
 - **(Pending)** Display image information, such as: dimensions, bits per pixel, number of unique colors and dots per inch.
 - *(Refactor possible)* Generation and display of the image's Histogram
-- **(Pending)** Contrast and Brightness adjustment.
+- *(Refactor possible)* Contrast and Brightness adjustment.
 - Dynamic Thresholding
 - *(Refactor possible)*Scaling and free rotation (no angle constraint).
 - *(Refactor possible)*Zoom in & Zoom out.
 - *(Refactor possible)*Gradient calculation using Sobel, Roberts and Prewitt filters.
-- *(Refactor possible)* Average, median and Laplacian of Gaussian (LoG) filters.
-- *(Refactor possible)* Apply a custom kernel filter to the image, there should be a simple and elegant way to choose the size and values of it. (Said kernel must be minimun 2x1 or 1x2 to a maximun of 7x7).
+- *(Refactor possible)*Average, median and Laplacian of Gaussian (LoG) filters.
+- *(Refactor possible)*Apply a custom kernel filter to the image, there should be a simple and elegant way to choose the size and values of it. (Said kernel must be minimun 2x1 or 1x2 to a maximun of 7x7).
 - **(Optional & Pending)** Thread based acceleration of the application in java, will only be taken into account if the rest of the features were successfully implemented.
 
 
