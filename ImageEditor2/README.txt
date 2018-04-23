@@ -79,85 +79,85 @@ que no correspondan a la imagen original, y si no está activo, la imagen resulta
 box cuadrado de la imagen girada.
 
 --------------------------------
-7.- Editar -> Escalamiento
+8.- Editar -> Escalamiento
 --------------------------------
 El programa reescala la imagen tomando como parámetros dos valores correspondientes al porcentaje de reescalado en 
 altura y anchura (de 1 a 1000%) y el método de interpolación a usar: Vecino más cercano o Interpolación Bilineal.
 
 --------------------------------------
-8.- Ver -> Aplicar Zoom (Alt+Z):
+9.- Ver -> Aplicar Zoom (Alt+Z):
 --------------------------------------
 El programa permite acercar o alejar una imagen según cierto rango (1-1000%) (Este zoom emplea vecino mas cercano exclusivamente).
 
 ----------------------------------------
-9.- Filtros -> Color -> Negativo (Ctrl+N):
+10.- Filtros -> Color -> Negativo (Ctrl+N):
 ----------------------------------------
 El programa invierte los colores de la imagen.
 
 ----------------------------------------
-10.- Filtros -> Color -> Escala de Grises (Ctrl+G):
+11.- Filtros -> Color -> Escala de Grises (Ctrl+G):
 ----------------------------------------
 El programa convierte la imagen a escala de grises de 256 colores.
 
 ----------------------------------------
-11.- Filtros -> Color -> Blanco y Negro (Ctrl+B):
+12.- Filtros -> Color -> Blanco y Negro (Ctrl+B):
 ----------------------------------------
 El programa convierte la imagen a blanco y negro de dos colores, de acuerdo a un umbral ingresado por el usuario.
 
 ----------------------------------------
-12.- Filtros -> Color -> Brillo 
+13.- Filtros -> Color -> Brillo 
 ----------------------------------------
 El programa modifica el brillo aumentando o disminuyendo en un rango de -127 a 127.
 
 ----------------------------------------
-13.- Filtros -> Color -> Contraste 
+14.- Filtros -> Color -> Contraste 
 ----------------------------------------
 El programa modifica el contraste automáticamente usando Ecualización del histograma.
 
 ----------------------------------------
-14.- Filtros -> Suavizado -> Suavizado Gaussiano
+15.- Filtros -> Suavizado -> Suavizado Gaussiano
 ----------------------------------------
 El programa aplica suavizado gaussiano a la imagen de acuerdo a un valor n de kernel ingresado por el usuario usando un slider
 y una de 3 orientaciones posibles vertical, horizontal o ambas (1xn, nx1 y nxn) el kernel sigue el triangulo de pascal.
 
 ----------------------------------------
-15.- Filtros -> Suavizado -> Suavizado Promedio
+16.- Filtros -> Suavizado -> Suavizado Promedio
 ----------------------------------------
 El programa aplica suavizado promedio a la imagen de acuerdo a un valor de ancho y alto del kernel ingresado por el usuario
 usando spinners.
 
 ----------------------------------------
-16.- Filtros -> Suavizado -> Mediana
+17.- Filtros -> Suavizado -> Mediana
 ----------------------------------------
 El programa aplica el filtro de Mediana a la imagen de acuerdo a un valor de ancho y alto del kernel ingresado por el usuario
 usando spinners.
 
 ----------------------------------------------
-17.- Filtros -> Detección de Bordes -> Roberts
+18.- Filtros -> Detección de Bordes -> Roberts
 ----------------------------------------------
 El programa calcula la gradiente de la imagen convolucionando los 2 kernels de Roberts y retornando el resultado de la suma del valor
 absoluta de ambas de forma automática.
 
 ----------------------------------------------
-18.- Filtros -> Detección de Bordes -> Sobel
+19.- Filtros -> Detección de Bordes -> Sobel
 ----------------------------------------------
 El programa calcula la gradiente de la imagen convolucionando  de  Sobel a partir de la orientacion dada: Horizontal,
 Vertical o ambos.
 
 ----------------------------------------------
-19.- Filtros -> Detección de Bordes -> Prewitt
+20.- Filtros -> Detección de Bordes -> Prewitt
 ----------------------------------------------
 El programa calcula la gradiente de la imagen convolucionando con uno o más kernels de Prewitt a partir de la orientacion dada:
 Horizontal, Vertical, Diagonal hacia la derecha, hacia la izquierda o todos.
 
 ---------------------------------------------------------------
-22.- Filtros -> Detección de Bordes -> Laplaciano del Gaussiano
+21.- Filtros -> Detección de Bordes -> Laplaciano del Gaussiano
 ---------------------------------------------------------------
 El programa  calcula la gradiente de la imagen convolucionando primero con un kernel de suavizado gaussiano de 3x3 y despues 
 convolucionando con el kernel Laplaciano.
 
 ------------------------------
-23.- Filtros -> Personalizado 
+22.- Filtros -> Personalizado 
 ------------------------------
 El programa despliega una interfaz que permite que el usuario seleccione el tamaño del kernel, el valor de cada campo del kernel y
 las coordenadas donde se ubicará el pivote. Por defecto ésta se asume lo más al centro posible, pero el usuario puede cambiar este
