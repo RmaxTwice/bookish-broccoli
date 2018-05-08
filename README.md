@@ -42,17 +42,25 @@ The application must have the following features implemented:
 - *(Optimizing possible)* Saving and Opening of images in a custom RLE compression format.
 
 ##### Second Stage
-- **(Pending)** Display image information, such as: dimensions, bits per pixel, number of unique colors and dots per inch.
-- *(Refactor possible)* Generation and display of the image's Histogram
-- *(Refactor possible)* Contrast and Brightness adjustment.
-- Dynamic Thresholding
-- *(Refactor possible)*Scaling and free rotation (no angle constraint).
-- *(Refactor possible)*Zoom in & Zoom out.
-- *(Refactor possible)*Gradient calculation using Sobel, Roberts and Prewitt filters.
-- *(Refactor possible)*Average, median and Laplacian of Gaussian (LoG) filters.
-- *(Refactor possible)*Apply a custom kernel filter to the image, there should be a simple and elegant way to choose the size and values of it. (Said kernel must be minimun 2x1 or 1x2 to a maximun of 7x7).
+-  Display image information, such as: dimensions, bits per pixel, number of unique colors and **(Pending)** dots per inch.
+-  Generation and display of the image's Histogram
+-  Contrast and Brightness adjustment.
+-  Dynamic Thresholding
+-  Scaling and free rotation (no angle constraint).
+-  Zoom in & Zoom out.
+-  Gradient calculation using Sobel, Roberts and Prewitt filters.
+-  Average, median and Laplacian of Gaussian (LoG) filters.
+-  Apply a custom kernel filter to the image, there should be a simple and elegant way to choose the size and values of it. (Said kernel must be minimun 2x1 or 1x2 to a maximun of 7x7).
 - **(Optional & Pending)** Thread based acceleration of the application in java, will only be taken into account if the rest of the features were successfully implemented.
 
+##### Third Stage
+
+From here on, the use of the JavaCV library is allowed and encouraged to do the heavy lifting when necessary.
+
+- **(Pending)** Color reduction of an image of 24 bits using at least 2 different approaches (palette conversion, pixel's bit reduction, k-means, etc.)
+- **(Pending)** Automatic Thresholding using OTSU (JavaCV and your own implementation) and another method.
+- **(Pending)** Morphological image processing such as: Erosion, Dilation, Opening and Closing. Also allowing the user to create his/her own structuring element (kernel).
+- **(Pending)** Undo and Redo at least 2 operations.
 
 ### Future Ideas / Observations
 - **(Pending)** Real-time image change while selecting threshold dynamically.
