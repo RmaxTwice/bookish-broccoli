@@ -5,24 +5,18 @@
  */
 package tarea3;
 
-
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StreamTokenizer;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JSlider;
-import javax.swing.JSpinner;
-import javax.swing.SpinnerNumberModel;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import MyUtils.*;
 import java.awt.BasicStroke;
@@ -30,12 +24,17 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.util.Enumeration;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.Java2DFrameConverter;
+import org.bytedeco.javacv.OpenCVFrameConverter;
+import org.bytedeco.javacv.OpenCVFrameConverter.ToIplImage;
 
 /**
  *
@@ -59,9 +58,8 @@ public class MainInterface extends javax.swing.JFrame {
     private int format;
     private int width;
     private int height;
-    private int maxColor;
-    private BufferedImage imgZoom = null;
     private BufferedImage img = null;
+    private IplImage ilpImage = null;
     // Hashmap and counter used to count unique colors
     private final HashMap<Integer, Integer> uniqueCols;
     private int colorsCounter;
@@ -157,8 +155,6 @@ public class MainInterface extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         DeshacerOperacion = new javax.swing.JMenuItem();
         Rehacer = new javax.swing.JMenuItem();
-        MenuVer = new javax.swing.JMenu();
-        Zoom = new javax.swing.JMenuItem();
         MenuFiltros = new javax.swing.JMenu();
         ColorMenu = new javax.swing.JMenu();
         EscalaDeGrises = new javax.swing.JMenuItem();
@@ -170,7 +166,7 @@ public class MainInterface extends javax.swing.JFrame {
         UmbralizacionMenu = new javax.swing.JMenu();
         OTSUOpenCV = new javax.swing.JMenuItem();
         OTSUPropio = new javax.swing.JMenuItem();
-        jMenuItem5 = new javax.swing.JMenuItem();
+        Triangulo = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         MorfologiaMenu = new javax.swing.JMenu();
         Erosion = new javax.swing.JMenuItem();
@@ -379,19 +375,6 @@ public class MainInterface extends javax.swing.JFrame {
 
         MenuBar.add(RehacerOperacion);
 
-        MenuVer.setText("Ver");
-
-        Zoom.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.ALT_MASK));
-        Zoom.setText("Aplicar Zoom");
-        Zoom.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ZoomActionPerformed(evt);
-            }
-        });
-        MenuVer.add(Zoom);
-
-        MenuBar.add(MenuVer);
-
         MenuFiltros.setText("Filtros");
 
         ColorMenu.setText("Color");
@@ -430,13 +413,28 @@ public class MainInterface extends javax.swing.JFrame {
         UmbralizacionMenu.setText("Umbralización");
 
         OTSUOpenCV.setText("OTSU (OpenCV)");
+        OTSUOpenCV.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                OTSUOpenCVActionPerformed(evt);
+            }
+        });
         UmbralizacionMenu.add(OTSUOpenCV);
 
-        OTSUPropio.setText("OTSU");
+        OTSUPropio.setText("OTSU (Propio)");
+        OTSUPropio.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                OTSUPropioActionPerformed(evt);
+            }
+        });
         UmbralizacionMenu.add(OTSUPropio);
 
-        jMenuItem5.setText("Metodo2");
-        UmbralizacionMenu.add(jMenuItem5);
+        Triangulo.setText("Triangulo");
+        Triangulo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TrianguloActionPerformed(evt);
+            }
+        });
+        UmbralizacionMenu.add(Triangulo);
 
         MenuFiltros.add(UmbralizacionMenu);
         MenuFiltros.add(jSeparator3);
@@ -510,12 +508,61 @@ public class MainInterface extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private static BufferedImage duplicate3BYTEBGR(BufferedImage image) {
-        if (image == null){
-            throw new NullPointerException();
+    private IplImage toIplImage(BufferedImage bufImage) {
+        ToIplImage iplConverter = new OpenCVFrameConverter.ToIplImage();
+        Java2DFrameConverter java2dConverter = new Java2DFrameConverter();
+        IplImage iplImage = iplConverter.convert(java2dConverter.convert(bufImage));
+        return iplImage;
+    }
+    
+    private  BufferedImage toBufferedImage(IplImage src) {
+        OpenCVFrameConverter.ToIplImage grabberConverter = new OpenCVFrameConverter.ToIplImage();
+        Java2DFrameConverter paintConverter = new Java2DFrameConverter();
+        Frame frame = grabberConverter.convert(src);
+        return paintConverter.getBufferedImage(frame,1);
+    }
+    
+    private int OTSUThreshold(int[] histogram, int total){
+        int threshold = 0;
+        double sum = 0;
+        double sumB = 0;
+        double maxVariance = 0;
+        int weightB = 0;
+        int weightF = 0;
+
+        for (int t = 0 ; t < 256 ; t++){
+            sum += t * histogram[t];
         }
-        BufferedImage copyImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
-        copyImage.setData(image.getData());
+
+        for (int t = 0 ; t < 256 ; t++){
+            weightB += histogram[t];               // Weight Background
+            if (weightB == 0) continue;
+
+            weightF = total - weightB;             // Weight Foreground
+            if (weightF == 0) break;
+
+            sumB += (float) (t * histogram[t]);
+
+            double mB = sumB / weightB;            // Mean Background
+            double mF = (sum - sumB) / weightF;    // Mean Foreground
+
+            // Calculate Between Class Variance
+            double varBetween = (double)weightB * (double)weightF * (mB - mF) * (mB - mF);
+
+            // Check if new maximum found
+            if (varBetween > maxVariance) {
+               maxVariance = varBetween;
+               threshold = t;
+            }
+        }
+        return threshold;
+    }
+    
+    private static BufferedImage duplicateImage(BufferedImage image) {
+        ColorModel cm = image.getColorModel();
+        boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+        WritableRaster raster = image.copyData(null);
+        BufferedImage copyImage = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
         return copyImage;
     }
     
@@ -548,20 +595,8 @@ public class MainInterface extends javax.swing.JFrame {
 		
     private void getBitsPerPixel(){
         if (img != null){
-            switch (format) {
-                case 3:
-                    ColorModel cm = img.getColorModel();
-                    bitspp = cm.getPixelSize();
-                    break;
-                case 2:
-                    bitspp = 8;
-                    break;
-                case 1:
-                    bitspp = 1;
-                    break;
-                default:
-                    break;
-            }
+            ColorModel cm = img.getColorModel();
+            bitspp = cm.getPixelSize();         
         }
     }
     
@@ -749,11 +784,8 @@ public class MainInterface extends javax.swing.JFrame {
         return val;
     }
 
-    private void refreshImageDisplayed(boolean count, boolean duplicate){
-        if(duplicate){
-            imgZoom = duplicate3BYTEBGR(img);
-        }
-        ImageIcon icon = new ImageIcon(imgZoom);
+    private void refreshImageDisplayed(boolean count){
+        ImageIcon icon = new ImageIcon(img);
         // Adding the ImageIcon to the Label.
         imglabel.setIcon( icon );
         //Aligning the image to the center.
@@ -769,7 +801,6 @@ public class MainInterface extends javax.swing.JFrame {
         }
     }
     
-    
     private void AbrirArchivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AbrirArchivoActionPerformed
         //FileInputStream in = null;
         //StreamTokenizer parser;
@@ -780,17 +811,10 @@ public class MainInterface extends javax.swing.JFrame {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             // The image variable
             img = null;
-            
+            IplImage image = null;
             File file = fcOpen.getSelectedFile();
             String path = file.getAbsolutePath();
             String extension = path.substring(path.length() - 3);
-            
-//            IplImage image = cvLoadImage(path);
-//            if (image != null) {
-//                cvSmooth(image, image);
-//                //cvSaveImage(path, image);
-//                cvReleaseImage(image);
-//            }
 
             if(null != extension){
                 // Are we opening a bmp image?
@@ -801,10 +825,13 @@ public class MainInterface extends javax.swing.JFrame {
                     try {
                         // Filling BufferedImage with file information
                         img = ImageIO.read(file);
+                        image = cvLoadImage(path);
+                        //ColorModel cm =  img.getColorModel();
+                        //int color = img.getRGB(0,0);
+                        //JOptionPane.showMessageDialog(this, "Modelo de color:\n" +cm+"\nRGB color:\n" + color );
                         // Making note of image properties
                         format = 3;
                         updateDimensions();
-                        maxColor = 255;
                         //JOptionPane.showMessageDialog(this, "Imagen tipo: " + types);
                     } catch (IOException e) {
                         // Report exceptions
@@ -812,11 +839,26 @@ public class MainInterface extends javax.swing.JFrame {
                     }
                     break;
                 }
-                refreshImageDisplayed(true, true);
+                getBitsPerPixel();
+                ilpImage = toIplImage(img);
+                if (image != null && bitspp == 1) {
+                    img = toBufferedImage(image);
+                }
+
+//                ilpImage = toIplImage(img);
+//                img = toBufferedImage(ilpImage);
+
+//                img = null;
+//                img = toBufferedImage(ilpImage);
+//                ColorModel cm =  img.getColorModel();
+//                int color = img.getRGB(0,0);
+//                JOptionPane.showMessageDialog(this, "Modelo de color:\n" +cm+"\nRGB color:\n" + color );
+
+                refreshImageDisplayed(true);
 
                 // Counting unique colors
                 countUniqueColors();
-                getBitsPerPixel();
+                
                 drawHistograms();
 
                 //Changing Estado Label
@@ -860,43 +902,6 @@ public class MainInterface extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_GuardarImagenActionPerformed
 
-    private void ZoomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ZoomActionPerformed
-        if (img != null){
-            SpinnerNumberModel model1 = new SpinnerNumberModel(100, 1, 1000, 1);  // Initial value, min, max, step
-            JSpinner spinZoomFactor = new JSpinner(model1);
-            JLabel labelZoomFactor = new JLabel("Zoom de Imagen original:");
-            JLabel labelPercentange = new JLabel(" % (1-1000)");
-            JPanel spinPanel = new JPanel();
-
-            spinPanel.add(labelZoomFactor);
-            spinPanel.add(spinZoomFactor);
-            spinPanel.add(labelPercentange);
-
-            Object[] params = {spinPanel};
-            Object[] options = {"Aceptar", "Cancelar"};
-            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
-                params,
-                "Opción de Zoom",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,           // Don't use a custom Icon
-                options,        // The strings of buttons
-                options[0]);    // Default button title
-            if (result == JOptionPane.NO_OPTION){
-                return;
-            }
-            if ((int)spinZoomFactor.getValue() != 100){
-                //ZoomController((int)spinZoomFactor.getValue());
-                imgZoom = myFilters.Zoom(img, (int)spinZoomFactor.getValue());
-                refreshImageDisplayed(false, false);
-            }else{
-                refreshImageDisplayed(false, true);
-            }
-        }else{
-            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
-        }
-    }//GEN-LAST:event_ZoomActionPerformed
-
     private void ReadmeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ReadmeActionPerformed
         Runtime rt = Runtime.getRuntime();
         String readme = ("README.txt");
@@ -938,7 +943,7 @@ public class MainInterface extends javax.swing.JFrame {
                 return;
             }
             img = myFilters.ThresholdBlackAndWhite(img, thresholdSlider.getValue());
-            refreshImageDisplayed(true, true);
+            refreshImageDisplayed(true);
             format = 1;
             refreshImageInformation("Aplicando Umbralización a Blanco y Negro.");
             //Estado.setText("Aplicando Blanco y Negro | Colores Únicos en imagen: " + colorsCounter);
@@ -949,11 +954,18 @@ public class MainInterface extends javax.swing.JFrame {
 
     private void EscalaDeGrisesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EscalaDeGrisesActionPerformed
         if (img != null){
-            img  = myFilters.GrayScale(img);
-            refreshImageDisplayed(true, true);
-            format = 2;
-            refreshImageInformation("Aplicando Escala de Grises.");
-            //Estado.setText("Aplicando Escala de Grises | Colores Únicos en imagen: " + colorsCounter);
+            ColorModel cm = img.getColorModel();
+            bitspp = cm.getPixelSize();
+            if(bitspp == 24){
+                IplImage ilpImage = toIplImage(img);
+                IplImage temp = cvCreateImage(cvGetSize(ilpImage), IPL_DEPTH_8U, 1);
+                cvCvtColor(ilpImage, temp, CV_RGB2GRAY);
+                img = toBufferedImage(temp);
+                refreshImageDisplayed(true);
+                refreshImageInformation("Aplicando Escala de Grises.");
+            }else{
+                JOptionPane.showMessageDialog(this, "¡La imágen no puede ser convertida a escala de grises!");
+            }
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -962,6 +974,103 @@ public class MainInterface extends javax.swing.JFrame {
     private void DilatacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DilatacionActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_DilatacionActionPerformed
+
+    private void OTSUOpenCVActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OTSUOpenCVActionPerformed
+        if (img != null){
+            IplImage ilpImage2 ;
+            IplImage ilpImageGray;
+            ColorModel cm = img.getColorModel();
+            bitspp = cm.getPixelSize();
+            switch(bitspp){
+                case 24:
+                    ilpImage2 = toIplImage(img);
+                    ilpImageGray = cvCreateImage(cvGetSize(ilpImage2), IPL_DEPTH_8U, 1);
+                    cvCvtColor(ilpImage2, ilpImageGray, CV_RGB2GRAY);
+                    cvThreshold(ilpImageGray, ilpImageGray, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
+                    img = toBufferedImage(ilpImageGray);
+                    break;
+                case 8:
+                    ilpImage2 = toIplImage(img);
+                    cvThreshold(ilpImage2, ilpImage2, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
+                    img = toBufferedImage(ilpImage2);
+                    break;
+            }
+            
+            refreshImageDisplayed(true);
+            refreshImageInformation("Aplicando Umbralización de OTSU(OpenCV).");
+            
+            
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_OTSUOpenCVActionPerformed
+
+    private void TrianguloActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TrianguloActionPerformed
+        if (img != null){
+            IplImage ilpImage2;
+            IplImage ilpImageGray;
+            ColorModel cm = img.getColorModel();
+            bitspp = cm.getPixelSize();
+            switch(bitspp){
+                case 24:
+                    ilpImage2 = toIplImage(img);
+                    ilpImageGray = cvCreateImage(cvGetSize(ilpImage2), IPL_DEPTH_8U, 1);
+                    cvCvtColor(ilpImage2, ilpImageGray, CV_RGB2GRAY);
+                    cvThreshold(ilpImageGray, ilpImageGray, 0, 255, CV_THRESH_BINARY | CV_THRESH_TRIANGLE );
+                    img = toBufferedImage(ilpImageGray);
+                    break;
+                case 8:
+                    ilpImage2 = toIplImage(img);
+                    cvThreshold(ilpImage2, ilpImage2, 0, 255, CV_THRESH_BINARY | CV_THRESH_TRIANGLE );
+                    img = toBufferedImage(ilpImage2);
+                    break;
+            }
+            
+            refreshImageDisplayed(true);
+            refreshImageInformation("Aplicando Umbralización de Triangulo.");
+            
+            
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_TrianguloActionPerformed
+
+    private void OTSUPropioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OTSUPropioActionPerformed
+        if (img != null){
+            IplImage ilpImage2 ;
+            IplImage ilpImageGray;
+            ColorModel cm = img.getColorModel();
+            bitspp = cm.getPixelSize();
+            switch(bitspp){
+                case 24:
+                    ilpImage2 = toIplImage(img);
+                    ilpImageGray = cvCreateImage(cvGetSize(ilpImage2), IPL_DEPTH_8U, 1);
+                    cvCvtColor(ilpImage2, ilpImageGray, CV_RGB2GRAY);
+                    img = toBufferedImage( ilpImageGray );
+                    Histogram hist = new Histogram();
+                    hist.setBins(img, "GRAY");
+                    int[] histValues = hist.getGrayHistogram();
+                    int t = OTSUThreshold(histValues, height*width);
+                    img = myFilters.ThresholdBlackAndWhite(img, t);
+                    break;
+                case 8:
+                    Histogram hist2 = new Histogram();
+                    hist2.setBins(img, "GRAY");
+                    //hist.normalizeHistograms("GRAY");
+                    int[] histValues2 = hist2.getGrayHistogram();
+                    int t2 = OTSUThreshold(histValues2, height*width);
+                    img = myFilters.ThresholdBlackAndWhite(img, t2);
+                    break;
+            }
+            
+            refreshImageDisplayed(true);
+            refreshImageInformation("Aplicando Umbralización de OTSU(Propio).");
+            
+            
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_OTSUPropioActionPerformed
 
     /**
      * @param args the command line arguments
@@ -979,22 +1088,16 @@ public class MainInterface extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MainInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(MainInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
+        
+        //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new MainInterface().setVisible(true);
-            }
+        java.awt.EventQueue.invokeLater(() -> {
+            new MainInterface().setVisible(true);
         });
     }
 
@@ -1027,7 +1130,6 @@ public class MainInterface extends javax.swing.JFrame {
     private javax.swing.JMenu MenuAyuda;
     private javax.swing.JMenuBar MenuBar;
     private javax.swing.JMenu MenuFiltros;
-    private javax.swing.JMenu MenuVer;
     private javax.swing.JMenu MorfologiaMenu;
     private javax.swing.JMenuItem OTSUOpenCV;
     private javax.swing.JMenuItem OTSUPropio;
@@ -1038,12 +1140,11 @@ public class MainInterface extends javax.swing.JFrame {
     private javax.swing.JMenu RehacerOperacion;
     private javax.swing.JLabel RojoLabel;
     private javax.swing.JPanel ScrollPanePanel;
+    private javax.swing.JMenuItem Triangulo;
     private javax.swing.JMenu UmbralizacionMenu;
     private javax.swing.JLabel VerdeLabel;
-    private javax.swing.JMenuItem Zoom;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
-    private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JScrollPane jScrollPane;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;

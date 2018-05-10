@@ -51,24 +51,6 @@
             </MenuItem>
           </SubComponents>
         </Menu>
-        <Menu class="javax.swing.JMenu" name="MenuVer">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Ver"/>
-          </Properties>
-          <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="Zoom">
-              <Properties>
-                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
-                  <KeyStroke key="Alt+Z"/>
-                </Property>
-                <Property name="text" type="java.lang.String" value="Aplicar Zoom"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ZoomActionPerformed"/>
-              </Events>
-            </MenuItem>
-          </SubComponents>
-        </Menu>
         <Menu class="javax.swing.JMenu" name="MenuFiltros">
           <Properties>
             <Property name="text" type="java.lang.String" value="Filtros"/>
@@ -131,16 +113,25 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="OTSU (OpenCV)"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="OTSUOpenCVActionPerformed"/>
+                  </Events>
                 </MenuItem>
                 <MenuItem class="javax.swing.JMenuItem" name="OTSUPropio">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="OTSU"/>
+                    <Property name="text" type="java.lang.String" value="OTSU (Propio)"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="OTSUPropioActionPerformed"/>
+                  </Events>
                 </MenuItem>
-                <MenuItem class="javax.swing.JMenuItem" name="jMenuItem5">
+                <MenuItem class="javax.swing.JMenuItem" name="Triangulo">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Metodo2"/>
+                    <Property name="text" type="java.lang.String" value="Triangulo"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="TrianguloActionPerformed"/>
+                  </Events>
                 </MenuItem>
               </SubComponents>
             </Menu>
