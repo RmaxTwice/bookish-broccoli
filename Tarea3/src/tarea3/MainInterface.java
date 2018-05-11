@@ -31,6 +31,10 @@ import javax.imageio.ImageIO;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameConverter;
@@ -442,6 +446,11 @@ public class MainInterface extends javax.swing.JFrame {
         MorfologiaMenu.setText("Morfología");
 
         Erosion.setText("Erosión");
+        Erosion.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ErosionActionPerformed(evt);
+            }
+        });
         MorfologiaMenu.add(Erosion);
 
         Dilatacion.setText("Dilatación");
@@ -453,9 +462,19 @@ public class MainInterface extends javax.swing.JFrame {
         MorfologiaMenu.add(Dilatacion);
 
         Apertura.setText("Apertura");
+        Apertura.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                AperturaActionPerformed(evt);
+            }
+        });
         MorfologiaMenu.add(Apertura);
 
         Cierre.setText("Cierre");
+        Cierre.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CierreActionPerformed(evt);
+            }
+        });
         MorfologiaMenu.add(Cierre);
 
         MenuFiltros.add(MorfologiaMenu);
@@ -557,6 +576,50 @@ public class MainInterface extends javax.swing.JFrame {
         }
         return threshold;
     }
+    
+    private IplConvKernel generateCustomStructuringEl(int w, int h){
+        SpinnerNumberModel[] spinnerModels = new SpinnerNumberModel[w*h];
+        JSpinner[] strElValues = new JSpinner[w*h];
+        int[] vals;
+        JPanel[] panels = new JPanel[h];
+        
+        Object[] options = {"Aceptar", "Cancelar"};
+        Object[] params;
+        IplConvKernel element;
+        
+        for(int i = 0; i < w * h; i++){
+            spinnerModels[i] = new SpinnerNumberModel(1, 0, 1, 1);  // Initial value, min, max, step
+            strElValues[i] = new JSpinner(spinnerModels[i]);
+        }
+        
+        for(int i = 0; i < h; i++){
+            panels[i] = new JPanel();
+            for(int j = 0; j < w ; j++){
+                panels[i].add(strElValues[i * w + j]);
+            }
+        }
+        params = new Object[]{"Valores del Elemento Estructurante:",panels};
+        int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                                                    params,
+                                                    "Valores del Elemento Estructurante",
+                                                    JOptionPane.YES_NO_OPTION,
+                                                    JOptionPane.QUESTION_MESSAGE,
+                                                    null,           // Don't use a custom Icon
+                                                    options,        // The strings of buttons
+                                                    options[0]);    // Default button title
+        if ( result == JOptionPane.NO_OPTION){
+            return null;
+        }
+        //Obtaining each spinner value and adding it to a int array.
+        vals = new int[w*h];
+        for(int i = 0; i < w * h; i++){
+            vals[i] = (int)strElValues[i].getValue();
+        }
+        
+        element = cvCreateStructuringElementEx(w, h, w/2, h/2, CV_SHAPE_CUSTOM, vals);
+        return element;
+    }
+
     
     private static BufferedImage duplicateImage(BufferedImage image) {
         ColorModel cm = image.getColorModel();
@@ -972,7 +1035,86 @@ public class MainInterface extends javax.swing.JFrame {
     }//GEN-LAST:event_EscalaDeGrisesActionPerformed
 
     private void DilatacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DilatacionActionPerformed
-        // TODO add your handling code here:
+        if (img != null){
+            
+            IplConvKernel element = null;
+            int w;
+            int h;
+            
+            //Jpanel for the button groups
+            JPanel optionPanel = new JPanel();
+            JPanel sizePanel = new JPanel();
+            
+            JRadioButton def = new JRadioButton("Default");
+            JRadioButton custom = new JRadioButton("Personalizado");
+
+            JRadioButton s3 = new JRadioButton("3");
+            JRadioButton s5 = new JRadioButton("5");
+            JRadioButton s7 = new JRadioButton("7");
+       
+            ButtonGroup optionGroup = new ButtonGroup();
+            ButtonGroup sizeGroup = new ButtonGroup();
+            
+            //adding to groups
+            optionGroup.add(def);
+            optionGroup.add(custom);
+            def.setSelected(true);
+            
+            sizeGroup.add(s3);
+            sizeGroup.add(s5);
+            sizeGroup.add(s7);
+            s5.setSelected(true); 
+           
+            //adding to panels
+            optionPanel.add(def);
+            optionPanel.add(custom);
+            
+            sizePanel.add(s3);
+            sizePanel.add(s5);
+            sizePanel.add(s7);
+            
+                                  
+            Object[] params = {"Elemento Estructurante:", optionPanel, "En caso de ser personalizado, indique ancho y alto del elemento estructurante:", sizePanel};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog( ScrollPanePanel,
+                params,
+                "Opciones del Elemento Estructurante",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,           // Don't use a custom Icon
+                options,        // The strings of buttons
+                options[0]);    // Default button title
+            
+            String opt = getSelectedButtonText(optionGroup);
+           
+            if (result == JOptionPane.NO_OPTION){
+                // If the kernel is 1x1 the image ends up the same or if the user cancels the action
+                // return at once.
+                return;
+            }
+            
+            switch(opt){
+                case "Default":
+                    element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
+                    break;
+                case "Personalizado":
+                    String size = getSelectedButtonText(sizeGroup);
+                    w = h = Integer.parseInt(size);
+                    element = generateCustomStructuringEl(w, h);
+                    break;
+                default:
+                    element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
+            }
+                   
+        
+            IplImage ilpImage2 = toIplImage(img);
+            cvDilate(ilpImage2, ilpImage2, element, 1);
+            img = toBufferedImage(ilpImage2);
+            refreshImageDisplayed(true);
+            refreshImageInformation("Aplicando Dilatación");           
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
     }//GEN-LAST:event_DilatacionActionPerformed
 
     private void OTSUOpenCVActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OTSUOpenCVActionPerformed
@@ -1071,6 +1213,253 @@ public class MainInterface extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
     }//GEN-LAST:event_OTSUPropioActionPerformed
+
+    private void ErosionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ErosionActionPerformed
+        if (img != null){
+            IplConvKernel element = null;
+            int w;
+            int h;
+            
+            //Jpanel for the button groups
+            JPanel optionPanel = new JPanel();
+            JPanel sizePanel = new JPanel();
+            
+            JRadioButton def = new JRadioButton("Default");
+            JRadioButton custom = new JRadioButton("Personalizado");
+
+            JRadioButton s3 = new JRadioButton("3");
+            JRadioButton s5 = new JRadioButton("5");
+            JRadioButton s7 = new JRadioButton("7");
+       
+            ButtonGroup optionGroup = new ButtonGroup();
+            ButtonGroup sizeGroup = new ButtonGroup();
+            
+            //adding to groups
+            optionGroup.add(def);
+            optionGroup.add(custom);
+            
+            sizeGroup.add(s3);
+            sizeGroup.add(s5);
+            sizeGroup.add(s7);
+            s5.setSelected(true); 
+           
+            //adding to panels
+            optionPanel.add(def);
+            optionPanel.add(custom);
+            def.setSelected(true);
+            
+            sizePanel.add(s3);
+            sizePanel.add(s5);
+            sizePanel.add(s7);
+            
+                                  
+            Object[] params = {"Elemento Estructurante:", optionPanel, "En caso de ser personalizado, indique ancho y alto del elemento estructurante:", sizePanel};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog( ScrollPanePanel,
+                params,
+                "Opciones del Elemento Estructurante",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,           // Don't use a custom Icon
+                options,        // The strings of buttons
+                options[0]);    // Default button title
+            
+            String opt = getSelectedButtonText(optionGroup);
+           
+            if (result == JOptionPane.NO_OPTION){
+                // If the kernel is 1x1 the image ends up the same or if the user cancels the action
+                // return at once.
+                return;
+            }
+            
+            switch(opt){
+                case "Default":
+                    element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
+                    break;
+                case "Personalizado":
+                    String size = getSelectedButtonText(sizeGroup);
+                    w = h = Integer.parseInt(size);
+                    element = generateCustomStructuringEl(w, h);
+                    break;
+                default:
+                    element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
+            }
+                   
+        
+            IplImage ilpImage2 = toIplImage(img);
+            cvErode(ilpImage2, ilpImage2, element, 1);
+            img = toBufferedImage(ilpImage2);
+            refreshImageDisplayed(true);
+            refreshImageInformation("Aplicando Erosión");           
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_ErosionActionPerformed
+
+    private void AperturaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AperturaActionPerformed
+        if (img != null){
+            IplConvKernel element = null;
+            int w;
+            int h;
+            
+            //Jpanel for the button groups
+            JPanel optionPanel = new JPanel();
+            JPanel sizePanel = new JPanel();
+            
+            JRadioButton def = new JRadioButton("Default");
+            JRadioButton custom = new JRadioButton("Personalizado");
+
+            JRadioButton s3 = new JRadioButton("3");
+            JRadioButton s5 = new JRadioButton("5");
+            JRadioButton s7 = new JRadioButton("7");
+       
+            ButtonGroup optionGroup = new ButtonGroup();
+            ButtonGroup sizeGroup = new ButtonGroup();
+            
+            //adding to groups
+            optionGroup.add(def);
+            optionGroup.add(custom);
+            def.setSelected(true);
+            
+            sizeGroup.add(s3);
+            sizeGroup.add(s5);
+            sizeGroup.add(s7);
+            s5.setSelected(true); 
+           
+            //adding to panels
+            optionPanel.add(def);
+            optionPanel.add(custom);
+            
+            sizePanel.add(s3);
+            sizePanel.add(s5);
+            sizePanel.add(s7);
+            
+                                  
+            Object[] params = {"Elemento Estructurante:", optionPanel, "En caso de ser personalizado, indique ancho y alto del elemento estructurante:", sizePanel};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog( ScrollPanePanel,
+                params,
+                "Opciones del Elemento Estructurante",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,           // Don't use a custom Icon
+                options,        // The strings of buttons
+                options[0]);    // Default button title
+            
+            String opt = getSelectedButtonText(optionGroup);
+           
+            if (result == JOptionPane.NO_OPTION){
+                // If the kernel is 1x1 the image ends up the same or if the user cancels the action
+                // return at once.
+                return;
+            }
+            
+            switch(opt){
+                case "Default":
+                    element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
+                    break;
+                case "Personalizado":
+                    String size = getSelectedButtonText(sizeGroup);
+                    w = h = Integer.parseInt(size);
+                    element = generateCustomStructuringEl(w, h);
+                    break;
+                default:
+                    element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
+            }
+                   
+            IplImage temp = new IplImage();
+            IplImage ilpImage2 = toIplImage(img);
+            cvMorphologyEx(ilpImage2, ilpImage2, temp, element, CV_MOP_OPEN, 1);
+            img = toBufferedImage(ilpImage2);
+            refreshImageDisplayed(true);
+            refreshImageInformation("Aplicando Apertura");           
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_AperturaActionPerformed
+
+    private void CierreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CierreActionPerformed
+        if (img != null){
+            IplConvKernel element = null;
+            int w;
+            int h;
+            
+            //Jpanel for the button groups
+            JPanel optionPanel = new JPanel();
+            JPanel sizePanel = new JPanel();
+            
+            JRadioButton def = new JRadioButton("Default");
+            JRadioButton custom = new JRadioButton("Personalizado");
+
+            JRadioButton s3 = new JRadioButton("3");
+            JRadioButton s5 = new JRadioButton("5");
+            JRadioButton s7 = new JRadioButton("7");
+       
+            ButtonGroup optionGroup = new ButtonGroup();
+            ButtonGroup sizeGroup = new ButtonGroup();
+            
+            //adding to groups
+            optionGroup.add(def);
+            optionGroup.add(custom);
+            def.setSelected(true);
+            
+            sizeGroup.add(s3);
+            sizeGroup.add(s5);
+            sizeGroup.add(s7);
+            s5.setSelected(true); 
+           
+            //adding to panels
+            optionPanel.add(def);
+            optionPanel.add(custom);
+            
+            sizePanel.add(s3);
+            sizePanel.add(s5);
+            sizePanel.add(s7);
+            
+                                  
+            Object[] params = {"Elemento Estructurante:", optionPanel, "En caso de ser personalizado, indique ancho y alto del elemento estructurante:", sizePanel};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog( ScrollPanePanel,
+                params,
+                "Opciones del Elemento Estructurante",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,           // Don't use a custom Icon
+                options,        // The strings of buttons
+                options[0]);    // Default button title
+            
+            String opt = getSelectedButtonText(optionGroup);
+           
+            if (result == JOptionPane.NO_OPTION){
+                // If the kernel is 1x1 the image ends up the same or if the user cancels the action
+                // return at once.
+                return;
+            }
+            
+            switch(opt){
+                case "Default":
+                    element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
+                    break;
+                case "Personalizado":
+                    String size = getSelectedButtonText(sizeGroup);
+                    w = h = Integer.parseInt(size);
+                    element = generateCustomStructuringEl(w, h);
+                    break;
+                default:
+                    element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
+            }
+                   
+            IplImage temp = new IplImage();
+            IplImage ilpImage2 = toIplImage(img);
+            cvMorphologyEx(ilpImage2, ilpImage2, temp, element, CV_MOP_CLOSE, 1);
+            img = toBufferedImage(ilpImage2);
+            refreshImageDisplayed(true);
+            refreshImageInformation("Aplicando Cierre");           
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    
+    }//GEN-LAST:event_CierreActionPerformed
 
     /**
      * @param args the command line arguments

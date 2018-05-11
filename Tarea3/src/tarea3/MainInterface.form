@@ -146,6 +146,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Erosi&#xf3;n"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ErosionActionPerformed"/>
+                  </Events>
                 </MenuItem>
                 <MenuItem class="javax.swing.JMenuItem" name="Dilatacion">
                   <Properties>
@@ -159,11 +162,17 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Apertura"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="AperturaActionPerformed"/>
+                  </Events>
                 </MenuItem>
                 <MenuItem class="javax.swing.JMenuItem" name="Cierre">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Cierre"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="CierreActionPerformed"/>
+                  </Events>
                 </MenuItem>
               </SubComponents>
             </Menu>
