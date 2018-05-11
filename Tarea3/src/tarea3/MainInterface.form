@@ -88,10 +88,13 @@
                     <Property name="text" type="java.lang.String" value="Reducci&#xf3;n de Color"/>
                   </Properties>
                   <SubComponents>
-                    <MenuItem class="javax.swing.JMenuItem" name="jMenuItem1">
+                    <MenuItem class="javax.swing.JMenuItem" name="CorteMedio">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Metodo1"/>
+                        <Property name="text" type="java.lang.String" value="Corte Medio"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="CorteMedioActionPerformed"/>
+                      </Events>
                     </MenuItem>
                     <MenuItem class="javax.swing.JMenuItem" name="jMenuItem2">
                       <Properties>

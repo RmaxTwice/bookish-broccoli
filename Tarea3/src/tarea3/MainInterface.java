@@ -160,7 +160,7 @@ public class MainInterface extends javax.swing.JFrame {
         EscalaDeGrises = new javax.swing.JMenuItem();
         BlancoNegro = new javax.swing.JMenuItem();
         ReduccionColorMenu = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
+        CorteMedio = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
         UmbralizacionMenu = new javax.swing.JMenu();
@@ -399,8 +399,13 @@ public class MainInterface extends javax.swing.JFrame {
 
         ReduccionColorMenu.setText("Reducción de Color");
 
-        jMenuItem1.setText("Metodo1");
-        ReduccionColorMenu.add(jMenuItem1);
+        CorteMedio.setText("Corte Medio");
+        CorteMedio.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CorteMedioActionPerformed(evt);
+            }
+        });
+        ReduccionColorMenu.add(CorteMedio);
 
         jMenuItem2.setText("Metodo2");
         ReduccionColorMenu.add(jMenuItem2);
@@ -528,7 +533,7 @@ public class MainInterface extends javax.swing.JFrame {
         double sumB = 0;
         double maxVariance = 0;
         int weightB = 0;
-        int weightF = 0;
+        int weightF;
 
         for (int t = 0 ; t < 256 ; t++){
             sum += t * histogram[t];
@@ -546,10 +551,10 @@ public class MainInterface extends javax.swing.JFrame {
             double mB = sumB / weightB;            // Mean Background
             double mF = (sum - sumB) / weightF;    // Mean Foreground
 
-            // Calculate Between Class Variance
+            // Calculate between class variance
             double varBetween = (double)weightB * (double)weightF * (mB - mF) * (mB - mF);
 
-            // Check if new maximum found
+            // Check for new maximum found
             if (varBetween > maxVariance) {
                maxVariance = varBetween;
                threshold = t;
@@ -830,7 +835,6 @@ public class MainInterface extends javax.swing.JFrame {
                         //int color = img.getRGB(0,0);
                         //JOptionPane.showMessageDialog(this, "Modelo de color:\n" +cm+"\nRGB color:\n" + color );
                         // Making note of image properties
-                        format = 3;
                         updateDimensions();
                         //JOptionPane.showMessageDialog(this, "Imagen tipo: " + types);
                     } catch (IOException e) {
@@ -918,16 +922,6 @@ public class MainInterface extends javax.swing.JFrame {
 
     private void BlancoNegroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BlancoNegroActionPerformed
         if (img != null){
-            /** JOptionPane SliderPane = new JOptionPane();
-            //Creating a ChangeListener so the changes in the JOptionPane get reflected to the slider.
-            thresholdSlider.addChangeListener(createChangeListener( SliderPane ));
-            SliderPane.setMessage(new Object[] { "Valor del umbral: ", thresholdSlider });
-            SliderPane.setMessageType(JOptionPane.QUESTION_MESSAGE);
-            SliderPane.setOptionType(JOptionPane.OK_CANCEL_OPTION);
-            JDialog dialog;
-            dialog = SliderPane.createDialog(jScrollPane, "Umbral");
-            dialog.setVisible(true); */
-
             Object[] params = {"Valor del umbral: ", thresholdSlider};
             Object[] options = {"Aceptar", "Cancelar"};
             int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
@@ -957,9 +951,9 @@ public class MainInterface extends javax.swing.JFrame {
             ColorModel cm = img.getColorModel();
             bitspp = cm.getPixelSize();
             if(bitspp == 24){
-                IplImage ilpImage = toIplImage(img);
-                IplImage temp = cvCreateImage(cvGetSize(ilpImage), IPL_DEPTH_8U, 1);
-                cvCvtColor(ilpImage, temp, CV_RGB2GRAY);
+                IplImage auxImage = toIplImage(img);
+                IplImage temp = cvCreateImage(cvGetSize(auxImage), IPL_DEPTH_8U, 1);
+                cvCvtColor(auxImage, temp, CV_RGB2GRAY);
                 img = toBufferedImage(temp);
                 refreshImageDisplayed(true);
                 refreshImageInformation("Aplicando Escala de Grises.");
@@ -995,11 +989,8 @@ public class MainInterface extends javax.swing.JFrame {
                     img = toBufferedImage(ilpImage2);
                     break;
             }
-            
             refreshImageDisplayed(true);
             refreshImageInformation("Aplicando Umbralización de OTSU(OpenCV).");
-            
-            
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1024,12 +1015,11 @@ public class MainInterface extends javax.swing.JFrame {
                     cvThreshold(ilpImage2, ilpImage2, 0, 255, CV_THRESH_BINARY | CV_THRESH_TRIANGLE );
                     img = toBufferedImage(ilpImage2);
                     break;
+                default:
+                    break;
             }
-            
             refreshImageDisplayed(true);
             refreshImageInformation("Aplicando Umbralización de Triangulo.");
-            
-            
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1061,16 +1051,25 @@ public class MainInterface extends javax.swing.JFrame {
                     int t2 = OTSUThreshold(histValues2, height*width);
                     img = myFilters.ThresholdBlackAndWhite(img, t2);
                     break;
+                default:
+                    break;
             }
-            
             refreshImageDisplayed(true);
             refreshImageInformation("Aplicando Umbralización de OTSU(Propio).");
-            
-            
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
     }//GEN-LAST:event_OTSUPropioActionPerformed
+
+    private void CorteMedioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CorteMedioActionPerformed
+        if (img != null){
+            img = myFilters.ReduceColorsMedianCut(img,8);
+            refreshImageDisplayed(true);
+            refreshImageInformation("Aplicando Reduccion de colores.");
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_CorteMedioActionPerformed
 
     /**
      * @param args the command line arguments
@@ -1113,6 +1112,7 @@ public class MainInterface extends javax.swing.JFrame {
     private javax.swing.JMenuItem Cierre;
     private javax.swing.JMenu ColorMenu;
     private javax.swing.JLabel Colores;
+    private javax.swing.JMenuItem CorteMedio;
     private javax.swing.JLabel DPI;
     private javax.swing.JMenuItem DeshacerOperacion;
     private javax.swing.JMenuItem Dilatacion;
@@ -1143,7 +1143,6 @@ public class MainInterface extends javax.swing.JFrame {
     private javax.swing.JMenuItem Triangulo;
     private javax.swing.JMenu UmbralizacionMenu;
     private javax.swing.JLabel VerdeLabel;
-    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JScrollPane jScrollPane;
     private javax.swing.JPopupMenu.Separator jSeparator1;
