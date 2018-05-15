@@ -5,6 +5,7 @@
  */
 package MyUtils;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1153,9 +1154,8 @@ public class FiltersController {
         return destImage;
     }
     
-    public BufferedImage ReduceColorsMedianCut(BufferedImage srcImage, int numberColors){
+    public BufferedImage ReduceColorsBitsPerChannel(BufferedImage srcImage, int shiftAmount){
         BufferedImage destImage = new BufferedImage(srcImage.getWidth(), srcImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
-
         for(int y = 0; y < srcImage.getHeight(); y++){
             for(int x = 0; x < srcImage.getWidth(); x++){
                 // Unpacking the data of each pixel with masks.
@@ -1164,17 +1164,18 @@ public class FiltersController {
                 int r = (p>>16)&0xff;
                 int g = (p>>8)&0xff;
                 int b = p&0xff;
-                
-                r = r >> 2;
-                g = g >> 2;
-                b = b >> 2;
-                
+
+                r = (r >> shiftAmount) << shiftAmount;
+                g = (g >> shiftAmount) << shiftAmount;
+                b = (b >> shiftAmount) << shiftAmount;
+
                 //Packing back the pixel data
                 p = (a<<24) | (r<<16) | (g<<8) | b;
                 destImage.setRGB(x, y, p);             
             }
-        }       
+        }
+
         return destImage;
     }
-    
+
 }

@@ -5,9 +5,7 @@
  */
 package tarea3;
 
-import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.*;
-import static org.bytedeco.javacpp.opencv_imgcodecs.*;
+
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
@@ -26,15 +24,21 @@ import java.awt.Graphics2D;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_imgproc.*;
+import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameConverter;
@@ -59,11 +63,9 @@ public class MainInterface extends javax.swing.JFrame {
     // Creating a file chooser to save files with
     private final JFileChooser fcSave;
     // Properties of the Image
-    private int format;
     private int width;
     private int height;
     private BufferedImage img = null;
-    private IplImage ilpImage = null;
     // Hashmap and counter used to count unique colors
     private final HashMap<Integer, Integer> uniqueCols;
     private int colorsCounter;
@@ -164,8 +166,8 @@ public class MainInterface extends javax.swing.JFrame {
         EscalaDeGrises = new javax.swing.JMenuItem();
         BlancoNegro = new javax.swing.JMenuItem();
         ReduccionColorMenu = new javax.swing.JMenu();
-        CorteMedio = new javax.swing.JMenuItem();
-        jMenuItem2 = new javax.swing.JMenuItem();
+        ReduccionBitsPorPixel = new javax.swing.JMenuItem();
+        PaletaAleatoria = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
         UmbralizacionMenu = new javax.swing.JMenu();
         OTSUOpenCV = new javax.swing.JMenuItem();
@@ -403,16 +405,21 @@ public class MainInterface extends javax.swing.JFrame {
 
         ReduccionColorMenu.setText("Reducción de Color");
 
-        CorteMedio.setText("Corte Medio");
-        CorteMedio.addActionListener(new java.awt.event.ActionListener() {
+        ReduccionBitsPorPixel.setText("Reducir bits por pixel");
+        ReduccionBitsPorPixel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                CorteMedioActionPerformed(evt);
+                ReduccionBitsPorPixelActionPerformed(evt);
             }
         });
-        ReduccionColorMenu.add(CorteMedio);
+        ReduccionColorMenu.add(ReduccionBitsPorPixel);
 
-        jMenuItem2.setText("Metodo2");
-        ReduccionColorMenu.add(jMenuItem2);
+        PaletaAleatoria.setText("Paleta Aleatoria");
+        PaletaAleatoria.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                PaletaAleatoriaActionPerformed(evt);
+            }
+        });
+        ReduccionColorMenu.add(PaletaAleatoria);
 
         ColorMenu.add(ReduccionColorMenu);
 
@@ -545,7 +552,7 @@ public class MainInterface extends javax.swing.JFrame {
         Frame frame = grabberConverter.convert(src);
         return paintConverter.getBufferedImage(frame,1);
     }
-    
+
     private int OTSUThreshold(int[] histogram, int total){
         int threshold = 0;
         double sum = 0;
@@ -582,6 +589,66 @@ public class MainInterface extends javax.swing.JFrame {
         return threshold;
     }
     
+    private double colorRGBDifference(int c1, int c2){
+        int r1 = ((c1 >> 16) & 0xff);
+        int g1 = ((c1 >> 8) & 0xff);
+        int b1 = c1  & 0xff;
+        int r2 = ((c2 >> 16) & 0xff);
+        int g2 = ((c2 >> 8) & 0xff);
+        int b2 = c2  & 0xff;
+        int deltaR = r1 - r2;
+        int deltaG = g1 - g2;
+        int deltaB = b1 - b2;
+        return Math.sqrt( deltaR * deltaR + deltaG * deltaG + deltaB * deltaB );
+    }
+
+    private BufferedImage euclideanDistanceColorQuantization(int[] palette){
+        BufferedImage destImage = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+        int currentColor;
+        int minDistanceIndex = 0;
+        double minD;
+        double minDistance = 99999999;
+        for (int i = 0; i < img.getHeight(); i++){
+            for(int j = 0; j < img.getWidth(); j++){
+                currentColor = img.getRGB(j, i);
+                // Now we choose the closest color in RGB space with euclidean distance (not RGBlab).
+                for(int k = 0; k < palette.length; k++){
+                    minD = colorRGBDifference(currentColor, palette[k]);
+                    if(minD < minDistance ){
+                        minDistance = minD;
+                        minDistanceIndex = k;
+                    }
+                }
+                destImage.setRGB(j, i, palette[minDistanceIndex]);
+                minDistance = 99999999;
+            }
+        }
+        return destImage;
+    }
+
+    private int[] randomPalette(int n){
+        int[] colors = new int[n];
+        ArrayList colorsAL = new ArrayList();
+        Random randGen = new Random();
+        int randHeight, randWidth, randColor;
+
+        while(colorsAL.size() < n){
+            randHeight = randGen.nextInt(height);
+            randWidth = randGen.nextInt(width);
+            randColor = img.getRGB(randWidth, randHeight);
+
+            if(colorsAL.indexOf(randColor) == -1){
+                colorsAL.add(randColor);
+            }
+        }
+        for (int i=0; i < colorsAL.size(); i++)
+        {
+            colors[i] = (int)colorsAL.get(i);
+        }
+
+        return colors;
+    }
+
     private IplConvKernel generateCustomStructuringEl(int w, int h){
         SpinnerNumberModel[] spinnerModels = new SpinnerNumberModel[w*h];
         JSpinner[] strElValues = new JSpinner[w*h];
@@ -625,7 +692,6 @@ public class MainInterface extends javax.swing.JFrame {
         return element;
     }
 
-    
     private static BufferedImage duplicateImage(BufferedImage image) {
         ColorModel cm = image.getColorModel();
         boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
@@ -907,7 +973,6 @@ public class MainInterface extends javax.swing.JFrame {
                     break;
                 }
                 getBitsPerPixel();
-                ilpImage = toIplImage(img);
                 if (image != null && bitspp == 1) {
                     img = toBufferedImage(image);
                 }
@@ -920,6 +985,11 @@ public class MainInterface extends javax.swing.JFrame {
 //                ColorModel cm =  img.getColorModel();
 //                int color = img.getRGB(0,0);
 //                JOptionPane.showMessageDialog(this, "Modelo de color:\n" +cm+"\nRGB color:\n" + color );
+
+//                BufferedImage indexedImage = new BufferedImage(img.getWidth(),img.getHeight(), BufferedImage.TYPE_BYTE_INDEXED);
+//                Graphics2D g = indexedImage.createGraphics();
+//                g.drawImage(img, 0,0,null);
+//                img=indexedImage;
 
                 refreshImageDisplayed(true);
 
@@ -1001,7 +1071,6 @@ public class MainInterface extends javax.swing.JFrame {
             }
             img = myFilters.ThresholdBlackAndWhite(img, thresholdSlider.getValue());
             refreshImageDisplayed(true);
-            format = 1;
             refreshImageInformation("Aplicando Umbralización a Blanco y Negro.");
             //Estado.setText("Aplicando Blanco y Negro | Colores Únicos en imagen: " + colorsCounter);
         }else{
@@ -1030,44 +1099,35 @@ public class MainInterface extends javax.swing.JFrame {
 
     private void DilatacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DilatacionActionPerformed
         if (img != null){
-            
-            IplConvKernel element = null;
+            IplConvKernel element;
             int w;
             int h;
-            
             //Jpanel for the button groups
             JPanel optionPanel = new JPanel();
             JPanel sizePanel = new JPanel();
-            
             JRadioButton def = new JRadioButton("Default");
             JRadioButton custom = new JRadioButton("Personalizado");
-
             JRadioButton s3 = new JRadioButton("3");
             JRadioButton s5 = new JRadioButton("5");
             JRadioButton s7 = new JRadioButton("7");
-       
             ButtonGroup optionGroup = new ButtonGroup();
             ButtonGroup sizeGroup = new ButtonGroup();
-            
+
             //adding to groups
             optionGroup.add(def);
             optionGroup.add(custom);
             def.setSelected(true);
-            
             sizeGroup.add(s3);
             sizeGroup.add(s5);
             sizeGroup.add(s7);
             s5.setSelected(true); 
-           
             //adding to panels
             optionPanel.add(def);
             optionPanel.add(custom);
-            
             sizePanel.add(s3);
             sizePanel.add(s5);
             sizePanel.add(s7);
-            
-                                  
+
             Object[] params = {"Elemento Estructurante:", optionPanel, "En caso de ser personalizado, indique ancho y alto del elemento estructurante:", sizePanel};
             Object[] options = {"Aceptar", "Cancelar"};
             int result = JOptionPane.showOptionDialog( ScrollPanePanel,
@@ -1078,15 +1138,15 @@ public class MainInterface extends javax.swing.JFrame {
                 null,           // Don't use a custom Icon
                 options,        // The strings of buttons
                 options[0]);    // Default button title
-            
+
             String opt = getSelectedButtonText(optionGroup);
-           
+
             if (result == JOptionPane.NO_OPTION){
                 // If the kernel is 1x1 the image ends up the same or if the user cancels the action
                 // return at once.
                 return;
             }
-            
+
             switch(opt){
                 case "Default":
                     element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
@@ -1099,13 +1159,12 @@ public class MainInterface extends javax.swing.JFrame {
                 default:
                     element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
             }
-                   
-        
+
             IplImage ilpImage2 = toIplImage(img);
             cvDilate(ilpImage2, ilpImage2, element, 1);
             img = toBufferedImage(ilpImage2);
             refreshImageDisplayed(true);
-            refreshImageInformation("Aplicando Dilatación");           
+            refreshImageInformation("Aplicando Dilatación");
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1203,55 +1262,78 @@ public class MainInterface extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_OTSUPropioActionPerformed
 
-    private void CorteMedioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CorteMedioActionPerformed
+    private void ReduccionBitsPorPixelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ReduccionBitsPorPixelActionPerformed
         if (img != null){
-            img = myFilters.ReduceColorsMedianCut(img,8);
+            SpinnerNumberModel model1 = new SpinnerNumberModel(4, 1, 7, 1);  // Initial value, min, max, step
+            JSpinner spinBits = new JSpinner(model1);
+            JLabel labelBits = new JLabel("Bits por canal :");
+            JPanel panel1 = new JPanel();
+            panel1.add(labelBits);
+            panel1.add(spinBits);
+            JCheckBox indexingButton = new JCheckBox("Indexar imagen.");
+
+            Object[] params = {panel1, indexingButton};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                params,
+                "Opciones de reducción de bits por pixel",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,           // Don't use a custom Icon
+                options,        // The strings of buttons
+                options[0]);    // Default button title
+            if (result == JOptionPane.NO_OPTION){
+                return;
+            }
+
+            img = myFilters.ReduceColorsBitsPerChannel(img, 8 - (int)spinBits.getValue());
+
+            boolean indexing = indexingButton.isSelected();
+            if(indexing){
+                BufferedImage indexedImage = new BufferedImage(img.getWidth(),img.getHeight(), BufferedImage.TYPE_BYTE_INDEXED);
+                Graphics2D g = indexedImage.createGraphics();
+                g.drawImage(img, 0,0,null);
+                img=indexedImage;
+            }
+
             refreshImageDisplayed(true);
             refreshImageInformation("Aplicando Reduccion de colores.");
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
-    }//GEN-LAST:event_CorteMedioActionPerformed
+    }//GEN-LAST:event_ReduccionBitsPorPixelActionPerformed
 
     private void ErosionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ErosionActionPerformed
         if (img != null){
-            IplConvKernel element = null;
+            IplConvKernel element;
             int w;
             int h;
-            
             //Jpanel for the button groups
             JPanel optionPanel = new JPanel();
             JPanel sizePanel = new JPanel();
-            
             JRadioButton def = new JRadioButton("Default");
             JRadioButton custom = new JRadioButton("Personalizado");
-
             JRadioButton s3 = new JRadioButton("3");
             JRadioButton s5 = new JRadioButton("5");
             JRadioButton s7 = new JRadioButton("7");
-       
             ButtonGroup optionGroup = new ButtonGroup();
             ButtonGroup sizeGroup = new ButtonGroup();
-            
+
             //adding to groups
             optionGroup.add(def);
             optionGroup.add(custom);
-            
             sizeGroup.add(s3);
             sizeGroup.add(s5);
             sizeGroup.add(s7);
             s5.setSelected(true); 
-           
             //adding to panels
             optionPanel.add(def);
             optionPanel.add(custom);
             def.setSelected(true);
-            
             sizePanel.add(s3);
             sizePanel.add(s5);
             sizePanel.add(s7);
-            
-                                  
+
             Object[] params = {"Elemento Estructurante:", optionPanel, "En caso de ser personalizado, indique ancho y alto del elemento estructurante:", sizePanel};
             Object[] options = {"Aceptar", "Cancelar"};
             int result = JOptionPane.showOptionDialog( ScrollPanePanel,
@@ -1262,15 +1344,15 @@ public class MainInterface extends javax.swing.JFrame {
                 null,           // Don't use a custom Icon
                 options,        // The strings of buttons
                 options[0]);    // Default button title
-            
+
             String opt = getSelectedButtonText(optionGroup);
-           
+
             if (result == JOptionPane.NO_OPTION){
                 // If the kernel is 1x1 the image ends up the same or if the user cancels the action
                 // return at once.
                 return;
             }
-            
+
             switch(opt){
                 case "Default":
                     element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
@@ -1283,13 +1365,12 @@ public class MainInterface extends javax.swing.JFrame {
                 default:
                     element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
             }
-                   
-        
+
             IplImage ilpImage2 = toIplImage(img);
             cvErode(ilpImage2, ilpImage2, element, 1);
             img = toBufferedImage(ilpImage2);
             refreshImageDisplayed(true);
-            refreshImageInformation("Aplicando Erosión");           
+            refreshImageInformation("Aplicando Erosión");
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1297,43 +1378,35 @@ public class MainInterface extends javax.swing.JFrame {
 
     private void AperturaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AperturaActionPerformed
         if (img != null){
-            IplConvKernel element = null;
+            IplConvKernel element;
             int w;
             int h;
-            
             //Jpanel for the button groups
             JPanel optionPanel = new JPanel();
             JPanel sizePanel = new JPanel();
-            
             JRadioButton def = new JRadioButton("Default");
             JRadioButton custom = new JRadioButton("Personalizado");
-
             JRadioButton s3 = new JRadioButton("3");
             JRadioButton s5 = new JRadioButton("5");
             JRadioButton s7 = new JRadioButton("7");
-       
             ButtonGroup optionGroup = new ButtonGroup();
             ButtonGroup sizeGroup = new ButtonGroup();
-            
+
             //adding to groups
             optionGroup.add(def);
             optionGroup.add(custom);
             def.setSelected(true);
-            
             sizeGroup.add(s3);
             sizeGroup.add(s5);
             sizeGroup.add(s7);
             s5.setSelected(true); 
-           
             //adding to panels
             optionPanel.add(def);
             optionPanel.add(custom);
-            
             sizePanel.add(s3);
             sizePanel.add(s5);
             sizePanel.add(s7);
-            
-                                  
+
             Object[] params = {"Elemento Estructurante:", optionPanel, "En caso de ser personalizado, indique ancho y alto del elemento estructurante:", sizePanel};
             Object[] options = {"Aceptar", "Cancelar"};
             int result = JOptionPane.showOptionDialog( ScrollPanePanel,
@@ -1344,15 +1417,15 @@ public class MainInterface extends javax.swing.JFrame {
                 null,           // Don't use a custom Icon
                 options,        // The strings of buttons
                 options[0]);    // Default button title
-            
+
             String opt = getSelectedButtonText(optionGroup);
-           
+
             if (result == JOptionPane.NO_OPTION){
                 // If the kernel is 1x1 the image ends up the same or if the user cancels the action
                 // return at once.
                 return;
             }
-            
+
             switch(opt){
                 case "Default":
                     element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
@@ -1365,13 +1438,13 @@ public class MainInterface extends javax.swing.JFrame {
                 default:
                     element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
             }
-                   
+
             IplImage temp = new IplImage();
             IplImage ilpImage2 = toIplImage(img);
             cvMorphologyEx(ilpImage2, ilpImage2, temp, element, CV_MOP_OPEN, 1);
             img = toBufferedImage(ilpImage2);
             refreshImageDisplayed(true);
-            refreshImageInformation("Aplicando Apertura");           
+            refreshImageInformation("Aplicando Apertura");
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1379,21 +1452,17 @@ public class MainInterface extends javax.swing.JFrame {
 
     private void CierreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CierreActionPerformed
         if (img != null){
-            IplConvKernel element = null;
+            IplConvKernel element;
             int w;
             int h;
-            
             //Jpanel for the button groups
             JPanel optionPanel = new JPanel();
             JPanel sizePanel = new JPanel();
-            
             JRadioButton def = new JRadioButton("Default");
             JRadioButton custom = new JRadioButton("Personalizado");
-
             JRadioButton s3 = new JRadioButton("3");
             JRadioButton s5 = new JRadioButton("5");
             JRadioButton s7 = new JRadioButton("7");
-       
             ButtonGroup optionGroup = new ButtonGroup();
             ButtonGroup sizeGroup = new ButtonGroup();
             
@@ -1401,21 +1470,20 @@ public class MainInterface extends javax.swing.JFrame {
             optionGroup.add(def);
             optionGroup.add(custom);
             def.setSelected(true);
-            
+
             sizeGroup.add(s3);
             sizeGroup.add(s5);
             sizeGroup.add(s7);
-            s5.setSelected(true); 
-           
+            s5.setSelected(true);
+
             //adding to panels
             optionPanel.add(def);
             optionPanel.add(custom);
-            
+
             sizePanel.add(s3);
             sizePanel.add(s5);
             sizePanel.add(s7);
-            
-                                  
+
             Object[] params = {"Elemento Estructurante:", optionPanel, "En caso de ser personalizado, indique ancho y alto del elemento estructurante:", sizePanel};
             Object[] options = {"Aceptar", "Cancelar"};
             int result = JOptionPane.showOptionDialog( ScrollPanePanel,
@@ -1426,15 +1494,15 @@ public class MainInterface extends javax.swing.JFrame {
                 null,           // Don't use a custom Icon
                 options,        // The strings of buttons
                 options[0]);    // Default button title
-            
+
             String opt = getSelectedButtonText(optionGroup);
-           
+
             if (result == JOptionPane.NO_OPTION){
                 // If the kernel is 1x1 the image ends up the same or if the user cancels the action
                 // return at once.
                 return;
             }
-            
+
             switch(opt){
                 case "Default":
                     element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
@@ -1447,18 +1515,66 @@ public class MainInterface extends javax.swing.JFrame {
                 default:
                     element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
             }
-                   
+
             IplImage temp = new IplImage();
             IplImage ilpImage2 = toIplImage(img);
             cvMorphologyEx(ilpImage2, ilpImage2, temp, element, CV_MOP_CLOSE, 1);
             img = toBufferedImage(ilpImage2);
             refreshImageDisplayed(true);
-            refreshImageInformation("Aplicando Cierre");           
+            refreshImageInformation("Aplicando Cierre");
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
-    
     }//GEN-LAST:event_CierreActionPerformed
+
+    private void PaletaAleatoriaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_PaletaAleatoriaActionPerformed
+        if (img != null){
+            SpinnerNumberModel model1 = new SpinnerNumberModel(16, 2, 128, 1);  // Initial value, min, max, step
+            JSpinner spinK = new JSpinner(model1);
+            JLabel labelK = new JLabel("Número de Colores:");
+            JPanel panel1 = new JPanel();
+            JCheckBox indexingButton = new JCheckBox("Indexar imagen.");
+            panel1.add(labelK);
+            panel1.add(spinK);
+
+            Object[] params = {panel1, indexingButton};
+            Object[] options = {"Aceptar", "Cancelar"};
+            int result = JOptionPane.showOptionDialog(  ScrollPanePanel,
+                params,
+                "Opciones de Paleta Aleatoria",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,           // Don't use a custom Icon
+                options,        // The strings of buttons
+                options[0]);    // Default button title
+            if (result == JOptionPane.NO_OPTION){
+                return;
+            }
+
+            if(bitspp == 24){
+                if(colorsCounter > (int)spinK.getValue()){
+                    // First we obtain a random color palette from the image with a certain number of colors.
+                    int[] colorPalette = randomPalette((int)spinK.getValue());
+                    // then we quantize the colors of the image according to the nearest color in the palette per pixel.
+                    img = euclideanDistanceColorQuantization(colorPalette);
+                    boolean indexing = indexingButton.isSelected();
+                    if(indexing){
+                        BufferedImage indexedImage = new BufferedImage(img.getWidth(),img.getHeight(), BufferedImage.TYPE_BYTE_INDEXED);
+                        Graphics2D g = indexedImage.createGraphics();
+                        g.drawImage(img, 0,0,null);
+                        img=indexedImage;
+                    }
+                    
+                    refreshImageDisplayed(true);
+                    refreshImageInformation("Aplicando Reduccion de colores.");
+                }
+            }else{
+                JOptionPane.showMessageDialog(this, "¡ERROR: Solo se pueden reducir imágenes de 24 bits");
+            }  
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_PaletaAleatoriaActionPerformed
 
 
     /**
@@ -1483,7 +1599,7 @@ public class MainInterface extends javax.swing.JFrame {
         //</editor-fold>
         
         //</editor-fold>
-
+        
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
             new MainInterface().setVisible(true);
@@ -1502,7 +1618,6 @@ public class MainInterface extends javax.swing.JFrame {
     private javax.swing.JMenuItem Cierre;
     private javax.swing.JMenu ColorMenu;
     private javax.swing.JLabel Colores;
-    private javax.swing.JMenuItem CorteMedio;
     private javax.swing.JLabel DPI;
     private javax.swing.JMenuItem DeshacerOperacion;
     private javax.swing.JMenuItem Dilatacion;
@@ -1523,8 +1638,10 @@ public class MainInterface extends javax.swing.JFrame {
     private javax.swing.JMenu MorfologiaMenu;
     private javax.swing.JMenuItem OTSUOpenCV;
     private javax.swing.JMenuItem OTSUPropio;
+    private javax.swing.JMenuItem PaletaAleatoria;
     private javax.swing.JMenuItem Readme;
     private javax.swing.JPanel RedHistogram;
+    private javax.swing.JMenuItem ReduccionBitsPorPixel;
     private javax.swing.JMenu ReduccionColorMenu;
     private javax.swing.JMenuItem Rehacer;
     private javax.swing.JMenu RehacerOperacion;
@@ -1533,7 +1650,6 @@ public class MainInterface extends javax.swing.JFrame {
     private javax.swing.JMenuItem Triangulo;
     private javax.swing.JMenu UmbralizacionMenu;
     private javax.swing.JLabel VerdeLabel;
-    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JScrollPane jScrollPane;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;

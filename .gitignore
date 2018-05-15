@@ -8,3 +8,4 @@ NetbeanProject/nbdist/
 /ImageEditor2/build/
 /Tarea3/nbproject/private/
 /Tarea3/build/
+*.log

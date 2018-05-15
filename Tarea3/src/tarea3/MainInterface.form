@@ -88,18 +88,21 @@
                     <Property name="text" type="java.lang.String" value="Reducci&#xf3;n de Color"/>
                   </Properties>
                   <SubComponents>
-                    <MenuItem class="javax.swing.JMenuItem" name="CorteMedio">
+                    <MenuItem class="javax.swing.JMenuItem" name="ReduccionBitsPorPixel">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Corte Medio"/>
+                        <Property name="text" type="java.lang.String" value="Reducir bits por pixel"/>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="CorteMedioActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ReduccionBitsPorPixelActionPerformed"/>
                       </Events>
                     </MenuItem>
-                    <MenuItem class="javax.swing.JMenuItem" name="jMenuItem2">
+                    <MenuItem class="javax.swing.JMenuItem" name="PaletaAleatoria">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Metodo2"/>
+                        <Property name="text" type="java.lang.String" value="Paleta Aleatoria"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="PaletaAleatoriaActionPerformed"/>
+                      </Events>
                     </MenuItem>
                   </SubComponents>
                 </Menu>
