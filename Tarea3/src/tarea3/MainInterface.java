@@ -153,15 +153,6 @@ public class MainInterface extends javax.swing.JFrame {
         Dimensiones = new javax.swing.JLabel();
         BPP = new javax.swing.JLabel();
         Colores = new javax.swing.JLabel();
-        DPI = new javax.swing.JLabel();
-        HistoPanel = new javax.swing.JPanel();
-        HistoLabel = new javax.swing.JLabel();
-        RedHistogram = new javax.swing.JPanel();
-        GreenHistogram = new javax.swing.JPanel();
-        BlueHistogram = new javax.swing.JPanel();
-        RojoLabel = new javax.swing.JLabel();
-        VerdeLabel = new javax.swing.JLabel();
-        AzulLabel = new javax.swing.JLabel();
         BarraEstadoPanel = new javax.swing.JPanel();
         Estado = new javax.swing.JLabel();
         MenuBar = new javax.swing.JMenuBar();
@@ -209,9 +200,6 @@ public class MainInterface extends javax.swing.JFrame {
         Colores.setFont(new java.awt.Font("Dialog", 1, 10)); // NOI18N
         Colores.setText("Colores únicos:");
 
-        DPI.setFont(new java.awt.Font("Dialog", 1, 10)); // NOI18N
-        DPI.setText("Puntos por pulgada (dpi):");
-
         javax.swing.GroupLayout InfoPanelLayout = new javax.swing.GroupLayout(InfoPanel);
         InfoPanel.setLayout(InfoPanelLayout);
         InfoPanelLayout.setHorizontalGroup(
@@ -224,10 +212,9 @@ public class MainInterface extends javax.swing.JFrame {
                         .addGroup(InfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(BPP)
                             .addComponent(Dimensiones)
-                            .addComponent(Colores)
-                            .addComponent(DPI)))
+                            .addComponent(Colores)))
                     .addComponent(InfoLabel))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(92, Short.MAX_VALUE))
         );
         InfoPanelLayout.setVerticalGroup(
             InfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -240,67 +227,6 @@ public class MainInterface extends javax.swing.JFrame {
                 .addComponent(BPP)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Colores)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(DPI)
-                .addContainerGap(18, Short.MAX_VALUE))
-        );
-
-        HistoPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-
-        HistoLabel.setText("Histogramas");
-
-        RedHistogram.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
-        RedHistogram.setLayout(new java.awt.BorderLayout());
-
-        GreenHistogram.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
-        GreenHistogram.setLayout(new java.awt.BorderLayout());
-
-        BlueHistogram.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
-        BlueHistogram.setLayout(new java.awt.BorderLayout());
-
-        RojoLabel.setFont(new java.awt.Font("Dialog", 1, 10)); // NOI18N
-        RojoLabel.setText("-");
-
-        VerdeLabel.setFont(new java.awt.Font("Dialog", 1, 10)); // NOI18N
-        VerdeLabel.setText("-");
-        VerdeLabel.setToolTipText("");
-
-        AzulLabel.setFont(new java.awt.Font("Dialog", 1, 10)); // NOI18N
-        AzulLabel.setText("-");
-
-        javax.swing.GroupLayout HistoPanelLayout = new javax.swing.GroupLayout(HistoPanel);
-        HistoPanel.setLayout(HistoPanelLayout);
-        HistoPanelLayout.setHorizontalGroup(
-            HistoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(HistoPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(HistoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(HistoLabel)
-                    .addComponent(RojoLabel)
-                    .addComponent(AzulLabel)
-                    .addComponent(RedHistogram, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(VerdeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(GreenHistogram, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(BlueHistogram, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        HistoPanelLayout.setVerticalGroup(
-            HistoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(HistoPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(HistoLabel)
-                .addGap(18, 18, 18)
-                .addComponent(RedHistogram, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(RojoLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(GreenHistogram, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(VerdeLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(BlueHistogram, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(AzulLabel)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -310,9 +236,7 @@ public class MainInterface extends javax.swing.JFrame {
             ImageInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, ImageInfoPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(ImageInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(HistoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(InfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(InfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
         ImageInfoPanelLayout.setVerticalGroup(
@@ -320,8 +244,7 @@ public class MainInterface extends javax.swing.JFrame {
             .addGroup(ImageInfoPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(InfoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(HistoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(527, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout ScrollPanePanelLayout = new javax.swing.GroupLayout(ScrollPanePanel);
@@ -329,9 +252,9 @@ public class MainInterface extends javax.swing.JFrame {
         ScrollPanePanelLayout.setHorizontalGroup(
             ScrollPanePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(ScrollPanePanelLayout.createSequentialGroup()
-                .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 774, Short.MAX_VALUE)
+                .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 852, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ImageInfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(ImageInfoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         ScrollPanePanelLayout.setVerticalGroup(
             ScrollPanePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -712,14 +635,6 @@ public class MainInterface extends javax.swing.JFrame {
         return element;
     }
 
-    private static BufferedImage duplicateImage(BufferedImage image) {
-        ColorModel cm = image.getColorModel();
-        boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
-        WritableRaster raster = image.copyData(null);
-        BufferedImage copyImage = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
-        return copyImage;
-    }
-    
     private void countUniqueColors(){
         colorsCounter = 0;
         uniqueCols.clear();
@@ -753,167 +668,13 @@ public class MainInterface extends javax.swing.JFrame {
             bitspp = cm.getPixelSize();         
         }
     }
-    
-    private void drawHistograms(){
-        //Getting dimensions from panels
-        Dimension RPanelDim = RedHistogram.getSize();
-        int RPanelDimW = RPanelDim.width;
-        int RPanelDimH = RPanelDim.height;
-        Dimension GrPanelDim = GreenHistogram.getSize();
-        int GrPanelDimW = GrPanelDim.width;
-        int GrPanelDimH = GrPanelDim.height;
-        Dimension BPanelDim = BlueHistogram.getSize();
-        int BPanelDimW = BPanelDim.width;
-        int BPanelDimH = BPanelDim.height;
-
-        //Creating the general histogram matrix
-        Histogram GenHist = new Histogram();
-        
-        if (bitspp < 24) //If Image is grayscaled or b&w (< 24 bits per pixel), just show a luminosity histogram
-        {
-            //Operations over histograms
-            GenHist.setBins(img, "GRAY");
-            GenHist.normalizeHistograms("GRAY");
-            GrayBins = GenHist.getGrayHistogram();
-
-            //Graphics creation
-            BufferedImage Ghist_base = new BufferedImage(RPanelDimW, RPanelDimH, BufferedImage.TYPE_3BYTE_BGR);
-            RojoLabel.setText("Luminosidad");
-            grLabel.setIcon(null);
-            bLabel.setIcon(null);
-            VerdeLabel.setText("-");
-            AzulLabel.setText("-");
-
-            //Drawing the graphics
-            Graphics2D Ghist_graph = Ghist_base.createGraphics();
-            Ghist_graph.setBackground(Color.WHITE);
-            Ghist_graph.fillRect(0, 0, RPanelDimW, RPanelDimH);
-            Ghist_graph.setColor(Color.BLACK);
-            BasicStroke bs = new BasicStroke(1);
-            Ghist_graph.setStroke(bs);
-
-            //Baselines
-            Ghist_graph.drawLine(4, RPanelDimH-6, 4, 4);
-            Ghist_graph.drawLine(4, RPanelDimH-6, RPanelDimW-4, RPanelDimH-6);
-
-            //Histogram lines
-            Ghist_graph.setColor(Color.GRAY);
-            for (int i = 7; i < 255+8; i++){
-                if (GrayBins[i-7] > 0){
-                    Ghist_graph.drawLine(i, RPanelDimH-7, i, RPanelDimH-7-GrayBins[i-7]);
-                }
-            }
-
-            //Setting the icon on its corresponding label
-            ImageIcon GrayIcon = new ImageIcon(Ghist_base);
-            rLabel.setIcon(GrayIcon);
-            RedHistogram.add(rLabel);
-            RedHistogram.revalidate();
-        }
-        else  //If Image is colored (24 bits per pixel), just show a histogram per channel
-        {
-            //Operations over histograms
-            GenHist.setBins(img, "COLOR");
-            GenHist.normalizeHistograms("COLOR");
-            RedBins = GenHist.getRedHistogram();
-            GreenBins = GenHist.getGreenHistogram();
-            BlueBins = GenHist.getBlueHistogram();
-
-            //Creating Buffered images for graphics
-            BufferedImage Rhist_base = new BufferedImage(RPanelDimW, RPanelDimH, BufferedImage.TYPE_3BYTE_BGR);
-            BufferedImage Grhist_base = new BufferedImage(GrPanelDimW, GrPanelDimH, BufferedImage.TYPE_3BYTE_BGR);
-            BufferedImage Bhist_base = new BufferedImage(BPanelDimW, BPanelDimH, BufferedImage.TYPE_3BYTE_BGR);
-
-            //Drawing the graphics
-            /////////RED
-            RojoLabel.setText("Rojo");
-            Graphics2D Rhist_graph = Rhist_base.createGraphics();
-            Rhist_graph.setBackground(Color.WHITE);
-            Rhist_graph.fillRect(0, 0, RPanelDimW, RPanelDimH);
-            Rhist_graph.setColor(Color.BLACK);
-            BasicStroke bs = new BasicStroke(1);
-            Rhist_graph.setStroke(bs);
-
-            //Baselines
-            Rhist_graph.drawLine(4, RPanelDimH-6, 4, 4);
-            Rhist_graph.drawLine(4, RPanelDimH-6, RPanelDimW-6, RPanelDimH-6);
-
-            //Histogram lines
-            Rhist_graph.setColor(Color.RED);
-            for (int i = 7; i < 255+8; i++){
-                if (RedBins[i-7] > 0){
-                    Rhist_graph.drawLine(i, RPanelDimH-7, i, RPanelDimH-7-RedBins[i-7]);
-                }
-            }
-
-            //Setting the icon on its corresponding label
-            ImageIcon RedIcon = new ImageIcon(Rhist_base);
-            rLabel.setIcon(RedIcon);
-            RedHistogram.add(rLabel);
-            RedHistogram.revalidate();
-
-            /////////GREEN
-            VerdeLabel.setText("Verde");
-            Graphics2D Grhist_graph = Grhist_base.createGraphics();
-            Grhist_graph.setBackground(Color.WHITE);
-            Grhist_graph.fillRect(0, 0, GrPanelDimW, GrPanelDimH);
-            Grhist_graph.setColor(Color.BLACK);
-            Grhist_graph.setStroke(bs);
-
-            //Baselines
-            Grhist_graph.drawLine(4, GrPanelDimH-6, 4, 4);
-            Grhist_graph.drawLine(4, GrPanelDimH-6, GrPanelDimW-6, GrPanelDimH-6);
-
-            //Histogram lines
-            Grhist_graph.setColor(Color.GREEN);
-            for (int i = 7; i < 255+8; i++){
-                if (GreenBins[i-7] > 0){
-                    Grhist_graph.drawLine(i, GrPanelDimH-7, i, GrPanelDimH-7-GreenBins[i-7]);
-                }
-            }
-
-            //Setting the icon on its corresponding label
-            ImageIcon GreenIcon = new ImageIcon(Grhist_base);
-            grLabel.setIcon(GreenIcon);
-            GreenHistogram.add(grLabel);
-            GreenHistogram.revalidate();
-
-            /////////BLUE
-            AzulLabel.setText("Azul");
-            Graphics2D Bhist_graph = Bhist_base.createGraphics();
-            Bhist_graph.setBackground(Color.WHITE);
-            Bhist_graph.fillRect(0, 0, BPanelDimW, BPanelDimH);
-            Bhist_graph.setColor(Color.BLACK);
-            Bhist_graph.setStroke(bs);
-
-            //Baselines
-            Bhist_graph.drawLine(4, BPanelDimH-6, 4, 4);
-            Bhist_graph.drawLine(4, BPanelDimH-6, BPanelDimW-6, BPanelDimH-6);
-
-            //Histogram lines
-            Bhist_graph.setColor(Color.BLUE);
-            for (int i = 7; i < 255+8; i++){
-                if (BlueBins[i-7] > 0){
-                    Bhist_graph.drawLine(i, BPanelDimH-7, i, BPanelDimH-7-BlueBins[i-7]);
-                }
-            }
-
-            //Setting the icon on its corresponding label
-            ImageIcon BlueIcon = new ImageIcon(Bhist_base);
-            bLabel.setIcon(BlueIcon);
-            BlueHistogram.add(bLabel);
-            BlueHistogram.revalidate();
-        }
-    }
 
     private void refreshImageInformation(String msg){
-        getBitsPerPixel();
-        drawHistograms(); 
+        getBitsPerPixel(); 
         Estado.setText( msg );
         Colores.setText("Colores únicos: "+colorsCounter);
         Dimensiones.setText("Dimensiones: " + width + "x" + height);
         BPP.setText("Bits por pixel: " + bitspp);
-        DPI.setText("Puntos por pulgada (dpi): -"); 
     }
     
     private String getSelectedButtonText(ButtonGroup buttonGroup) {
@@ -926,16 +687,6 @@ public class MainInterface extends javax.swing.JFrame {
         }
 
         return null;
-    }
-    
-    private int clampColorValue(int val){
-        if(val > 255){
-            return 255;
-        }
-        if(val < 0){
-            return 0;
-        }
-        return val;
     }
 
     private void refreshImageDisplayed(boolean count){
@@ -1043,16 +794,12 @@ public class MainInterface extends javax.swing.JFrame {
 
                 // Counting unique colors
                 countUniqueColors();
-                
-                //Painting Histograms
-                drawHistograms();
 
                 //Changing Estado Label
                 Estado.setText("Abriendo " + file.getAbsolutePath() );
                 Colores.setText("Colores únicos: "+colorsCounter);
                 Dimensiones.setText("Dimensiones: " + width + "x" + height);
                 BPP.setText("Bits por pixel: " + bitspp);
-                DPI.setText("Puntos por pulgada (dpi): -");
 
                 //Changing Estado Label
                 Estado.setText("Abriendo " + file.getAbsolutePath());
@@ -1342,19 +1089,21 @@ public class MainInterface extends javax.swing.JFrame {
             if (result == JOptionPane.NO_OPTION){
                 return;
             }
-
-            img = myFilters.ReduceColorsBitsPerChannel(img, 8 - (int)spinBits.getValue());
-
-            boolean indexing = indexingButton.isSelected();
-            if(indexing){
-                BufferedImage indexedImage = new BufferedImage(img.getWidth(),img.getHeight(), BufferedImage.TYPE_BYTE_INDEXED);
-                Graphics2D g = indexedImage.createGraphics();
-                g.drawImage(img, 0,0,null);
-                img=indexedImage;
-            }
-            ImageOperationDequeSetting(UndoDeque, RedoDeque, img);
-            refreshImageDisplayed(true);
-            refreshImageInformation("Aplicando Reduccion de colores.");
+            if(bitspp == 24){
+                img = myFilters.ReduceColorsBitsPerChannel(img, 8 - (int)spinBits.getValue());
+                boolean indexing = indexingButton.isSelected();
+                if(indexing){
+                    BufferedImage indexedImage = new BufferedImage(img.getWidth(),img.getHeight(), BufferedImage.TYPE_BYTE_INDEXED);
+                    Graphics2D g = indexedImage.createGraphics();
+                    g.drawImage(img, 0,0,null);
+                    img=indexedImage;
+                }
+                ImageOperationDequeSetting(UndoDeque, RedoDeque, img);
+                refreshImageDisplayed(true);
+                refreshImageInformation("Aplicando Reduccion de colores.");
+            }else{
+                JOptionPane.showMessageDialog(this, "¡ERROR: Solo se pueden reducir imágenes de 24 bits");
+            }  
         }else{
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
@@ -1638,6 +1387,10 @@ public class MainInterface extends javax.swing.JFrame {
 
     private void DeshacerOperacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DeshacerOperacionActionPerformed
         if (img != null){
+            if(UndoDeque.size() <= 1){
+                JOptionPane.showMessageDialog(this, "ERROR: No se puede deshacer");
+                return;
+            }
             BufferedImage imgTemp = UndoDeque.pop();
             try {                
                 RedoDeque.push(imgTemp);
@@ -1655,7 +1408,11 @@ public class MainInterface extends javax.swing.JFrame {
     }//GEN-LAST:event_DeshacerOperacionActionPerformed
 
     private void RehacerOperacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RehacerOperacionActionPerformed
-        if (img != null){            
+        if (img != null){ 
+            if(RedoDeque.isEmpty()){
+                JOptionPane.showMessageDialog(this, "ERROR: No se puede rehacer");
+                return;
+            }
             try {
                 BufferedImage imgTemp = RedoDeque.pop();
                 try {                    
@@ -1667,7 +1424,7 @@ public class MainInterface extends javax.swing.JFrame {
                     JOptionPane.showMessageDialog(this, "ERROR: No se puede rehacer");
                     img = imgTemp;
                 }
-            } catch (Exception e) {
+            } catch (HeadlessException e) {
                 JOptionPane.showMessageDialog(this, "ERROR: No se puede rehacer");
             }
         }else{
@@ -1709,25 +1466,19 @@ public class MainInterface extends javax.swing.JFrame {
     private javax.swing.JMenuItem About;
     private javax.swing.JMenuItem AbrirArchivo;
     private javax.swing.JMenuItem Apertura;
-    private javax.swing.JLabel AzulLabel;
     private javax.swing.JLabel BPP;
     private javax.swing.JPanel BarraEstadoPanel;
     private javax.swing.JMenuItem BlancoNegro;
-    private javax.swing.JPanel BlueHistogram;
     private javax.swing.JMenuItem Cierre;
     private javax.swing.JMenu ColorMenu;
     private javax.swing.JLabel Colores;
-    private javax.swing.JLabel DPI;
     private javax.swing.JMenuItem DeshacerOperacion;
     private javax.swing.JMenuItem Dilatacion;
     private javax.swing.JLabel Dimensiones;
     private javax.swing.JMenuItem Erosion;
     private javax.swing.JMenuItem EscalaDeGrises;
     private javax.swing.JLabel Estado;
-    private javax.swing.JPanel GreenHistogram;
     private javax.swing.JMenuItem GuardarImagen;
-    private javax.swing.JLabel HistoLabel;
-    private javax.swing.JPanel HistoPanel;
     private javax.swing.JPanel ImageInfoPanel;
     private javax.swing.JLabel InfoLabel;
     private javax.swing.JPanel InfoPanel;
@@ -1740,15 +1491,12 @@ public class MainInterface extends javax.swing.JFrame {
     private javax.swing.JMenuItem OTSUPropio;
     private javax.swing.JMenuItem PaletaAleatoria;
     private javax.swing.JMenuItem Readme;
-    private javax.swing.JPanel RedHistogram;
     private javax.swing.JMenuItem ReduccionBitsPorPixel;
     private javax.swing.JMenu ReduccionColorMenu;
     private javax.swing.JMenuItem RehacerOperacion;
-    private javax.swing.JLabel RojoLabel;
     private javax.swing.JPanel ScrollPanePanel;
     private javax.swing.JMenuItem Triangulo;
     private javax.swing.JMenu UmbralizacionMenu;
-    private javax.swing.JLabel VerdeLabel;
     private javax.swing.JScrollPane jScrollPane;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
