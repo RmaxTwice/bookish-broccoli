@@ -949,6 +949,7 @@ public class MainInterface extends javax.swing.JFrame {
 
             switch(opt){
                 case "Default":
+                    //It uses a rectangular structuring element by default
                     element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
                     break;
                 case "Personalizado":
@@ -1161,6 +1162,7 @@ public class MainInterface extends javax.swing.JFrame {
 
             switch(opt){
                 case "Default":
+                    //It uses a rectangular structuring element by default
                     element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
                     break;
                 case "Personalizado":
@@ -1235,6 +1237,7 @@ public class MainInterface extends javax.swing.JFrame {
 
             switch(opt){
                 case "Default":
+                    //It uses a rectangular structuring element by default
                     element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
                     break;
                 case "Personalizado":
@@ -1313,6 +1316,7 @@ public class MainInterface extends javax.swing.JFrame {
 
             switch(opt){
                 case "Default":
+                    //It uses a rectangular structuring element by default
                     element = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
                     break;
                 case "Personalizado":
