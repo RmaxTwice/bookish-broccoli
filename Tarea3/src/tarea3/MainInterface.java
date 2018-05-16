@@ -21,11 +21,14 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.HeadlessException;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractButton;
@@ -79,6 +82,9 @@ public class MainInterface extends javax.swing.JFrame {
     private int [] RedBins;
     private int [] GreenBins;
     private int [] BlueBins;
+    //Undo/Redo Deques
+    private Deque<BufferedImage> UndoDeque;
+    private Deque<BufferedImage> RedoDeque;
     
     
     /**
@@ -124,6 +130,10 @@ public class MainInterface extends javax.swing.JFrame {
         brightnessSlider.setMajorTickSpacing(50);
         brightnessSlider.setPaintTicks(true);
         brightnessSlider.setPaintLabels(true);
+        
+        //Creating deques for undo and redo functions
+        UndoDeque = new ArrayDeque<BufferedImage>(4);
+        RedoDeque = new ArrayDeque<BufferedImage>(4);
     }
 
     /**
@@ -155,12 +165,12 @@ public class MainInterface extends javax.swing.JFrame {
         BarraEstadoPanel = new javax.swing.JPanel();
         Estado = new javax.swing.JLabel();
         MenuBar = new javax.swing.JMenuBar();
-        RehacerOperacion = new javax.swing.JMenu();
+        MenuArchivo = new javax.swing.JMenu();
         AbrirArchivo = new javax.swing.JMenuItem();
         GuardarImagen = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         DeshacerOperacion = new javax.swing.JMenuItem();
-        Rehacer = new javax.swing.JMenuItem();
+        RehacerOperacion = new javax.swing.JMenuItem();
         MenuFiltros = new javax.swing.JMenu();
         ColorMenu = new javax.swing.JMenu();
         EscalaDeGrises = new javax.swing.JMenuItem();
@@ -350,7 +360,7 @@ public class MainInterface extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        RehacerOperacion.setText("Archivo");
+        MenuArchivo.setText("Archivo");
 
         AbrirArchivo.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         AbrirArchivo.setText("Abrir Imagen...");
@@ -359,7 +369,7 @@ public class MainInterface extends javax.swing.JFrame {
                 AbrirArchivoActionPerformed(evt);
             }
         });
-        RehacerOperacion.add(AbrirArchivo);
+        MenuArchivo.add(AbrirArchivo);
 
         GuardarImagen.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         GuardarImagen.setText("Guardar imagen...");
@@ -368,18 +378,28 @@ public class MainInterface extends javax.swing.JFrame {
                 GuardarImagenActionPerformed(evt);
             }
         });
-        RehacerOperacion.add(GuardarImagen);
-        RehacerOperacion.add(jSeparator1);
+        MenuArchivo.add(GuardarImagen);
+        MenuArchivo.add(jSeparator1);
 
         DeshacerOperacion.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.CTRL_MASK));
         DeshacerOperacion.setText("Deshacer");
-        RehacerOperacion.add(DeshacerOperacion);
+        DeshacerOperacion.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                DeshacerOperacionActionPerformed(evt);
+            }
+        });
+        MenuArchivo.add(DeshacerOperacion);
 
-        Rehacer.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.CTRL_MASK));
-        Rehacer.setText("Rehacer");
-        RehacerOperacion.add(Rehacer);
+        RehacerOperacion.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.CTRL_MASK));
+        RehacerOperacion.setText("Rehacer");
+        RehacerOperacion.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RehacerOperacionActionPerformed(evt);
+            }
+        });
+        MenuArchivo.add(RehacerOperacion);
 
-        MenuBar.add(RehacerOperacion);
+        MenuBar.add(MenuArchivo);
 
         MenuFiltros.setText("Filtros");
 
@@ -935,6 +955,30 @@ public class MainInterface extends javax.swing.JFrame {
         }
     }
     
+    private void OverwriteDeque(Deque d, int size){
+        if (d.size() == 4){
+            d.removeLast();
+        }
+    }
+    
+    private void ClearDeque(Deque d){
+        d.clear();
+    }
+    
+    //Sets the content of the desk when opening the image
+    private void ImageOpeningDequeSetting(Deque u, Deque r, BufferedImage i){
+        ClearDeque(u);
+        ClearDeque(r);
+        u.push(i);        
+    }
+    
+    //Sets the content of the deques after applying any operation
+    private void ImageOperationDequeSetting(Deque u, Deque r, BufferedImage i){
+        OverwriteDeque(u, 4);
+        u.push(i);
+        ClearDeque(r);
+    }
+    
     private void AbrirArchivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AbrirArchivoActionPerformed
         //FileInputStream in = null;
         //StreamTokenizer parser;
@@ -990,12 +1034,17 @@ public class MainInterface extends javax.swing.JFrame {
 //                Graphics2D g = indexedImage.createGraphics();
 //                g.drawImage(img, 0,0,null);
 //                img=indexedImage;
-
+                
+                //Setting the undo/redo deques for first use per opened image
+                ImageOpeningDequeSetting(UndoDeque, RedoDeque, img);
+                
+                //Refresh image
                 refreshImageDisplayed(true);
 
                 // Counting unique colors
                 countUniqueColors();
                 
+                //Painting Histograms
                 drawHistograms();
 
                 //Changing Estado Label
@@ -1070,6 +1119,9 @@ public class MainInterface extends javax.swing.JFrame {
                 return;
             }
             img = myFilters.ThresholdBlackAndWhite(img, thresholdSlider.getValue());
+            
+            
+            ImageOperationDequeSetting(UndoDeque, RedoDeque, img);
             refreshImageDisplayed(true);
             refreshImageInformation("Aplicando Umbralización a Blanco y Negro.");
             //Estado.setText("Aplicando Blanco y Negro | Colores Únicos en imagen: " + colorsCounter);
@@ -1087,6 +1139,7 @@ public class MainInterface extends javax.swing.JFrame {
                 IplImage temp = cvCreateImage(cvGetSize(auxImage), IPL_DEPTH_8U, 1);
                 cvCvtColor(auxImage, temp, CV_RGB2GRAY);
                 img = toBufferedImage(temp);
+                ImageOperationDequeSetting(UndoDeque, RedoDeque, img);
                 refreshImageDisplayed(true);
                 refreshImageInformation("Aplicando Escala de Grises.");
             }else{
@@ -1163,6 +1216,7 @@ public class MainInterface extends javax.swing.JFrame {
             IplImage ilpImage2 = toIplImage(img);
             cvDilate(ilpImage2, ilpImage2, element, 1);
             img = toBufferedImage(ilpImage2);
+            ImageOperationDequeSetting(UndoDeque, RedoDeque, img);
             refreshImageDisplayed(true);
             refreshImageInformation("Aplicando Dilatación");
         }else{
@@ -1190,6 +1244,7 @@ public class MainInterface extends javax.swing.JFrame {
                     img = toBufferedImage(ilpImage2);
                     break;
             }
+            ImageOperationDequeSetting(UndoDeque, RedoDeque, img);
             refreshImageDisplayed(true);
             refreshImageInformation("Aplicando Umbralización de OTSU(OpenCV).");
         }else{
@@ -1219,6 +1274,7 @@ public class MainInterface extends javax.swing.JFrame {
                 default:
                     break;
             }
+            ImageOperationDequeSetting(UndoDeque, RedoDeque, img);
             refreshImageDisplayed(true);
             refreshImageInformation("Aplicando Umbralización de Triangulo.");
         }else{
@@ -1255,6 +1311,7 @@ public class MainInterface extends javax.swing.JFrame {
                 default:
                     break;
             }
+            ImageOperationDequeSetting(UndoDeque, RedoDeque, img);
             refreshImageDisplayed(true);
             refreshImageInformation("Aplicando Umbralización de OTSU(Propio).");
         }else{
@@ -1295,7 +1352,7 @@ public class MainInterface extends javax.swing.JFrame {
                 g.drawImage(img, 0,0,null);
                 img=indexedImage;
             }
-
+            ImageOperationDequeSetting(UndoDeque, RedoDeque, img);
             refreshImageDisplayed(true);
             refreshImageInformation("Aplicando Reduccion de colores.");
         }else{
@@ -1369,6 +1426,7 @@ public class MainInterface extends javax.swing.JFrame {
             IplImage ilpImage2 = toIplImage(img);
             cvErode(ilpImage2, ilpImage2, element, 1);
             img = toBufferedImage(ilpImage2);
+            ImageOperationDequeSetting(UndoDeque, RedoDeque, img);
             refreshImageDisplayed(true);
             refreshImageInformation("Aplicando Erosión");
         }else{
@@ -1443,6 +1501,7 @@ public class MainInterface extends javax.swing.JFrame {
             IplImage ilpImage2 = toIplImage(img);
             cvMorphologyEx(ilpImage2, ilpImage2, temp, element, CV_MOP_OPEN, 1);
             img = toBufferedImage(ilpImage2);
+            ImageOperationDequeSetting(UndoDeque, RedoDeque, img);
             refreshImageDisplayed(true);
             refreshImageInformation("Aplicando Apertura");
         }else{
@@ -1520,6 +1579,7 @@ public class MainInterface extends javax.swing.JFrame {
             IplImage ilpImage2 = toIplImage(img);
             cvMorphologyEx(ilpImage2, ilpImage2, temp, element, CV_MOP_CLOSE, 1);
             img = toBufferedImage(ilpImage2);
+            ImageOperationDequeSetting(UndoDeque, RedoDeque, img);
             refreshImageDisplayed(true);
             refreshImageInformation("Aplicando Cierre");
         }else{
@@ -1564,7 +1624,7 @@ public class MainInterface extends javax.swing.JFrame {
                         g.drawImage(img, 0,0,null);
                         img=indexedImage;
                     }
-                    
+                    ImageOperationDequeSetting(UndoDeque, RedoDeque, img);
                     refreshImageDisplayed(true);
                     refreshImageInformation("Aplicando Reduccion de colores.");
                 }
@@ -1575,6 +1635,45 @@ public class MainInterface extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
         }
     }//GEN-LAST:event_PaletaAleatoriaActionPerformed
+
+    private void DeshacerOperacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DeshacerOperacionActionPerformed
+        if (img != null){
+            BufferedImage imgTemp = UndoDeque.pop();
+            try {                
+                RedoDeque.push(imgTemp);
+                img = UndoDeque.peek();
+                refreshImageDisplayed(true);
+                refreshImageInformation("Deshaciendo operación");
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "ERROR: No se puede deshacer");
+                UndoDeque.push(imgTemp);
+                img = imgTemp;
+            }
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_DeshacerOperacionActionPerformed
+
+    private void RehacerOperacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RehacerOperacionActionPerformed
+        if (img != null){            
+            try {
+                BufferedImage imgTemp = RedoDeque.pop();
+                try {                    
+                    img = imgTemp;
+                    UndoDeque.push(imgTemp);
+                    refreshImageDisplayed(true);
+                    refreshImageInformation("Rehaciendo operación");
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(this, "ERROR: No se puede rehacer");
+                    img = imgTemp;
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "ERROR: No se puede rehacer");
+            }
+        }else{
+            JOptionPane.showMessageDialog(this, "¡ERROR: Cargue una imagen primero!");
+        }
+    }//GEN-LAST:event_RehacerOperacionActionPerformed
 
 
     /**
@@ -1632,6 +1731,7 @@ public class MainInterface extends javax.swing.JFrame {
     private javax.swing.JPanel ImageInfoPanel;
     private javax.swing.JLabel InfoLabel;
     private javax.swing.JPanel InfoPanel;
+    private javax.swing.JMenu MenuArchivo;
     private javax.swing.JMenu MenuAyuda;
     private javax.swing.JMenuBar MenuBar;
     private javax.swing.JMenu MenuFiltros;
@@ -1643,8 +1743,7 @@ public class MainInterface extends javax.swing.JFrame {
     private javax.swing.JPanel RedHistogram;
     private javax.swing.JMenuItem ReduccionBitsPorPixel;
     private javax.swing.JMenu ReduccionColorMenu;
-    private javax.swing.JMenuItem Rehacer;
-    private javax.swing.JMenu RehacerOperacion;
+    private javax.swing.JMenuItem RehacerOperacion;
     private javax.swing.JLabel RojoLabel;
     private javax.swing.JPanel ScrollPanePanel;
     private javax.swing.JMenuItem Triangulo;
